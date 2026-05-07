@@ -14,7 +14,7 @@ export function buildWhatsAppUrl(listing: Listing): string {
   const phone = `55${listing.whatsapp.replace(/\D/g, '')}`;
   const base = `https://wa.me/${phone}`;
 
-  if (listing.category === 'venda') {
+  if (listing.category === 'venda' || listing.category === 'imoveis') {
     const message = [
       'Olá! Tenho interesse no anúncio:',
       '',
@@ -22,7 +22,7 @@ export function buildWhatsAppUrl(listing: Listing): string {
       '',
       `Link:\n${buildListingUrl(listing)}`,
       '',
-      'Ele ainda está disponível?',
+      'Ainda está disponível?',
     ].join('\n');
 
     return `${base}?text=${encodeURIComponent(message)}`;

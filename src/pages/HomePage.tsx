@@ -72,7 +72,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-8 sm:gap-12">
             {[
               { value: `${listings.length}+`, label: 'Anúncios ativos' },
-              { value: '4', label: 'Categorias' },
+              { value: `${CATEGORIES.length}`, label: 'Categorias' },
               { value: '100%', label: 'Gratuito' },
             ].map(({ value, label }, i) => (
               <div key={i} className="text-center">
@@ -110,16 +110,21 @@ export default function HomePage() {
         {loading ? (
           <SkeletonCategories />
         ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {CATEGORIES.map((cat) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {CATEGORIES.map((cat, i) => {
             const count = listings.filter((l) => l.category === cat.value).length;
+            // On sm (3-col), last 2 items are centered by spanning trick
+            // Use CSS to center the last row when it has fewer items
+            const isLastOnSm = i === 3; // 4th item: starts the 2nd row on sm
             return (
               <button
                 key={cat.value}
                 onClick={() => navigate(`/anuncios?categoria=${cat.value}`)}
-                className="group flex flex-col items-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700/50"
+                className={`group flex flex-col items-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600${
+                  isLastOnSm ? ' sm:col-start-1 lg:col-start-auto' : ''
+                }`}
               >
-                <span className="text-3xl">{cat.icon}</span>
+                <span className="text-3xl group-hover:scale-110 transition-transform duration-300 ease-out">{cat.icon}</span>
                 <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
                   {cat.label}
                 </span>

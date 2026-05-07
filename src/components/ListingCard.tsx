@@ -27,7 +27,7 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
 
   return (
     <article
-      className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-lg dark:shadow-slate-900/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer group border border-slate-100/60 dark:border-slate-700/40"
+      className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out overflow-hidden cursor-pointer group border border-slate-100/60 dark:border-slate-700/40 hover:border-slate-200 dark:hover:border-slate-600"
       onClick={() => onSelect(listing)}
     >
       {/* Image */}

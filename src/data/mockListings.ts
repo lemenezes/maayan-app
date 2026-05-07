@@ -114,4 +114,30 @@ export const mockListings: Listing[] = [
     apartment: 'Apto 802',
     createdAt: '2026-04-12T15:00:00Z',
   },
+  {
+    id: '10',
+    title: 'Vaga de garagem — aluguel mensal',
+    description:
+      'Vaga coberta no subsolo, próxima ao elevador. Ideal para carros de médio porte. Disponível a partir do próximo mês. Contrato de 6 ou 12 meses. Valor inclui IPTU proporcional.',
+    category: 'imoveis',
+    price: 350,
+    whatsapp: '11999000010',
+    images: ['https://picsum.photos/seed/parking-spot/800/600'],
+    authorName: 'Renata Souza',
+    apartment: 'Apto 1102',
+    createdAt: '2026-05-01T11:00:00Z',
+  },
+  {
+    id: '11',
+    title: 'Quarto para moça — república feminina',
+    description:
+      'Quarto mobiliado em república exclusivamente feminina no bloco B. Apartamento com 3 quartos, 2 banheiros, área de serviço e vaga de garagem. Wi-Fi incluso. Ambiente tranquilo, ideal para quem trabalha ou estuda.',
+    category: 'imoveis',
+    price: 1200,
+    whatsapp: '11999000011',
+    images: ['https://picsum.photos/seed/bedroom-cozy/800/600'],
+    authorName: 'Patricia Lima',
+    apartment: 'Apto 405B',
+    createdAt: '2026-05-03T09:30:00Z',
+  },
 ];

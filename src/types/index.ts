@@ -1,4 +1,4 @@
-export type Category = 'venda' | 'servicos' | 'indicacoes' | 'doacao';
+export type Category = 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
 
 export interface Listing {
   id: string;
@@ -49,5 +49,12 @@ export const CATEGORIES: CategoryConfig[] = [
     icon: '🎁',
     badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
     pillActiveClass: 'bg-emerald-600 text-white border-emerald-600',
+  },
+  {
+    value: 'imoveis',
+    label: 'Imóveis',
+    icon: '🏠',
+    badgeClass: 'bg-rose-50 text-rose-700 border border-rose-200',
+    pillActiveClass: 'bg-rose-500 text-white border-rose-500',
   },
 ];

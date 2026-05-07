@@ -15,7 +15,8 @@ create table if not exists public.listings (
             'venda',
             'servicos',
             'indicacoes',
-            'doacao'
+            'doacao',
+            'imoveis'
         )
     ),
     price numeric(10, 2),

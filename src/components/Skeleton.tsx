@@ -31,8 +31,8 @@ export function SkeletonGrid({ count = 6 }: { count?: number }) {
 
 export function SkeletonCategories() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
           className="flex flex-col items-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 animate-pulse"

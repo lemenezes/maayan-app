@@ -13,7 +13,7 @@ export type Database = {
           id: string;
           title: string;
           description: string;
-          category: 'venda' | 'servicos' | 'indicacoes' | 'doacao';
+          category: 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
           price: number | null;
           whatsapp: string;
           image_url: string | null;
@@ -28,7 +28,7 @@ export type Database = {
           id?: string;
           title: string;
           description: string;
-          category: 'venda' | 'servicos' | 'indicacoes' | 'doacao';
+          category: 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
           price?: number | null;
           whatsapp: string;
           image_url?: string | null;
@@ -43,7 +43,7 @@ export type Database = {
           id?: string;
           title?: string;
           description?: string;
-          category?: 'venda' | 'servicos' | 'indicacoes' | 'doacao';
+          category?: 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
           price?: number | null;
           whatsapp?: string;
           image_url?: string | null;
