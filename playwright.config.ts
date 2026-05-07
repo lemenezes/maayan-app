@@ -30,6 +30,7 @@ export default defineConfig({
     timeout: 60_000,
     env: {
       VITE_USE_MOCK: 'true',
+      VITE_USE_MOCK_AUTH: 'true',
     },
   },
 });

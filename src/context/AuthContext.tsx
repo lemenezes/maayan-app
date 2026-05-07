@@ -25,8 +25,8 @@ const AuthContext = createContext<AuthContextValue>({
   signOut: async () => {},
 });
 
-// ─── Mock para testes E2E (VITE_USE_MOCK=true) ───────────────────────────────
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+// ─── Mock para testes E2E (VITE_USE_MOCK_AUTH=true) ─────────────────────────
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
 
 const MOCK_USER = {
   id: 'mock-user-id',
