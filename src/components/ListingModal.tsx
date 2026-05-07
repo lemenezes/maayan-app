@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { X, MessageCircle, MapPin, Calendar, ImageOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, MessageCircle, MapPin, Calendar, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CATEGORIES } from '../types';
 import type { Listing } from '../types';
 
@@ -16,19 +16,30 @@ const priceFormatter = new Intl.NumberFormat('pt-BR', {
 export default function ListingModal({ listing, onClose }: ListingModalProps) {
   const category = CATEGORIES.find((c) => c.value === listing.category)!;
   const whatsappLink = `https://wa.me/55${listing.whatsapp.replace(/\D/g, '')}`;
+  const [activeImg, setActiveImg] = useState(0);
+  const hasMultiple = listing.images.length > 1;
+
+  const prevImg = () => setActiveImg((i) => (i - 1 + listing.images.length) % listing.images.length);
+  const nextImg = () => setActiveImg((i) => (i + 1) % listing.images.length);
+
+  useEffect(() => {
+    setActiveImg(0);
+  }, [listing.id]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft' && hasMultiple) prevImg();
+      if (e.key === 'ArrowRight' && hasMultiple) nextImg();
     };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
-  }, [onClose]);
+  }, [onClose, hasMultiple]);
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -55,14 +66,46 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
         className="bg-white dark:bg-slate-800 w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-slide-up sm:animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image */}
+        {/* Gallery */}
         <div className="aspect-video relative bg-slate-100 dark:bg-slate-700 sm:rounded-t-3xl rounded-t-3xl overflow-hidden">
-          {listing.images[0] ? (
-            <img
-              src={listing.images[0]}
-              alt={listing.title}
-              className="w-full h-full object-cover"
-            />
+          {listing.images.length > 0 ? (
+            <>
+              <img
+                key={activeImg}
+                src={listing.images[activeImg]}
+                alt={`${listing.title} ${activeImg + 1}`}
+                className="w-full h-full object-cover animate-fade-in"
+              />
+              {hasMultiple && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); prevImg(); }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+                    aria-label="Foto anterior"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); nextImg(); }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+                    aria-label="Próxima foto"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                  {/* Dots */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {listing.images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => { e.stopPropagation(); setActiveImg(i); }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeImg ? 'bg-white w-4' : 'bg-white/50'}`}
+                        aria-label={`Foto ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
               <ImageOff className="w-12 h-12 text-slate-300 dark:text-slate-600" />
@@ -86,6 +129,25 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
             {category.icon} {category.label}
           </span>
         </div>
+
+        {/* Thumbnail strip */}
+        {hasMultiple && (
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-none bg-slate-50 dark:bg-slate-900/40">
+            {listing.images.map((url, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImg(i)}
+                className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                  i === activeImg
+                    ? 'border-sky-400 opacity-100'
+                    : 'border-transparent opacity-50 hover:opacity-75'
+                }`}
+              >
+                <img src={url} alt={`Miniatura ${i + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-6 sm:p-8">

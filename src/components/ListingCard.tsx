@@ -1,4 +1,4 @@
-import { MessageCircle, ImageOff } from 'lucide-react';
+import { MessageCircle, ImageOff, Images } from 'lucide-react';
 import { CATEGORIES } from '../types';
 import type { Listing } from '../types';
 
@@ -32,12 +32,20 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
       {/* Image */}
       <div className="aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-700 relative">
         {listing.images[0] ? (
-          <img
-            src={listing.images[0]}
-            alt={listing.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+          <>
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            {listing.images.length > 1 && (
+              <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                <Images size={10} />
+                {listing.images.length}
+              </span>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 gap-2">
             <ImageOff className="w-10 h-10 text-slate-300 dark:text-slate-600" />
