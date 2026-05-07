@@ -93,21 +93,21 @@ export default function NewListingPage() {
   };
 
   const inputClass = (field: keyof FormData) =>
-    `w-full px-4 py-3 rounded-xl border text-sm text-slate-800 placeholder-slate-400 outline-none transition-all bg-white ${
+    `w-full px-4 py-3 rounded-xl border text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-all bg-white dark:bg-slate-800 ${
       errors[field]
-        ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100'
-        : 'border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100'
+        ? 'border-red-300 dark:border-red-500/60 focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-900/30'
+        : 'border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40'
     }`;
 
   /* ── Success screen ── */
   if (submitted) {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/40 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-10 h-10 text-emerald-500" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-3">Anúncio publicado!</h1>
-        <p className="text-slate-400 mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">Anúncio publicado!</h1>
+        <p className="text-slate-400 dark:text-slate-500 mb-8">
           Seu anúncio já está visível para todos os moradores do condomínio.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -122,7 +122,7 @@ export default function NewListingPage() {
               setForm(initialForm);
               setSubmitted(false);
             }}
-            className="text-slate-500 font-medium px-8 py-3 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
+            className="text-slate-500 dark:text-slate-400 font-medium px-8 py-3 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             Publicar outro
           </button>
@@ -138,15 +138,15 @@ export default function NewListingPage() {
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm font-medium mb-8 transition-colors"
+        className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-medium mb-8 transition-colors"
       >
         <ArrowLeft size={16} />
         Voltar
       </button>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">Publicar anúncio</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">Publicar anúncio</h1>
+        <p className="text-slate-400 dark:text-slate-500 text-sm">
           Preencha os dados para os vizinhos verem
         </p>
       </div>
@@ -154,7 +154,7 @@ export default function NewListingPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
         {/* Category selector */}
         <div>
-          <p className="block text-sm font-semibold text-slate-700 mb-3">
+          <p className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
             Categoria <span className="text-red-400">*</span>
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -165,8 +165,8 @@ export default function NewListingPage() {
                 onClick={() => setForm((p) => ({ ...p, category: cat.value, price: '' }))}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 text-sm font-medium transition-all ${
                   form.category === cat.value
-                    ? 'border-sky-400 bg-sky-50 text-sky-700'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-sky-400 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
                 <span className="text-2xl">{cat.icon}</span>
@@ -178,7 +178,7 @@ export default function NewListingPage() {
 
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-semibold text-slate-700 mb-1.5">
+          <label htmlFor="title" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
             Título <span className="text-red-400">*</span>
           </label>
           <input
@@ -198,7 +198,7 @@ export default function NewListingPage() {
         <div>
           <label
             htmlFor="description"
-            className="block text-sm font-semibold text-slate-700 mb-1.5"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
           >
             Descrição <span className="text-red-400">*</span>
           </label>
@@ -218,7 +218,7 @@ export default function NewListingPage() {
             ) : (
               <span />
             )}
-            <p className="text-slate-300 text-xs">{form.description.length}/1000</p>
+            <p className="text-slate-300 dark:text-slate-600 text-xs">{form.description.length}/1000</p>
           </div>
         </div>
 
@@ -227,13 +227,13 @@ export default function NewListingPage() {
           <div>
             <label
               htmlFor="price"
-              className="block text-sm font-semibold text-slate-700 mb-1.5"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
             >
               {form.category === 'servicos' ? 'Valor por hora' : 'Preço'}{' '}
               <span className="text-slate-400 font-normal">(opcional)</span>
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm font-medium pointer-events-none">
                 R$
               </span>
               <input
@@ -255,10 +255,10 @@ export default function NewListingPage() {
         <div>
           <label
             htmlFor="imageUrl"
-            className="block text-sm font-semibold text-slate-700 mb-1.5"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
           >
             URL da imagem{' '}
-            <span className="text-slate-400 font-normal">(opcional)</span>
+            <span className="text-slate-400 dark:text-slate-500 font-normal">(opcional)</span>
           </label>
           <input
             id="imageUrl"
@@ -269,7 +269,7 @@ export default function NewListingPage() {
             placeholder="https://..."
             className={inputClass('imageUrl')}
           />
-          <p className="text-slate-400 text-xs mt-1">Cole o link de uma imagem hospedada online</p>
+          <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Cole o link de uma imagem hospedada online</p>
         </div>
 
         {/* Author + apartment */}
@@ -277,7 +277,7 @@ export default function NewListingPage() {
           <div>
             <label
               htmlFor="authorName"
-              className="block text-sm font-semibold text-slate-700 mb-1.5"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
             >
               Seu nome <span className="text-red-400">*</span>
             </label>
@@ -298,10 +298,10 @@ export default function NewListingPage() {
           <div>
             <label
               htmlFor="apartment"
-              className="block text-sm font-semibold text-slate-700 mb-1.5"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
             >
               Apartamento{' '}
-              <span className="text-slate-400 font-normal">(opcional)</span>
+              <span className="text-slate-400 dark:text-slate-500 font-normal">(opcional)</span>
             </label>
             <input
               id="apartment"
@@ -320,7 +320,7 @@ export default function NewListingPage() {
         <div>
           <label
             htmlFor="whatsapp"
-            className="block text-sm font-semibold text-slate-700 mb-1.5"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
           >
             WhatsApp <span className="text-red-400">*</span>
           </label>
@@ -343,7 +343,7 @@ export default function NewListingPage() {
           {errors.whatsapp ? (
             <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
           ) : (
-            <p className="text-slate-400 text-xs mt-1">
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
               Os interessados entrarão em contato pelo WhatsApp
             </p>
           )}

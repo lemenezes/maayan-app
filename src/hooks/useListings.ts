@@ -6,19 +6,26 @@ const STORAGE_KEY = 'maayan_listings';
 
 export function useListings() {
   const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed: Listing[] = JSON.parse(stored);
-        setListings(parsed.length > 0 ? parsed : mockListings);
-      } else {
+    // Short simulated load for perceived-performance skeleton
+    const timer = setTimeout(() => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed: Listing[] = JSON.parse(stored);
+          setListings(parsed.length > 0 ? parsed : mockListings);
+        } else {
+          setListings(mockListings);
+        }
+      } catch {
         setListings(mockListings);
       }
-    } catch {
-      setListings(mockListings);
-    }
+      setLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const addListing = (data: Omit<Listing, 'id' | 'createdAt'>): Listing => {
@@ -33,5 +40,5 @@ export function useListings() {
     return listing;
   };
 
-  return { listings, addListing };
+  return { listings, loading, addListing };
 }
