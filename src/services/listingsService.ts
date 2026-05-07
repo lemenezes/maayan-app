@@ -51,7 +51,7 @@ export async function fetchListings(): Promise<Listing[]> {
   return (data ?? []).map(rowToListing);
 }
 
-export async function fetchUserListings(userId: string): Promise<Listing[]> {
+export async function fetchUserListings(userId: string): Promise<(Listing & { status: string })[]> {
   const { data, error } = await supabase
     .from('listings')
     .select('*')
@@ -60,6 +60,20 @@ export async function fetchUserListings(userId: string): Promise<Listing[]> {
 
   if (error) throw new Error(error.message);
   return (data ?? []).map(rowToListing);
+}
+
+export async function fetchListingById(id: string): Promise<(Listing & { status: string }) | null> {
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null; // not found
+    throw new Error(error.message);
+  }
+  return data ? rowToListing(data) : null;
 }
 
 export interface CreateListingInput {

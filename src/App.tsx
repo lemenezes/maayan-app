@@ -9,6 +9,7 @@ import ListingsPage from './pages/ListingsPage'
 import NewListingPage from './pages/NewListingPage'
 import MyListingsPage from './pages/MyListingsPage'
 import EditListingPage from './pages/EditListingPage'
+import ListingDetailPage from './pages/ListingDetailPage'
 import AuthPage from './pages/AuthPage'
 
 const router = createBrowserRouter([
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'anuncios', element: <ListingsPage /> },
+      { path: 'anuncios/:id', element: <ListingDetailPage /> },
       {
         path: 'publicar',
         element: (

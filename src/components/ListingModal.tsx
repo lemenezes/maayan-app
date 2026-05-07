@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
-import { X, MessageCircle, MapPin, Calendar, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { X, MessageCircle, MapPin, Calendar, ExternalLink } from 'lucide-react';
 import { CATEGORIES } from '../types';
 import type { Listing } from '../types';
+import { buildWhatsAppUrl } from '../utils/whatsapp';
+import ListingGallery from './ListingGallery';
 
 interface ListingModalProps {
   listing: Listing;
@@ -15,31 +18,20 @@ const priceFormatter = new Intl.NumberFormat('pt-BR', {
 
 export default function ListingModal({ listing, onClose }: ListingModalProps) {
   const category = CATEGORIES.find((c) => c.value === listing.category)!;
-  const whatsappLink = `https://wa.me/55${listing.whatsapp.replace(/\D/g, '')}`;
-  const [activeImg, setActiveImg] = useState(0);
-  const hasMultiple = listing.images.length > 1;
-
-  const prevImg = () => setActiveImg((i) => (i - 1 + listing.images.length) % listing.images.length);
-  const nextImg = () => setActiveImg((i) => (i + 1) % listing.images.length);
-
-  useEffect(() => {
-    setActiveImg(0);
-  }, [listing.id]);
+  const whatsappLink = buildWhatsAppUrl(listing);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft' && hasMultiple) prevImg();
-      if (e.key === 'ArrowRight' && hasMultiple) nextImg();
     };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
-  }, [onClose, hasMultiple]);
+  }, [onClose]);
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -67,87 +59,27 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Gallery */}
-        <div className="aspect-video relative bg-slate-100 dark:bg-slate-700 sm:rounded-t-3xl rounded-t-3xl overflow-hidden">
-          {listing.images.length > 0 ? (
+        <ListingGallery
+          images={listing.images}
+          title={listing.title}
+          rounded="modal"
+          overlay={
             <>
-              <img
-                key={activeImg}
-                src={listing.images[activeImg]}
-                alt={`${listing.title} ${activeImg + 1}`}
-                className="w-full h-full object-cover animate-fade-in"
-              />
-              {hasMultiple && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); prevImg(); }}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-                    aria-label="Foto anterior"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); nextImg(); }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-                    aria-label="Próxima foto"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                  {/* Dots */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {listing.images.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={(e) => { e.stopPropagation(); setActiveImg(i); }}
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeImg ? 'bg-white w-4' : 'bg-white/50'}`}
-                        aria-label={`Foto ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
-              <ImageOff className="w-12 h-12 text-slate-300 dark:text-slate-600" />
-              <span className="text-sm text-slate-300 dark:text-slate-600">Sem imagem</span>
-            </div>
-          )}
-
-          {/* Close */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 bg-white/90 dark:bg-slate-900/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-900 transition-colors shadow-sm"
-            aria-label="Fechar"
-          >
-            <X size={18} className="text-slate-700 dark:text-slate-200" />
-          </button>
-
-          {/* Category */}
-          <span
-            className={`absolute top-4 left-4 text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm ${category.badgeClass}`}
-          >
-            {category.icon} {category.label}
-          </span>
-        </div>
-
-        {/* Thumbnail strip */}
-        {hasMultiple && (
-          <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-none bg-slate-50 dark:bg-slate-900/40">
-            {listing.images.map((url, i) => (
               <button
-                key={i}
-                onClick={() => setActiveImg(i)}
-                className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
-                  i === activeImg
-                    ? 'border-sky-400 opacity-100'
-                    : 'border-transparent opacity-50 hover:opacity-75'
-                }`}
+                onClick={onClose}
+                className="absolute top-4 right-4 w-10 h-10 bg-white/90 dark:bg-slate-900/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-900 transition-colors shadow-sm"
+                aria-label="Fechar"
               >
-                <img src={url} alt={`Miniatura ${i + 1}`} className="w-full h-full object-cover" />
+                <X size={18} className="text-slate-700 dark:text-slate-200" />
               </button>
-            ))}
-          </div>
-        )}
+              <span
+                className={`absolute top-4 left-4 text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm ${category.badgeClass}`}
+              >
+                {category.icon} {category.label}
+              </span>
+            </>
+          }
+        />
 
         {/* Content */}
         <div className="p-6 sm:p-8">
@@ -190,15 +122,25 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
           </div>
 
           {/* CTA */}
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-4 rounded-2xl text-base transition-all shadow-sm"
-          >
-            <MessageCircle size={20} />
-            Entrar em contato via WhatsApp
-          </a>
+          <div className="flex flex-col gap-3">
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-4 rounded-2xl text-base transition-all shadow-sm"
+            >
+              <MessageCircle size={20} />
+              Entrar em contato via WhatsApp
+            </a>
+            <Link
+              to={`/anuncios/${listing.id}`}
+              onClick={onClose}
+              className="flex items-center justify-center gap-2 w-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium py-3 rounded-2xl text-sm transition-colors"
+            >
+              <ExternalLink size={15} />
+              Ver página do anúncio
+            </Link>
+          </div>
         </div>
       </div>
     </div>

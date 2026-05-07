@@ -1,6 +1,7 @@
 import { MessageCircle, ImageOff, Images } from 'lucide-react';
 import { CATEGORIES } from '../types';
 import type { Listing } from '../types';
+import { buildWhatsAppUrl } from '../utils/whatsapp';
 
 interface ListingCardProps {
   listing: Listing;
@@ -14,7 +15,7 @@ const priceFormatter = new Intl.NumberFormat('pt-BR', {
 
 export default function ListingCard({ listing, onSelect }: ListingCardProps) {
   const category = CATEGORIES.find((c) => c.value === listing.category)!;
-  const whatsappLink = `https://wa.me/55${listing.whatsapp.replace(/\D/g, '')}`;
+  const whatsappLink = buildWhatsAppUrl(listing);
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
