@@ -27,7 +27,7 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
 
   return (
     <article
-      className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out overflow-hidden cursor-pointer group border border-slate-100/60 dark:border-slate-700/40 hover:border-slate-200 dark:hover:border-slate-600"
+      className="flex flex-col bg-white dark:bg-slate-800/80 rounded-2xl shadow-[0_2px_12px_rgba(12,90,134,0.06)] hover:shadow-[0_8px_30px_rgba(12,90,134,0.14)] hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out overflow-hidden cursor-pointer group border border-[#EEF2F7] dark:border-slate-700/40 hover:border-[#1DAFD9]/30 dark:hover:border-sky-700/40"
       onClick={() => onSelect(listing)}
     >
       {/* Image */}
@@ -70,7 +70,7 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
         </p>
 
         {listing.price !== undefined && (
-          <p className="text-sky-600 dark:text-sky-400 font-bold text-base sm:text-lg mb-2 tabular-nums">
+          <p className="text-sky-600 dark:text-teal-500 font-bold text-base sm:text-lg mb-2 tabular-nums">
             {formatPrice(listing.price)}
           </p>
         )}

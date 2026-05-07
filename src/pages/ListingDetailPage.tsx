@@ -79,7 +79,7 @@ export default function ListingDetailPage() {
         </p>
         <Link
           to="/anuncios"
-          className="inline-flex items-center gap-2 text-sky-500 hover:text-sky-600 font-medium text-sm"
+          className="inline-flex items-center gap-2 text-[#0C5A86] hover:text-[#0C5A86] font-medium text-sm"
         >
           <ArrowLeft size={15} />
           Ver todos os anúncios
@@ -126,7 +126,7 @@ export default function ListingDetailPage() {
         </h1>
 
         {price && (
-          <p className="text-3xl font-bold text-sky-600 dark:text-sky-400 mb-5 tabular-nums">
+          <p className="text-3xl font-bold text-[#0C5A86] dark:text-sky-400 mb-5 tabular-nums">
             {price}
           </p>
         )}
@@ -140,8 +140,8 @@ export default function ListingDetailPage() {
         {/* Author */}
         <div className="flex flex-col gap-3 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-purple-100 dark:from-sky-900/60 dark:to-purple-900/60 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-sky-600 dark:text-sky-400">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900/60 dark:to-cyan-900/60 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-[#0C5A86] dark:text-sky-400">
                 {listing.authorName.charAt(0).toUpperCase()}
               </span>
             </div>

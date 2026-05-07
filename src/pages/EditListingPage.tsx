@@ -195,7 +195,7 @@ export default function EditListingPage() {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
         <p className="text-slate-500 dark:text-slate-400 mb-4">Anúncio não encontrado.</p>
-        <Link to="/meus-anuncios" className="text-sky-500 font-medium hover:underline">
+        <Link to="/meus-anuncios" className="text-[#0C5A86] font-medium hover:underline">
           Voltar para meus anúncios
         </Link>
       </div>
@@ -232,7 +232,7 @@ export default function EditListingPage() {
                 onClick={() => setForm((p) => ({ ...p, category: cat.value, price: '' }))}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 text-sm font-medium transition-all ${
                   form.category === cat.value
-                    ? 'border-sky-400 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400'
+                    ? 'border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40 text-[#0C5A86] dark:text-sky-400'
                     : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
@@ -315,13 +315,13 @@ export default function EditListingPage() {
                     aria-label="Remover imagem">
                     <X size={12} className="text-white" />
                   </button>
-                  <span className="absolute bottom-1.5 left-1.5 text-[10px] font-semibold bg-sky-500/80 text-white px-1.5 py-0.5 rounded-full">Nova</span>
+                  <span className="absolute bottom-1.5 left-1.5 text-[10px] font-semibold bg-[#0C5A86]/80 text-white px-1.5 py-0.5 rounded-full">Nova</span>
                 </div>
               ))}
               {/* Add more slot */}
               {totalImages < MAX_IMAGES && (
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-1 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 transition-all">
+                  className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-1 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 transition-all">
                   <Upload size={16} className="text-slate-400 dark:text-slate-500" />
                   <span className="text-xs text-slate-400 dark:text-slate-500">Adicionar</span>
                 </button>
@@ -334,7 +334,7 @@ export default function EditListingPage() {
               className={`w-full flex flex-col items-center gap-3 py-10 rounded-2xl border-2 border-dashed transition-all ${
                 errors.images
                   ? 'border-red-300 dark:border-red-500/60 bg-red-50 dark:bg-red-950/20'
-                  : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/50 dark:hover:bg-sky-950/20'
+                  : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-50/50 dark:hover:bg-sky-950/20'
               }`}>
               <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-sm">
                 <Upload size={18} className="text-slate-400 dark:text-slate-500" />
@@ -397,7 +397,7 @@ export default function EditListingPage() {
             Cancelar
           </button>
           <button type="submit" disabled={submitting}
-            className="flex-1 bg-gradient-to-r from-sky-500 to-purple-600 text-white font-bold py-4 rounded-2xl text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="flex-1 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white font-bold py-4 rounded-2xl text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {submitting && <Loader2 size={16} className="animate-spin" />}
             {submitting
               ? newImages.length > 0 ? `Enviando ${newImages.length} foto${newImages.length > 1 ? 's' : ''}…` : 'Salvando…'

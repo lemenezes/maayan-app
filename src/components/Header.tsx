@@ -21,20 +21,34 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-200">
+    <header className="sticky top-0 z-50 bg-[#FCFCFB]/92 dark:bg-[#0a1f2e]/90 backdrop-blur-xl border-b border-[#EEF2F7] dark:border-white/5 shadow-[0_1px_12px_rgba(12,90,134,0.04)] transition-colors duration-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-[68px]">
           {/* Logo */}
-          <Link to="/" onClick={close} className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-sm font-bold">M</span>
-            </div>
+          <Link to="/" onClick={close} className="flex items-center gap-3 min-w-0">
+            {/* Water fountain SVG mark */}
+            <svg viewBox="0 0 40 40" fill="none" className="w-9 h-9 flex-shrink-0" aria-hidden="true">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#0C5A86"/>
+                  <stop offset="100%" stopColor="#1DAFD9"/>
+                </linearGradient>
+              </defs>
+              <circle cx="20" cy="18" r="14" stroke="url(#logoGrad)" strokeWidth="1.5" fill="none" opacity="0.5"/>
+              <ellipse cx="20" cy="29" rx="8" ry="2.2" stroke="url(#logoGrad)" strokeWidth="1.2" fill="none"/>
+              <ellipse cx="20" cy="29" rx="4.5" ry="1.3" stroke="url(#logoGrad)" strokeWidth="0.8" fill="none"/>
+              <line x1="20" y1="29" x2="20" y2="19" stroke="url(#logoGrad)" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M20 19 C17 15.5 14 13.5 13.5 10" stroke="url(#logoGrad)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+              <path d="M20 19 C23 15.5 26 13.5 26.5 10" stroke="url(#logoGrad)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+              <path d="M20 19 C18.8 15 18 12.5 20 10" stroke="url(#logoGrad)" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+              <path d="M20 8 C19 10 18.2 11.2 18.2 12C18.2 12.88 19 13.6 20 13.6C21 13.6 21.8 12.88 21.8 12C21.8 11.2 21 10 20 8Z" fill="url(#logoGrad)"/>
+            </svg>
             <div className="leading-tight min-w-0">
-              <span className="block text-base font-bold bg-gradient-to-r from-sky-500 to-purple-600 bg-clip-text text-transparent">
+              <span className="block text-base font-bold tracking-wide text-[#0C5A86] dark:text-white">
                 Maayan
               </span>
-              <span className="hidden sm:block text-xs text-slate-400 dark:text-slate-500 font-medium truncate">
-                Classificados do Condomínio
+              <span className="hidden sm:block text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-widest uppercase truncate">
+                Cidade Jardim
               </span>
             </div>
           </Link>
@@ -47,7 +61,7 @@ export default function Header() {
               className={({ isActive }) =>
                 `px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                    ? 'bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`
               }
@@ -59,7 +73,7 @@ export default function Header() {
               className={({ isActive }) =>
                 `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                    ? 'bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`
               }
@@ -73,7 +87,7 @@ export default function Header() {
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                      ? 'bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`
                 }
@@ -88,7 +102,7 @@ export default function Header() {
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400'
+                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`
                 }
@@ -114,7 +128,7 @@ export default function Header() {
               <>
                 {/* User avatar (desktop) */}
                 <div className="hidden md:flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 px-2">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0C5A86] to-[#1DAFD9] flex items-center justify-center flex-shrink-0">
                     <User size={13} className="text-white" />
                   </div>
                   <span className="truncate max-w-[120px] text-xs font-medium">
@@ -134,7 +148,7 @@ export default function Header() {
                 <div className="hidden md:block">
                   <Link
                     to="/publicar"
-                    className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-purple-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
+                    className="flex items-center gap-2 bg-[#0C5A86] hover:bg-[#09476B] text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm"
                   >
                     <PlusCircle size={15} />
                     Publicar
@@ -155,7 +169,7 @@ export default function Header() {
                 <div className="hidden md:block">
                   <Link
                     to="/publicar"
-                    className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-purple-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
+                    className="flex items-center gap-2 bg-[#0C5A86] hover:bg-[#09476B] text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm"
                   >
                     <PlusCircle size={15} />
                     Publicar Anúncio
@@ -186,7 +200,7 @@ export default function Header() {
             className={({ isActive }) =>
               `px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                  ? 'bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
               }`
             }
@@ -199,7 +213,7 @@ export default function Header() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                  ? 'bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
               }`
             }
@@ -220,7 +234,7 @@ export default function Header() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                      ? 'bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`
                 }
@@ -235,7 +249,7 @@ export default function Header() {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`
                   }
@@ -247,7 +261,7 @@ export default function Header() {
               <Link
                 to="/publicar"
                 onClick={close}
-                className="flex items-center justify-center gap-2 mt-1 bg-gradient-to-r from-sky-500 to-purple-600 text-white px-4 py-3.5 rounded-xl text-sm font-semibold"
+                className="flex items-center justify-center gap-2 mt-1 bg-[#0C5A86] hover:bg-[#09476B] text-white px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors"
               >
                 <PlusCircle size={16} />
                 Publicar Anúncio
@@ -273,7 +287,7 @@ export default function Header() {
               <Link
                 to="/publicar"
                 onClick={close}
-                className="flex items-center justify-center gap-2 mt-1 bg-gradient-to-r from-sky-500 to-purple-600 text-white px-4 py-3.5 rounded-xl text-sm font-semibold"
+                className="flex items-center justify-center gap-2 mt-1 bg-[#0C5A86] hover:bg-[#09476B] text-white px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors"
               >
                 <PlusCircle size={16} />
                 Publicar Anúncio

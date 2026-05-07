@@ -88,7 +88,7 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
           </h2>
 
           {listing.price !== undefined && (
-            <p className="text-3xl font-bold text-sky-600 dark:text-sky-400 mb-5 tabular-nums">
+            <p className="text-3xl font-bold text-[#0C5A86] dark:text-sky-400 mb-5 tabular-nums">
               {formatPrice(listing.price)}
             </p>
           )}
@@ -100,8 +100,8 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
           {/* Author Info */}
           <div className="flex flex-col gap-3 mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-purple-100 dark:from-sky-900/60 dark:to-purple-900/60 flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-bold text-sky-600 dark:text-sky-400">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900/60 dark:to-cyan-900/60 flex items-center justify-center flex-shrink-0">
+                <span className="text-sm font-bold text-[#0C5A86] dark:text-sky-400">
                   {listing.authorName.charAt(0).toUpperCase()}
                 </span>
               </div>

@@ -129,7 +129,7 @@ export default function AdminListingsPage() {
               onClick={() => setFilter(s)}
               className={`rounded-2xl p-4 text-left border-2 transition-all ${
                 filter === s
-                  ? 'border-sky-400 bg-sky-50 dark:bg-sky-950/40'
+                  ? 'border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40'
                   : 'border-transparent bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700'
               }`}
             >
@@ -152,7 +152,7 @@ export default function AdminListingsPage() {
             onClick={() => setFilter(o.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filter === o.value
-                ? 'bg-sky-500 text-white'
+                ? 'bg-[#0C5A86] text-white'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
@@ -216,7 +216,7 @@ export default function AdminListingsPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {isBusy ? (
-                    <Loader2 size={18} className="animate-spin text-sky-500" />
+                    <Loader2 size={18} className="animate-spin text-[#0C5A86]" />
                   ) : (
                     <>
                       {listing.status !== 'active' && (

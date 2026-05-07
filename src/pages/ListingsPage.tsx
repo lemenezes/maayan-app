@@ -126,7 +126,7 @@ export default function ListingsPage() {
               {searchText && (
                 <button
                   onClick={() => updateParam('busca', null)}
-                  className="text-sky-500 dark:text-sky-400 text-sm font-medium hover:text-sky-600 transition-colors"
+                  className="text-[#0C5A86] dark:text-sky-400 text-sm font-medium hover:text-[#0C5A86] transition-colors"
                 >
                   Limpar busca
                 </button>
@@ -134,14 +134,14 @@ export default function ListingsPage() {
               {activeCategory && (
                 <button
                   onClick={() => updateParam('categoria', null)}
-                  className="text-sky-500 dark:text-sky-400 text-sm font-medium hover:text-sky-600 transition-colors"
+                  className="text-[#0C5A86] dark:text-sky-400 text-sm font-medium hover:text-[#0C5A86] transition-colors"
                 >
                   Limpar filtro
                 </button>
               )}
               <Link
                 to="/publicar"
-                className="bg-gradient-to-r from-sky-500 to-purple-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
               >
                 Publicar primeiro anúncio
               </Link>

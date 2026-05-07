@@ -26,23 +26,27 @@ export default function HomePage() {
   return (
     <>
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative bg-gradient-to-br from-sky-500 via-sky-400 to-purple-600 overflow-hidden">
-        {/* Decorative blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-16 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
+      <section className="relative bg-[#0A3D62] overflow-hidden">
+        {/* Layered background — oceano premium */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0A3D62] via-[#0C5A86] to-[#1DAFD9] opacity-90" />
+          {/* Radial glow — reflexo de água */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#1DAFD9]/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-[500px] h-[300px] bg-[#0C5A86]/40 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 left-0 w-64 h-64 bg-white/5 rounded-full blur-2xl" />
         </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-          <span className="inline-block text-sky-100 text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full border border-sky-200/40 bg-white/10 backdrop-blur-sm mb-6">
-            ✨ Exclusivo para quem mora no Condomínio Maayan
+          <span className="inline-block text-white/70 text-xs sm:text-sm font-medium tracking-widest uppercase px-5 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm mb-8 letter-spacing-wide">
+            Condomínio Maayan · Cidade Jardim
           </span>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight mb-5">
-            Compre, venda e <span className="text-sky-100">conecte-se</span> com a comunidade
+          <h1 className="font-['Cormorant_Garamond'] text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.1] tracking-tight mb-6">
+            Compre, venda e<br/>
+            <span className="text-[#7FD6E8] italic">conecte-se</span> com a comunidade
           </h1>
 
-          <p className="text-sky-100 text-lg sm:text-xl mb-10 max-w-xl mx-auto font-light">
+          <p className="text-white/60 text-base sm:text-lg mb-10 max-w-xl mx-auto font-light tracking-wide">
             Classificados simples e confiáveis para quem mora aqui.
           </p>
 
@@ -59,7 +63,7 @@ export default function HomePage() {
               />
               <button
                 type="submit"
-                className="bg-gradient-to-r from-sky-500 to-purple-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex-shrink-0"
+                className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex-shrink-0"
               >
                 Buscar
               </button>
@@ -75,23 +79,16 @@ export default function HomePage() {
             ].map(({ value, label }, i) => (
               <div key={i} className="text-center">
                 <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
-                <p className="text-sky-200 text-xs mt-0.5">{label}</p>
+                <p className="text-white/50 text-xs mt-0.5 tracking-wider uppercase">{label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Wave divider */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg
-            viewBox="0 0 1440 56"
-            className="w-full text-slate-50 dark:text-slate-900"
-            preserveAspectRatio="none"
-          >
-            <path
-              fill="currentColor"
-              d="M0,56 C360,0 720,56 1080,28 C1260,14 1380,0 1440,0 L1440,56 Z"
-            />
+        <div className="absolute bottom-0 left-0 right-0 translate-y-[1px]">
+          <svg viewBox="0 0 1440 56" className="w-full text-[#FCFCFB] dark:text-[#071a28]" preserveAspectRatio="none">
+            <path fill="currentColor" d="M0,56 C360,0 720,56 1080,28 C1260,14 1380,0 1440,0 L1440,56 Z" />
           </svg>
         </div>
       </section>
@@ -99,7 +96,7 @@ export default function HomePage() {
       {/* ─── Categories ───────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
         <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
             O que você procura?
           </h2>
           <p className="text-slate-400 dark:text-slate-500 text-sm">Navegue pelas categorias disponíveis</p>
@@ -115,10 +112,10 @@ export default function HomePage() {
               <button
                 key={cat.value}
                 onClick={() => navigate(`/anuncios?categoria=${cat.value}`)}
-                className="group flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600"
+                className="group flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl hover:shadow-sky-100/80 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-sky-200 dark:hover:border-sky-800/50"
               >
                 <span className="text-xl sm:text-3xl group-hover:scale-110 transition-transform duration-300 ease-out">{cat.icon}</span>
-                <span className="font-medium sm:font-semibold text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-tight text-center group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                <span className="font-medium sm:font-semibold text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-tight text-center group-hover:text-[#0C5A86] dark:group-hover:text-sky-400 transition-colors">
                   {cat.label}
                 </span>
                 <span className="hidden sm:block text-xs text-slate-300 dark:text-slate-600">
@@ -135,7 +132,7 @@ export default function HomePage() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-1">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
               Anúncios recentes
             </h2>
             <p className="text-slate-400 dark:text-slate-500 text-sm">Os mais recentes do condomínio</p>
@@ -143,7 +140,7 @@ export default function HomePage() {
           {!loading && featuredListings.length > 0 && (
             <Link
               to="/anuncios"
-              className="flex items-center gap-1.5 text-sky-500 font-semibold text-sm hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+              className="flex items-center gap-1.5 text-[#0C5A86] font-semibold text-sm hover:text-[#09476B] dark:hover:text-sky-400 transition-colors"
             >
               Ver todos
               <ArrowRight size={15} />
@@ -170,17 +167,21 @@ export default function HomePage() {
 
       {/* ─── CTA Banner ───────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="bg-gradient-to-r from-sky-500 to-purple-600 rounded-3xl overflow-hidden">
-          <div className="px-8 py-12 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+        <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-[#0A3558]">
+          {/* gradient oceânico */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0A3558] via-[#0F5C88] to-[#38B6D9]" />
+          {/* glow radial sutil — reflexo de água */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_110%,rgba(29,175,217,0.18),transparent)]" />
+          <div className="relative px-8 py-12 text-center">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-white mb-3">
               Tem algo para anunciar?
             </h2>
-            <p className="text-sky-100 mb-7 text-sm sm:text-base">
+            <p className="text-white/60 mb-7 text-sm sm:text-base tracking-wide">
               Publique grátis e alcance toda a comunidade do condomínio
             </p>
             <Link
               to="/publicar"
-              className="inline-flex items-center gap-2 bg-white text-sky-600 font-bold px-8 py-3 rounded-full hover:bg-sky-50 transition-colors shadow-lg text-sm sm:text-base"
+              className="inline-flex items-center gap-2 bg-white text-[#0C5A86] font-semibold px-8 py-3 rounded-xl hover:bg-[#f0f8ff] transition-colors shadow-lg text-sm sm:text-base"
             >
               Publicar Anúncio Grátis
               <ArrowRight size={17} />

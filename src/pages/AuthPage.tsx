@@ -69,7 +69,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
         </p>
         <Link
           to="/entrar"
-          className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
+          className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors"
         >
           Ir para o login →
         </Link>
@@ -84,7 +84,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700/50 p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-purple-600 flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0C5A86] to-[#1DAFD9] flex items-center justify-center mb-4">
               <span className="text-white text-xl font-bold">M</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
@@ -165,7 +165,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-sky-500 to-purple-600 text-white font-semibold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
+              className="w-full bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white font-semibold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
             >
               {submitting && <Loader2 size={16} className="animate-spin" />}
               {mode === 'login' ? 'Entrar' : 'Criar conta'}
@@ -179,7 +179,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
                 Não tem conta?{' '}
                 <Link
                   to="/cadastro"
-                  className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
+                  className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors"
                 >
                   Cadastre-se
                 </Link>
@@ -189,7 +189,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
                 Já tem conta?{' '}
                 <Link
                   to="/entrar"
-                  className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
+                  className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors"
                 >
                   Entrar
                 </Link>
@@ -200,7 +200,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
 
         {/* Back link */}
         <p className="text-center text-sm text-slate-400 dark:text-slate-600 mt-5">
-          <Link to="/" className="hover:text-sky-500 transition-colors">
+          <Link to="/" className="hover:text-[#0C5A86] transition-colors">
             ← Voltar para a página inicial
           </Link>
         </p>

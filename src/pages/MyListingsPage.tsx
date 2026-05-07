@@ -150,7 +150,7 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
           </h3>
 
           {price && (
-            <p className="text-sky-600 dark:text-sky-400 font-bold text-sm mb-1">{price}</p>
+            <p className="text-[#0C5A86] dark:text-sky-400 font-bold text-sm mb-1">{price}</p>
           )}
 
           <p className="text-slate-400 dark:text-slate-500 text-xs">
@@ -164,7 +164,7 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
         {!isPending && !isRejected && (
           <Link
             to={`/editar/${listing.id}`}
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-[#0C5A86] dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors"
           >
             <Pencil size={13} />
             Editar
@@ -270,7 +270,7 @@ export default function MyListingsPage() {
         </div>
         <Link
           to="/publicar"
-          className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-purple-600 text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
+          className="flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
         >
           <PlusCircle size={15} />
           Publicar
@@ -298,7 +298,7 @@ export default function MyListingsPage() {
           </p>
           <Link
             to="/publicar"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-purple-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             <PlusCircle size={16} />
             Publicar anúncio

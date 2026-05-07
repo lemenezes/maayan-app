@@ -34,7 +34,7 @@ export function EmptyListings() {
       actions={
         <Link
           to="/publicar"
-          className="bg-gradient-to-r from-sky-500 to-purple-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+          className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           Publicar primeiro anúncio
         </Link>
