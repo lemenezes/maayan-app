@@ -44,7 +44,7 @@ export const mockListings: Listing[] = [
     id: '4',
     title: 'Eletricista residencial — CREA ativo',
     description:
-      'Serviços elétricos residenciais: instalação de tomadas, disjuntores, lustres e quadro de luz. 15 anos de experiência. CREA ativo. Atendo moradores do condomínio com prioridade. Orçamento sem compromisso.',
+      'Serviços elétricos residenciais: instalação de tomadas, disjuntores, lustres e quadro de luz. 15 anos de experiência. CREA ativo. Atendo a comunidade do condomínio com prioridade. Orçamento sem compromisso.',
     category: 'servicos',
     price: 150,
     whatsapp: '11999000003',

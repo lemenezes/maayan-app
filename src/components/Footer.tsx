@@ -13,7 +13,7 @@ export default function Footer() {
               <span className="font-bold text-slate-800 dark:text-slate-100">Maayan</span>
             </Link>
             <p className="text-sm text-slate-400 dark:text-slate-500 max-w-xs">
-              Classificados exclusivos para moradores do Condomínio Maayan.
+              Classificados exclusivos para a comunidade do Condomínio Maayan.
             </p>
           </div>
           <nav className="flex items-center gap-6 text-sm text-slate-400 dark:text-slate-500">

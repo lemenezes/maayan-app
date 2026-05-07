@@ -294,7 +294,7 @@ export default function MyListingsPage() {
             Nenhum anúncio ainda
           </h2>
           <p className="text-slate-400 dark:text-slate-500 text-sm mb-6">
-            Publique seu primeiro anúncio para os vizinhos verem.
+            Publique seu primeiro anúncio e compartilhe com a comunidade.
           </p>
           <Link
             to="/publicar"

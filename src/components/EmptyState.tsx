@@ -30,7 +30,7 @@ export function EmptyListings() {
     <EmptyState
       icon={<Tag className="w-7 h-7 text-slate-300 dark:text-slate-500" />}
       title="Nenhum anúncio ainda"
-      description="Seja o primeiro a publicar! Venda, doe ou ofereça serviços para os vizinhos."
+      description="Seja a primeira pessoa a publicar! Venda, doe ou ofereça serviços para a comunidade."
       actions={
         <Link
           to="/publicar"

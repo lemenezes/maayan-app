@@ -168,7 +168,7 @@ export default function NewListingPage() {
           Seu anúncio está <strong className="text-amber-600 dark:text-amber-400">aguardando aprovação</strong> do administrador.
         </p>
         <p className="text-slate-400 dark:text-slate-500 text-sm mb-8">
-          Você receberá um e-mail quando ele for aprovado e ficar visível para os demais moradores.
+          Você receberá um e-mail quando ele for aprovado e ficar visível para a comunidade.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
@@ -210,7 +210,7 @@ export default function NewListingPage() {
           Publicar anúncio
         </h1>
         <p className="text-slate-400 dark:text-slate-500 text-sm">
-          Preencha os dados para os vizinhos verem
+          Preencha os dados e compartilhe com a comunidade
         </p>
       </div>
 
