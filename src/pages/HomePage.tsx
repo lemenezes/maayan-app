@@ -33,18 +33,16 @@ export default function HomePage() {
           <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <span className="inline-block text-sky-100 text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full border border-sky-200/40 bg-white/10 backdrop-blur-sm mb-6">
             ✨ Exclusivo para quem mora no Condomínio Maayan
           </span>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight mb-5">
-            Compre, venda e
-            <br />
-            <span className="text-sky-100">conecte-se</span> com a comunidade
+            Compre, venda e <span className="text-sky-100">conecte-se</span> com a comunidade
           </h1>
 
-          <p className="text-sky-100 text-lg sm:text-xl mb-10 max-w-lg mx-auto font-light">
+          <p className="text-sky-100 text-lg sm:text-xl mb-10 max-w-xl mx-auto font-light">
             Classificados simples e confiáveis para quem mora aqui.
           </p>
 
