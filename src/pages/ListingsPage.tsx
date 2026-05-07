@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { useListings } from '../hooks/useListings';
@@ -17,6 +17,22 @@ export default function ListingsPage() {
 
   const searchText = searchParams.get('busca') ?? '';
   const activeCategory = (searchParams.get('categoria') as Category) || null;
+
+  // Local state keeps the raw input value so dead keys / IME composition work correctly.
+  // The URL is updated with a debounce to avoid cutting off accented characters mid-composition.
+  const [inputValue, setInputValue] = useState(searchText);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync back when URL param is cleared externally (e.g. clicking the X button)
+  useEffect(() => {
+    setInputValue(searchText);
+  }, [searchText]);
+
+  const handleSearchChange = (value: string) => {
+    setInputValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => updateParam('busca', value || null), 300);
+  };
 
   const updateParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams);
@@ -64,8 +80,8 @@ export default function ListingsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
           <input
             type="text"
-            value={searchText}
-            onChange={(e) => updateParam('busca', e.target.value || null)}
+            value={inputValue}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Buscar anúncios..."
             className="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/50 transition-all"
           />
