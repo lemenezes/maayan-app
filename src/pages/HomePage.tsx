@@ -135,15 +135,15 @@ export default function HomePage() {
             <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
               Anúncios recentes
             </h2>
-            <p className="text-slate-400 dark:text-slate-500 text-sm">Os mais recentes do condomínio</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Os <span className="font-semibold text-slate-700 dark:text-slate-300">6</span> anúncios mais recentes do condomínio</p>
           </div>
           {!loading && featuredListings.length > 0 && (
             <Link
               to="/anuncios"
-              className="flex items-center gap-1.5 text-[#0C5A86] font-semibold text-sm hover:text-[#09476B] dark:hover:text-sky-400 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[#0C5A86] dark:text-sky-400 text-sm font-medium px-4 py-2 rounded-xl border border-[#0C5A86]/25 dark:border-sky-400/20 hover:bg-[#0C5A86]/6 dark:hover:bg-sky-400/8 hover:border-[#0C5A86]/40 dark:hover:border-sky-400/35 transition-all duration-150 whitespace-nowrap"
             >
-              Ver todos
-              <ArrowRight size={15} />
+              Ver todos os anúncios
+              <ArrowRight size={14} />
             </Link>
           )}
         </div>
