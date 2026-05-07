@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Clock, Upload, X, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { createListing } from '../services/listingsService';
 import { CATEGORIES } from '../types';
@@ -158,21 +158,24 @@ export default function NewListingPage() {
   if (submitted) {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/40 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-10 h-10 text-emerald-500" />
+        <div className="w-20 h-20 bg-amber-50 dark:bg-amber-950/40 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Clock className="w-10 h-10 text-amber-500" />
         </div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">
-          Anúncio publicado!
+          Anúncio enviado!
         </h1>
-        <p className="text-slate-400 dark:text-slate-500 mb-8">
-          Seu anúncio já está visível para todos os moradores do condomínio.
+        <p className="text-slate-500 dark:text-slate-400 mb-2">
+          Seu anúncio está <strong className="text-amber-600 dark:text-amber-400">aguardando aprovação</strong> do administrador.
+        </p>
+        <p className="text-slate-400 dark:text-slate-500 text-sm mb-8">
+          Você receberá um e-mail quando ele for aprovado e ficar visível para os demais moradores.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            to="/anuncios"
+            to="/meus-anuncios"
             className="bg-gradient-to-r from-sky-500 to-purple-600 text-white font-semibold px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
           >
-            Ver anúncios
+            Meus anúncios
           </Link>
           <button
             onClick={() => {

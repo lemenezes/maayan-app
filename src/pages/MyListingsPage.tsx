@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Pencil, Trash2, EyeOff, Eye, ImageOff, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, EyeOff, Eye, ImageOff, AlertTriangle, Clock, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchUserListings, deleteListing, deactivateListing, reactivateListing } from '../services/listingsService';
@@ -80,21 +80,46 @@ function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
 
 /* ── My Listing Card ── */
 interface MyListingCardProps {
-  listing: Listing;
+  listing: Listing & { status: string };
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, current: 'active' | 'inactive') => void;
 }
 function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps) {
   const category = CATEGORIES.find((c) => c.value === listing.category)!;
-  const isActive = (listing as Listing & { status?: string }).status !== 'inactive';
+  const status = listing.status;
+  const isActive = status === 'active';
+  const isPending = status === 'pending';
+  const isRejected = status === 'rejected';
   const price = formatPrice(listing);
 
   return (
     <article className={`bg-white dark:bg-slate-800 rounded-2xl border overflow-hidden transition-all ${
-      isActive
+      isPending
+        ? 'border-amber-200 dark:border-amber-800/50'
+        : isRejected
+        ? 'border-red-200 dark:border-red-900/50 opacity-70'
+        : isActive
         ? 'border-slate-100/60 dark:border-slate-700/40 shadow-sm'
         : 'border-slate-200 dark:border-slate-700 opacity-60'
     }`}>
+      {/* Pending / Rejected notice banner */}
+      {isPending && (
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-100 dark:border-amber-900/40">
+          <Clock size={13} className="text-amber-500 flex-shrink-0" />
+          <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+            Aguardando aprovação do administrador
+          </p>
+        </div>
+      )}
+      {isRejected && (
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-950/40 border-b border-red-100 dark:border-red-900/40">
+          <XCircle size={13} className="text-red-500 flex-shrink-0" />
+          <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+            Anúncio rejeitado pelo administrador
+          </p>
+        </div>
+      )}
+
       <div className="flex gap-4 p-4">
         {/* Thumbnail */}
         <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
@@ -113,7 +138,7 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${category.badgeClass}`}>
               {category.icon} {category.label}
             </span>
-            {!isActive && (
+            {!isActive && !isPending && !isRejected && (
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                 Inativo
               </span>
@@ -136,25 +161,35 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
 
       {/* Actions */}
       <div className="border-t border-slate-100 dark:border-slate-700/60 px-4 py-3 flex items-center gap-2">
-        <Link
-          to={`/editar/${listing.id}`}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors"
-        >
-          <Pencil size={13} />
-          Editar
-        </Link>
+        {!isPending && !isRejected && (
+          <Link
+            to={`/editar/${listing.id}`}
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors"
+          >
+            <Pencil size={13} />
+            Editar
+          </Link>
+        )}
 
-        <button
-          onClick={() => onToggleStatus(listing.id, isActive ? 'active' : 'inactive')}
-          className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
-            isActive
-              ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30'
-              : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
-          }`}
-        >
-          {isActive ? <EyeOff size={13} /> : <Eye size={13} />}
-          {isActive ? 'Desativar' : 'Reativar'}
-        </button>
+        {isActive && (
+          <button
+            onClick={() => onToggleStatus(listing.id, 'active')}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+          >
+            <EyeOff size={13} />
+            Desativar
+          </button>
+        )}
+
+        {status === 'inactive' && (
+          <button
+            onClick={() => onToggleStatus(listing.id, 'inactive')}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+          >
+            <Eye size={13} />
+            Reativar
+          </button>
+        )}
 
         <button
           onClick={() => onDelete(listing.id)}
