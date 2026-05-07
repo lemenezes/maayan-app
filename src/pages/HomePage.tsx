@@ -41,7 +41,7 @@ export default function HomePage() {
             Condomínio Maayan · Cidade Jardim
           </span>
 
-          <h1 className="font-['Cormorant_Garamond'] text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.1] tracking-tight mb-6">
+          <h1 data-testid="hero-title" className="font-['Cormorant_Garamond'] text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.1] tracking-tight mb-6">
             Compre, venda e<br/>
             <span className="text-[#7FD6E8] italic">conecte-se</span> com a comunidade
           </h1>
@@ -94,7 +94,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── Categories ───────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
+      <section data-testid="category-section" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
         <div className="text-center mb-10">
           <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
             O que você procura?
@@ -151,7 +151,7 @@ export default function HomePage() {
         {loading ? (
           <SkeletonGrid count={6} />
         ) : featuredListings.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div data-testid="listings-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {featuredListings.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -180,6 +180,7 @@ export default function HomePage() {
               Publique grátis e alcance toda a comunidade do condomínio
             </p>
             <Link
+              data-testid="publish-cta"
               to="/publicar"
               className="inline-flex items-center gap-2 bg-white text-[#0C5A86] font-semibold px-8 py-3 rounded-xl hover:bg-[#f0f8ff] transition-colors shadow-lg text-sm sm:text-base"
             >

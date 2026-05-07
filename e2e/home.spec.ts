@@ -3,30 +3,37 @@ import { test, expect } from '@playwright/test';
 test.describe('Home — fluxo principal', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    // aguarda mock data carregar
+    await expect(page.getByTestId('hero-title')).toBeVisible();
   });
 
   test('exibe o título do hero', async ({ page }) => {
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('comunidade');
+    await expect(page.getByTestId('hero-title')).toContainText('comunidade');
   });
 
   test('exibe seção de categorias', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /o que você procura/i })).toBeVisible();
+    await expect(page.getByTestId('category-section')).toBeVisible();
+    await expect(
+      page.getByTestId('category-section').getByRole('heading', { level: 2 }),
+    ).toContainText('procura');
   });
 
   test('exibe anúncios recentes', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /anúncios recentes/i })).toBeVisible();
-    // cards de anúncios renderizados
-    await expect(page.locator('article').first()).toBeVisible();
+    await expect(page.getByTestId('listings-grid')).toBeVisible();
+    await expect(page.getByTestId('listings-grid').locator('article').first()).toBeVisible();
   });
 
-  test('busca por anúncio filtra resultados', async ({ page }) => {
-    await page.fill('input[placeholder*="procurando"]', 'Sofá');
-    await page.keyboard.press('Enter');
+  test('busca por anúncio redireciona para /anuncios', async ({ page }) => {
+    const searchInput = page.getByPlaceholder(/procurando/i);
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('Sofá');
+    await searchInput.press('Enter');
     await expect(page).toHaveURL(/\/anuncios/);
   });
 
-  test('navegar para Publicar Anúncio', async ({ page }) => {
-    await page.getByRole('link', { name: /publicar anúncio grátis/i }).click();
+  test('CTA publicar leva à página /publicar', async ({ page }) => {
+    await expect(page.getByTestId('publish-cta')).toBeVisible();
+    await page.getByTestId('publish-cta').click();
     await expect(page).toHaveURL(/\/publicar/);
   });
 });
@@ -34,41 +41,49 @@ test.describe('Home — fluxo principal', () => {
 test.describe('Listagem de anúncios', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/anuncios');
-  });
-
-  test('exibe grid de anúncios', async ({ page }) => {
+    // aguarda ao menos um card aparecer
     await expect(page.locator('article').first()).toBeVisible();
   });
 
-  test('filtro por categoria Venda funciona', async ({ page }) => {
-    await page.getByRole('button', { name: /venda/i }).click();
-    // URL atualiza com filtro
-    await expect(page).toHaveURL(/categoria=venda|venda/);
+  test('exibe grid de anúncios com mock data', async ({ page }) => {
+    await expect(page.locator('article').first()).toBeVisible();
   });
 
-  test('botão "Todos" limpa o filtro', async ({ page }) => {
-    await page.getByRole('button', { name: /venda/i }).click();
+  test('filtro por categoria Venda atualiza URL', async ({ page }) => {
+    await page.getByRole('button', { name: /^venda$/i }).click();
+    await expect(page).toHaveURL(/categoria=venda/);
+  });
+
+  test('botão Todos limpa filtro e exibe todos os anúncios', async ({ page }) => {
+    // aplica filtro
+    await page.getByRole('button', { name: /^venda$/i }).click();
+    await expect(page).toHaveURL(/categoria=venda/);
+    // limpa filtro
     await page.getByRole('button', { name: /^todos$/i }).click();
+    await expect(page).not.toHaveURL(/categoria=/);
     await expect(page.locator('article').first()).toBeVisible();
   });
 });
 
 test.describe('Navegação geral', () => {
-  test('altera para dark mode via toggle no header', async ({ page }) => {
+  test('toggle de tema altera classe do html', async ({ page }) => {
     await page.goto('/');
+    await expect(page.getByTestId('hero-title')).toBeVisible();
+
     const htmlEl = page.locator('html');
     const initialClass = await htmlEl.getAttribute('class');
 
-    // clica no botão de tema (aria-label ou o botão com ícone sol/lua)
-    await page.locator('header button').filter({ has: page.locator('svg') }).first().click();
+    await page.getByTestId('theme-toggle').click();
 
     const newClass = await htmlEl.getAttribute('class');
     expect(newClass).not.toBe(initialClass);
   });
 
-  test('logo leva à home', async ({ page }) => {
+  test('logo no header navega para home', async ({ page }) => {
     await page.goto('/anuncios');
-    await page.locator('header a').first().click();
+    await expect(page.locator('article').first()).toBeVisible();
+    // primeiro link no header é o logo
+    await page.locator('header').getByRole('link').first().click();
     await expect(page).toHaveURL('/');
   });
 });
