@@ -3,6 +3,8 @@
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export type ListingStatus = 'pending' | 'active' | 'inactive' | 'rejected';
+
 export type Database = {
   public: {
     Tables: {
@@ -19,7 +21,7 @@ export type Database = {
           user_id: string;
           author_name: string;
           apartment: string | null;
-          status: 'active' | 'inactive';
+          status: ListingStatus;
           created_at: string;
         };
         Insert: {
@@ -34,7 +36,7 @@ export type Database = {
           user_id: string;
           author_name: string;
           apartment?: string | null;
-          status?: 'active' | 'inactive';
+          status?: ListingStatus;
           created_at?: string;
         };
         Update: {
@@ -49,7 +51,25 @@ export type Database = {
           user_id?: string;
           author_name?: string;
           apartment?: string | null;
-          status?: 'active' | 'inactive';
+          status?: ListingStatus;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      profiles: {
+        Row: {
+          id: string;
+          role: 'user' | 'admin';
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          role?: 'user' | 'admin';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          role?: 'user' | 'admin';
           created_at?: string;
         };
         Relationships: [];
@@ -64,3 +84,4 @@ export type Database = {
 
 export type ListingRow = Database['public']['Tables']['listings']['Row'];
 export type ListingInsert = Database['public']['Tables']['listings']['Insert'];
+export type ProfileRow = Database['public']['Tables']['profiles']['Row'];

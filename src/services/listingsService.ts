@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { ListingInsert } from '../lib/database.types';
+import type { ListingInsert, ListingStatus } from '../lib/database.types';
 import type { Listing } from '../types';
 import type { Category } from '../types';
 
@@ -131,7 +131,7 @@ export async function createListing(input: CreateListingInput): Promise<Listing>
     user_id: input.userId,
     author_name: input.authorName,
     apartment: input.apartment ?? null,
-    status: 'active',
+    status: 'pending',
   };
 
   const { data, error } = await supabase
@@ -253,4 +253,36 @@ export async function updateListing(id: string, input: UpdateListingInput): Prom
 
   if (error) throw new Error(error.message);
   return rowToListing(data);
+}
+
+// ─── Admin functions ─────────────────────────────────────────────────────────
+// These require the caller to have admin role in RLS policies.
+
+export async function fetchAllListingsAdmin(): Promise<(Listing & { status: string; userId: string })[]> {
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => ({ ...rowToListing(row), userId: row.user_id }));
+}
+
+export async function setListingStatus(id: string, status: ListingStatus): Promise<void> {
+  const { error } = await supabase
+    .from('listings')
+    .update({ status })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function fetchUserRole(userId: string): Promise<'admin' | 'user'> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (error || !data) return 'user';
+  return data.role as 'admin' | 'user';
 }

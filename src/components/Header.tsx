@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, Tag, PlusCircle, Sun, Moon, LogOut, LogIn, User, LayoutList } from 'lucide-react';
+import { Menu, X, Tag, PlusCircle, Sun, Moon, LogOut, LogIn, User, LayoutList, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggle } = useTheme();
   const { user, signOut } = useAuth();
+  const isAdmin = useIsAdmin();
   const navigate = useNavigate();
 
   const close = () => setIsOpen(false);
@@ -78,6 +80,21 @@ export default function Header() {
               >
                 <LayoutList size={14} />
                 Meus anúncios
+              </NavLink>
+            )}
+            {isAdmin && (
+              <NavLink
+                to="/admin/anuncios"
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`
+                }
+              >
+                <ShieldCheck size={14} />
+                Admin
               </NavLink>
             )}
           </nav>
@@ -211,6 +228,22 @@ export default function Header() {
                 <LayoutList size={16} />
                 Meus anúncios
               </NavLink>
+              {isAdmin && (
+                <NavLink
+                  to="/admin/anuncios"
+                  onClick={close}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`
+                  }
+                >
+                  <ShieldCheck size={16} />
+                  Moderação
+                </NavLink>
+              )}
               <Link
                 to="/publicar"
                 onClick={close}
