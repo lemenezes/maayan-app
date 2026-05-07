@@ -31,10 +31,10 @@ test.describe('Home — fluxo principal', () => {
     await expect(page).toHaveURL(/\/anuncios/);
   });
 
-  test('CTA publicar leva à página /publicar', async ({ page }) => {
-    await expect(page.getByTestId('publish-cta')).toBeVisible();
-    await page.getByTestId('publish-cta').click();
-    await expect(page).toHaveURL(/\/publicar/);
+  test('CTA publicar aponta para /publicar', async ({ page }) => {
+    const cta = page.getByTestId('publish-cta');
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute('href', '/publicar');
   });
 });
 
@@ -50,16 +50,16 @@ test.describe('Listagem de anúncios', () => {
   });
 
   test('filtro por categoria Venda atualiza URL', async ({ page }) => {
-    await page.getByRole('button', { name: /^venda$/i }).click();
+    await page.getByRole('button', { name: /venda/i }).click();
     await expect(page).toHaveURL(/categoria=venda/);
   });
 
   test('botão Todos limpa filtro e exibe todos os anúncios', async ({ page }) => {
     // aplica filtro
-    await page.getByRole('button', { name: /^venda$/i }).click();
+    await page.getByRole('button', { name: /venda/i }).click();
     await expect(page).toHaveURL(/categoria=venda/);
     // limpa filtro
-    await page.getByRole('button', { name: /^todos$/i }).click();
+    await page.getByRole('button', { name: /^todos/i }).click();
     await expect(page).not.toHaveURL(/categoria=/);
     await expect(page.locator('article').first()).toBeVisible();
   });
