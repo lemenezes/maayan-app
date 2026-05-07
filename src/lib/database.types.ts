@@ -4,6 +4,9 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type ListingStatus = 'pending' | 'active' | 'inactive' | 'rejected';
+export type ProfileRole = 'user' | 'resident' | 'admin';
+export type ProfileStatus = 'approved' | 'suspended';
+export type AccessRequestStatus = 'pending' | 'approved' | 'rejected';
 
 export type Database = {
   public: {
@@ -59,18 +62,71 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
-          role: 'user' | 'admin';
+          full_name: string | null;
+          email: string | null;
+          block: string | null;
+          apartment: string | null;
+          role: ProfileRole;
+          status: ProfileStatus;
           created_at: string;
         };
         Insert: {
           id: string;
-          role?: 'user' | 'admin';
+          full_name?: string | null;
+          email?: string | null;
+          block?: string | null;
+          apartment?: string | null;
+          role?: ProfileRole;
+          status?: ProfileStatus;
           created_at?: string;
         };
         Update: {
           id?: string;
-          role?: 'user' | 'admin';
+          full_name?: string | null;
+          email?: string | null;
+          block?: string | null;
+          apartment?: string | null;
+          role?: ProfileRole;
+          status?: ProfileStatus;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      access_requests: {
+        Row: {
+          id: string;
+          full_name: string;
+          email: string;
+          block: string;
+          apartment: string;
+          message: string | null;
+          status: AccessRequestStatus;
+          created_at: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          full_name: string;
+          email: string;
+          block: string;
+          apartment: string;
+          message?: string | null;
+          status?: AccessRequestStatus;
+          created_at?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          full_name?: string;
+          email?: string;
+          block?: string;
+          apartment?: string;
+          message?: string | null;
+          status?: AccessRequestStatus;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
         };
         Relationships: [];
       };
@@ -85,3 +141,4 @@ export type Database = {
 export type ListingRow = Database['public']['Tables']['listings']['Row'];
 export type ListingInsert = Database['public']['Tables']['listings']['Insert'];
 export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+export type AccessRequestRow = Database['public']['Tables']['access_requests']['Row'];

@@ -77,7 +77,7 @@ describe('Header — mobile menu', () => {
     renderHeader();
     await userEvent.click(screen.getByRole('button', { name: /abrir menu|menu/i }));
     expect(screen.getAllByRole('link', { name: /anúncios/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('link', { name: /publicar/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /entrar|solicitar/i }).length).toBeGreaterThan(0);
   });
 });
 

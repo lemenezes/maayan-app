@@ -1,5 +1,32 @@
 export type Category = 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
 
+export type ProfileRole = 'resident' | 'admin' | 'user';
+export type ProfileStatus = 'approved' | 'suspended';
+export type RequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  block: string | null;
+  apartment: string | null;
+  role: ProfileRole;
+  status: ProfileStatus;
+  created_at: string;
+}
+
+export interface AccessRequest {
+  id: string;
+  full_name: string;
+  email: string;
+  block: string;
+  apartment: string;
+  message: string | null;
+  status: RequestStatus;
+  created_at: string;
+  reviewed_at: string | null;
+}
+
 export interface Listing {
   id: string;
   title: string;

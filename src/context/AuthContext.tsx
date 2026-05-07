@@ -1,11 +1,14 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import type { Profile } from '../types';
 
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  profile: Profile | null;
+  profileLoading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -15,15 +18,29 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   session: null,
   loading: true,
+  profile: null,
+  profileLoading: false,
   signUp: async () => ({ error: null }),
   signIn: async () => ({ error: null }),
   signOut: async () => {},
 });
 
+async function fetchProfile(userId: string): Promise<Profile | null> {
+  if (!isSupabaseConfigured) return null;
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, block, apartment, role, status, created_at')
+    .eq('id', userId)
+    .single();
+  return (data as Profile | null) ?? null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     // Restore session on mount
@@ -42,6 +59,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Load profile whenever user changes
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      setProfileLoading(false);
+      return;
+    }
+    setProfileLoading(true);
+    fetchProfile(user.id)
+      .then(setProfile)
+      .finally(() => setProfileLoading(false));
+  }, [user]);
+
   const signUp = async (email: string, password: string): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
@@ -59,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, profile, profileLoading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

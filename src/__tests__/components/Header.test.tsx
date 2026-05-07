@@ -38,13 +38,13 @@ describe('Header', () => {
     expect(screen.getAllByRole('link', { name: /anúncios/i }).length).toBeGreaterThan(0);
   });
 
-  it('renderiza link para Publicar', () => {
+  it('renderiza link para Entrar quando não logado', () => {
     render(
       <MemoryRouter>
         <Header />
       </MemoryRouter>,
     );
-    expect(screen.getAllByRole('link', { name: /publicar/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /entrar/i }).length).toBeGreaterThan(0);
   });
 
   it('renderiza botão de toggle de tema', () => {

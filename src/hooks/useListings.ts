@@ -6,12 +6,23 @@ import { mockListings } from '../data/mockListings';
 
 const SUPABASE_CONFIGURED = isSupabaseConfigured && import.meta.env.VITE_USE_MOCK !== 'true';
 
-export function useListings() {
+interface UseListingsOptions {
+  /** Quando true, não busca dados (ex: usuário não autenticado) */
+  skip?: boolean;
+}
+
+export function useListings(options: UseListingsOptions = {}) {
+  const { skip = false } = options;
   const [listings, setListings] = useState<Listing[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (skip) {
+      setListings([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -32,7 +43,7 @@ export function useListings() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [skip]);
 
   useEffect(() => {
     load();
@@ -40,4 +51,3 @@ export function useListings() {
 
   return { listings, loading, error, reload: load };
 }
-

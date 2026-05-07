@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ArrowRight } from 'lucide-react';
 import { useListings } from '../hooks/useListings';
+import { useAuth } from '../context/AuthContext';
 import { CATEGORIES } from '../types';
 import type { Listing } from '../types';
 import ListingCard from '../components/ListingCard';
 import ListingModal from '../components/ListingModal';
+import GuestWall from '../components/GuestWall';
 import { SkeletonGrid, SkeletonCategories } from '../components/Skeleton';
 import { EmptyListings } from '../components/EmptyState';
 
 export default function HomePage() {
-  const { listings, loading } = useListings();
+  const { user } = useAuth();
+  const { listings, loading } = useListings({ skip: !user });
   const [searchInput, setSearchInput] = useState('');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const navigate = useNavigate();
@@ -73,7 +76,7 @@ export default function HomePage() {
           {/* Stats */}
           <div className="flex items-center justify-center gap-8 sm:gap-12">
             {[
-              { value: `${listings.length}+`, label: 'Anúncios ativos' },
+              { value: user ? `${listings.length}+` : '—', label: 'Anúncios ativos' },
               { value: `${CATEGORIES.length}`, label: 'Categorias' },
               { value: '100%', label: 'Gratuito' },
             ].map(({ value, label }, i) => (
@@ -137,7 +140,7 @@ export default function HomePage() {
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">Os <span className="font-semibold text-slate-700 dark:text-slate-300">6</span> mais recentes do condomínio</p>
           </div>
-          {!loading && featuredListings.length > 0 && (
+          {user && !loading && featuredListings.length > 0 && (
             <Link
               to="/anuncios"
               className="self-start sm:self-auto inline-flex items-center gap-1.5 text-[#0C5A86] dark:text-sky-400 text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-[#0C5A86]/25 dark:border-sky-400/20 hover:bg-[#0C5A86]/6 dark:hover:bg-sky-400/8 hover:border-[#0C5A86]/40 dark:hover:border-sky-400/35 transition-all duration-150 whitespace-nowrap"
@@ -148,7 +151,9 @@ export default function HomePage() {
           )}
         </div>
 
-        {loading ? (
+        {!user ? (
+          <GuestWall message="Entre para ver os anúncios da comunidade do condomínio." />
+        ) : loading ? (
           <SkeletonGrid count={6} />
         ) : featuredListings.length > 0 ? (
           <div data-testid="listings-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">

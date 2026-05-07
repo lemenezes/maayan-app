@@ -44,6 +44,7 @@ describe('ProtectedRoute', () => {
   it('redireciona para /entrar quando usuário não está logado', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null, session: null, loading: false,
+      profile: null, profileLoading: false,
       signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),
     });
 
@@ -52,11 +53,13 @@ describe('ProtectedRoute', () => {
     expect(screen.queryByText('Conteúdo protegido')).not.toBeInTheDocument();
   });
 
-  it('renderiza conteúdo quando usuário está logado', () => {
+  it('renderiza conteúdo quando usuário está logado e aprovado', () => {
     vi.mocked(useAuth).mockReturnValue({
       // @ts-expect-error mock parcial
       user: { id: 'abc', email: 'user@test.com' },
       session: null, loading: false,
+      profile: { id: 'abc', full_name: 'Test', email: 'user@test.com', block: 'A', apartment: '101', role: 'resident', status: 'approved', created_at: '2026-01-01T00:00:00Z' },
+      profileLoading: false,
       signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),
     });
 
@@ -64,9 +67,32 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Conteúdo protegido')).toBeInTheDocument();
   });
 
+  it('redireciona para /aguardando-aprovacao quando perfil pendente', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      // @ts-expect-error mock parcial
+      user: { id: 'abc', email: 'user@test.com' },
+      session: null, loading: false,
+      profile: null,
+      profileLoading: false,
+      signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/protegido']}>
+        <Routes>
+          <Route path="/protegido" element={<ProtectedRoute><div>Conteúdo protegido</div></ProtectedRoute>} />
+          <Route path="/aguardando-aprovacao" element={<div>Aguardando aprovação</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Aguardando aprovação')).toBeInTheDocument();
+    expect(screen.queryByText('Conteúdo protegido')).not.toBeInTheDocument();
+  });
+
   it('exibe spinner enquanto carregando', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null, session: null, loading: true,
+      profile: null, profileLoading: false,
       signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),
     });
 
@@ -117,6 +143,7 @@ describe('AdminRoute', () => {
   it('exibe spinner enquanto carregando auth', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null, session: null, loading: true,
+      profile: null, profileLoading: false,
       signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),
     });
     vi.mocked(useIsAdmin).mockReturnValue(null);

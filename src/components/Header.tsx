@@ -97,19 +97,34 @@ export default function Header() {
               </NavLink>
             )}
             {isAdmin && (
-              <NavLink
-                to="/admin/anuncios"
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    isActive
-                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`
-                }
-              >
-                <ShieldCheck size={14} />
-                Admin
-              </NavLink>
+              <>
+                <NavLink
+                  to="/admin/anuncios"
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`
+                  }
+                >
+                  <ShieldCheck size={14} />
+                  Anúncios
+                </NavLink>
+                <NavLink
+                  to="/admin/moradores"
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`
+                  }
+                >
+                  <User size={14} />
+                  Moradores
+                </NavLink>
+              </>
             )}
           </nav>
 
@@ -158,22 +173,21 @@ export default function Header() {
               </>
             ) : (
               <>
-                {/* Login (desktop) */}
+                {/* Solicitar acesso (desktop) */}
                 <Link
-                  to="/entrar"
+                  to="/solicitar-acesso"
                   className="hidden md:flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 text-sm font-medium px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <LogIn size={15} />
-                  Entrar
+                  Solicitar acesso
                 </Link>
-                {/* Publish CTA (desktop) */}
+                {/* Login (desktop) */}
                 <div className="hidden md:block">
                   <Link
-                    to="/publicar"
+                    to="/entrar"
                     className="flex items-center gap-2 bg-[#0C5A86] hover:bg-[#09476B] text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm"
                   >
-                    <PlusCircle size={15} />
-                    Publicar Anúncio
+                    <LogIn size={15} />
+                    Entrar
                   </Link>
                 </div>
               </>
@@ -244,20 +258,36 @@ export default function Header() {
                 Meus anúncios
               </NavLink>
               {isAdmin && (
-                <NavLink
-                  to="/admin/anuncios"
-                  onClick={close}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`
-                  }
-                >
-                  <ShieldCheck size={16} />
-                  Moderação
-                </NavLink>
+                <>
+                  <NavLink
+                    to="/admin/anuncios"
+                    onClick={close}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`
+                    }
+                  >
+                    <ShieldCheck size={16} />
+                    Moderação
+                  </NavLink>
+                  <NavLink
+                    to="/admin/moradores"
+                    onClick={close}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`
+                    }
+                  >
+                    <User size={16} />
+                    Moradores
+                  </NavLink>
+                </>
               )}
               <Link
                 to="/publicar"
@@ -286,12 +316,11 @@ export default function Header() {
                 Entrar
               </Link>
               <Link
-                to="/publicar"
+                to="/solicitar-acesso"
                 onClick={close}
                 className="flex items-center justify-center gap-2 mt-1 bg-[#0C5A86] hover:bg-[#09476B] text-white px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors"
               >
-                <PlusCircle size={16} />
-                Publicar Anúncio
+                Solicitar acesso
               </Link>
             </>
           )}
