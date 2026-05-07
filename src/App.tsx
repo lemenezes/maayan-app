@@ -1,11 +1,14 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import ListingsPage from './pages/ListingsPage'
 import NewListingPage from './pages/NewListingPage'
+import MyListingsPage from './pages/MyListingsPage'
+import EditListingPage from './pages/EditListingPage'
 import AuthPage from './pages/AuthPage'
 
 const router = createBrowserRouter([
@@ -23,6 +26,22 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: 'meus-anuncios',
+        element: (
+          <ProtectedRoute>
+            <MyListingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'editar/:id',
+        element: (
+          <ProtectedRoute>
+            <EditListingPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'entrar', element: <AuthPage mode="login" /> },
       { path: 'cadastro', element: <AuthPage mode="register" /> },
     ],
@@ -33,7 +52,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <ToastProvider>
+          <RouterProvider router={router} />
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   )

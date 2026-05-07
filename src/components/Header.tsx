@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, Tag, PlusCircle, Sun, Moon, LogOut, LogIn, User } from 'lucide-react';
+import { Menu, X, Tag, PlusCircle, Sun, Moon, LogOut, LogIn, User, LayoutList } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -65,6 +65,21 @@ export default function Header() {
               <Tag size={14} />
               Anúncios
             </NavLink>
+            {user && (
+              <NavLink
+                to="/meus-anuncios"
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`
+                }
+              >
+                <LayoutList size={14} />
+                Meus anúncios
+              </NavLink>
+            )}
           </nav>
 
           {/* Right actions */}
@@ -182,6 +197,20 @@ export default function Header() {
                 <User size={13} />
                 {user.email}
               </div>
+              <NavLink
+                to="/meus-anuncios"
+                onClick={close}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`
+                }
+              >
+                <LayoutList size={16} />
+                Meus anúncios
+              </NavLink>
               <Link
                 to="/publicar"
                 onClick={close}
