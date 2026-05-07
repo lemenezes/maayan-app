@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ImageOff, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import ListingLightbox from './ListingLightbox';
 
 interface Props {
   images: string[];
@@ -12,6 +13,7 @@ interface Props {
 
 export default function ListingGallery({ images, title, overlay, rounded = 'modal' }: Props) {
   const [activeImg, setActiveImg] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const hasMultiple = images.length > 1;
 
   const prevImg = () => setActiveImg((i) => (i - 1 + images.length) % images.length);
@@ -25,30 +27,41 @@ export default function ListingGallery({ images, title, overlay, rounded = 'moda
       <div className={`aspect-video relative bg-slate-100 dark:bg-slate-700 ${roundedClass} overflow-hidden`}>
         {images.length > 0 ? (
           <>
-            <img
-              key={activeImg}
-              src={images[activeImg]}
-              alt={`${title} ${activeImg + 1}`}
-              className="w-full h-full object-cover animate-fade-in"
-            />
+            <button
+              className="absolute inset-0 w-full h-full cursor-zoom-in focus:outline-none group"
+              onClick={() => setLightboxOpen(true)}
+              aria-label="Ampliar imagem"
+              tabIndex={0}
+            >
+              <img
+                key={activeImg}
+                src={images[activeImg]}
+                alt={`${title} ${activeImg + 1}`}
+                className="w-full h-full object-cover animate-fade-in"
+              />
+              {/* Zoom hint */}
+              <span className="absolute bottom-3 right-3 w-8 h-8 bg-black/40 group-hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <ZoomIn size={14} className="text-white" />
+              </span>
+            </button>
             {hasMultiple && (
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); prevImg(); }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
                   aria-label="Foto anterior"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); nextImg(); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
                   aria-label="Próxima foto"
                 >
                   <ChevronRight size={18} />
                 </button>
                 {/* Dots */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                   {images.map((_, i) => (
                     <button
                       key={i}
@@ -89,6 +102,17 @@ export default function ListingGallery({ images, title, overlay, rounded = 'moda
           ))}
         </div>
       )}
+
+      {/* Lightbox */}
+      {images.length > 0 && (
+        <ListingLightbox
+          images={images}
+          initialIndex={activeImg}
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 }
+
