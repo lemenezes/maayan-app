@@ -109,7 +109,7 @@ export default function Header() {
                   }
                 >
                   <ShieldCheck size={14} />
-                  Anúncios
+                  Moderação
                 </NavLink>
                 <NavLink
                   to="/admin/moradores"
