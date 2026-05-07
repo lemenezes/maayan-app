@@ -27,7 +27,7 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
 
   return (
     <article
-      className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out overflow-hidden cursor-pointer group border border-slate-100/60 dark:border-slate-700/40 hover:border-slate-200 dark:hover:border-slate-600"
+      className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out overflow-hidden cursor-pointer group border border-slate-100/60 dark:border-slate-700/40 hover:border-slate-200 dark:hover:border-slate-600"
       onClick={() => onSelect(listing)}
     >
       {/* Image */}
@@ -61,21 +61,21 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-snug line-clamp-2 mb-1.5">
+      <div className="flex flex-col flex-1 p-3 sm:p-4">
+        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-snug line-clamp-2 mb-1">
           {listing.title}
         </h3>
-        <p className="text-slate-400 dark:text-slate-500 text-xs line-clamp-2 mb-3 leading-relaxed">
+        <p className="text-slate-400 dark:text-slate-500 text-xs line-clamp-2 mb-2 leading-relaxed">
           {listing.description}
         </p>
 
         {listing.price !== undefined && (
-          <p className="text-sky-600 dark:text-sky-400 font-bold text-lg mb-3 tabular-nums">
+          <p className="text-sky-600 dark:text-sky-400 font-bold text-base sm:text-lg mb-2 tabular-nums">
             {formatPrice(listing.price)}
           </p>
         )}
 
-        <div className="flex items-end justify-between gap-2">
+        <div className="flex items-end justify-between gap-2 mt-auto pt-2">
           <div className="min-w-0">
             <p className="text-slate-700 dark:text-slate-300 text-xs font-medium leading-tight truncate">
               {listing.authorName}

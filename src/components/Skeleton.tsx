@@ -31,15 +31,15 @@ export function SkeletonGrid({ count = 6 }: { count?: number }) {
 
 export function SkeletonCategories() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="flex flex-col items-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 animate-pulse"
+          className="flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-700/50 animate-pulse"
         >
-          <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full" />
-          <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-700 rounded" />
-          <div className="h-2.5 w-12 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="w-7 h-7 sm:w-10 sm:h-10 bg-slate-200 dark:bg-slate-700 rounded-full" />
+          <div className="h-3 w-14 sm:h-3.5 sm:w-16 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="hidden sm:block h-2.5 w-12 bg-slate-200 dark:bg-slate-700 rounded" />
         </div>
       ))}
     </div>

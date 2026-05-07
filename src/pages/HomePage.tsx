@@ -110,25 +110,20 @@ export default function HomePage() {
         {loading ? (
           <SkeletonCategories />
         ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {CATEGORIES.map((cat, i) => {
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+          {CATEGORIES.map((cat) => {
             const count = listings.filter((l) => l.category === cat.value).length;
-            // On sm (3-col), last 2 items are centered by spanning trick
-            // Use CSS to center the last row when it has fewer items
-            const isLastOnSm = i === 3; // 4th item: starts the 2nd row on sm
             return (
               <button
                 key={cat.value}
                 onClick={() => navigate(`/anuncios?categoria=${cat.value}`)}
-                className={`group flex flex-col items-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600${
-                  isLastOnSm ? ' sm:col-start-1 lg:col-start-auto' : ''
-                }`}
+                className="group flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl hover:shadow-slate-200/70 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600"
               >
-                <span className="text-3xl group-hover:scale-110 transition-transform duration-300 ease-out">{cat.icon}</span>
-                <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                <span className="text-xl sm:text-3xl group-hover:scale-110 transition-transform duration-300 ease-out">{cat.icon}</span>
+                <span className="font-medium sm:font-semibold text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-tight text-center group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
                   {cat.label}
                 </span>
-                <span className="text-xs text-slate-300 dark:text-slate-600">
+                <span className="hidden sm:block text-xs text-slate-300 dark:text-slate-600">
                   {count} anúncio{count !== 1 ? 's' : ''}
                 </span>
               </button>
@@ -161,7 +156,7 @@ export default function HomePage() {
         {loading ? (
           <SkeletonGrid count={6} />
         ) : featuredListings.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {featuredListings.map((listing) => (
               <ListingCard
                 key={listing.id}
