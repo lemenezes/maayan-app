@@ -23,6 +23,7 @@ export interface AccessRequest {
   apartment: string;
   message: string | null;
   status: RequestStatus;
+  rejection_reason: string | null;
   created_at: string;
   reviewed_at: string | null;
 }

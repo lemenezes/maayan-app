@@ -104,6 +104,7 @@ export type Database = {
           created_at: string;
           reviewed_at: string | null;
           reviewed_by: string | null;
+          rejection_reason: string | null;
         };
         Insert: {
           id?: string;
@@ -116,6 +117,7 @@ export type Database = {
           created_at?: string;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
+          rejection_reason?: string | null;
         };
         Update: {
           id?: string;
@@ -127,6 +129,7 @@ export type Database = {
           status?: AccessRequestStatus;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
+          rejection_reason?: string | null;
         };
         Relationships: [];
       };

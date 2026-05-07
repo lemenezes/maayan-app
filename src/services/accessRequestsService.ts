@@ -31,14 +31,27 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
   return (data ?? []) as AccessRequest[];
 }
 
-// ─── Admin: rejeitar solicitação ─────────────────────────────────────────────
+// ─── Admin: rejeitar solicitação (via Edge Function) ────────────────────────
 
-export async function rejectAccessRequest(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('access_requests')
-    .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) throw new Error(error.message);
+export async function rejectAccessRequest(
+  id: string,
+  accessToken: string,
+  reason?: string,
+): Promise<void> {
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? '';
+  const res = await fetch(`${supabaseUrl}/functions/v1/reject-resident`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ requestId: id, reason }),
+  });
+
+  if (!res.ok) {
+    const body: { error?: string } = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Erro ao rejeitar solicitação (${res.status})`);
+  }
 }
 
 // ─── Admin: aprovar solicitação (via Edge Function) ───────────────────────────

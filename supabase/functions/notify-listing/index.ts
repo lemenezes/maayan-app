@@ -1,7 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'Maayan <noreply@maayan.app>';
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://maayan.app';
 const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET') ?? '';
 

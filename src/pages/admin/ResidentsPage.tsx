@@ -52,6 +52,9 @@ export default function ResidentsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<RequestStatus | 'all'>('pending');
   const [busy, setBusy] = useState<Set<string>>(new Set());
+  // id da solicitação com o painel de rejeição aberto → string | null
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -87,16 +90,34 @@ export default function ResidentsPage() {
     }
   };
 
-  const reject = async (req: AccessRequest) => {
+  const openReject = (id: string) => {
+    setRejectingId(id);
+    setRejectReason('');
+  };
+
+  const cancelReject = () => {
+    setRejectingId(null);
+    setRejectReason('');
+  };
+
+  const confirmReject = async (req: AccessRequest) => {
+    if (!session?.access_token) {
+      showToast('Sessão expirada — faça login novamente', 'error');
+      return;
+    }
     setBusy((s) => new Set(s).add(req.id));
+    setRejectingId(null);
     try {
-      await rejectAccessRequest(req.id);
-      setRequests((prev) => prev.map((r) => r.id === req.id ? { ...r, status: 'rejected' } : r));
-      showToast('Solicitação rejeitada', 'success');
-    } catch {
-      showToast('Erro ao rejeitar', 'error');
+      await rejectAccessRequest(req.id, session.access_token, rejectReason || undefined);
+      setRequests((prev) => prev.map((r) =>
+        r.id === req.id ? { ...r, status: 'rejected', rejection_reason: rejectReason || null } : r,
+      ));
+      showToast('Solicitação rejeitada — e-mail enviado ao solicitante', 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Erro ao rejeitar', 'error');
     } finally {
       setBusy((s) => { const n = new Set(s); n.delete(req.id); return n; });
+      setRejectReason('');
     }
   };
 
@@ -186,6 +207,12 @@ export default function ResidentsPage() {
                     </p>
                   )}
 
+                  {req.status === 'rejected' && req.rejection_reason && (
+                    <p className="text-red-600 dark:text-red-400 text-xs mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+                      <strong>Motivo:</strong> {req.rejection_reason}
+                    </p>
+                  )}
+
                   <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-2">
                     {new Date(req.created_at).toLocaleDateString('pt-BR', {
                       day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -193,23 +220,57 @@ export default function ResidentsPage() {
                   </p>
 
                   {req.status === 'pending' && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => approve(req)}
-                        disabled={isBusy}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 disabled:opacity-50 transition-colors"
-                      >
-                        {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                        Aprovar e convidar
-                      </button>
-                      <button
-                        onClick={() => reject(req)}
-                        disabled={isBusy}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 transition-colors"
-                      >
-                        {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
-                        Rejeitar
-                      </button>
+                    <div className="mt-3 space-y-2">
+                      {rejectingId === req.id ? (
+                        /* ── Painel de motivo de rejeição ── */
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 space-y-2">
+                          <p className="text-xs font-semibold text-red-700 dark:text-red-400">
+                            Motivo da rejeição <span className="font-normal">(opcional — será enviado por e-mail)</span>
+                          </p>
+                          <textarea
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="Ex: apartamento não confirmado no cadastro do condomínio..."
+                            rows={2}
+                            className="w-full text-xs px-3 py-2 rounded-lg border border-red-200 dark:border-red-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-red-400 resize-none"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => confirmReject(req)}
+                              disabled={isBusy}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                              Confirmar rejeição
+                            </button>
+                            <button
+                              onClick={cancelReject}
+                              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => approve(req)}
+                            disabled={isBusy}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 disabled:opacity-50 transition-colors"
+                          >
+                            {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                            Aprovar e convidar
+                          </button>
+                          <button
+                            onClick={() => openReject(req.id)}
+                            disabled={isBusy}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 transition-colors"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            Rejeitar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
