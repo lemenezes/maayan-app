@@ -5,7 +5,7 @@ const CONTACT_EMAIL = 'lemenezes@gmail.com';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#FCFCFB] dark:bg-[#071520] border-t border-[#EEF2F7] dark:border-white/5 mt-20 transition-colors duration-200">
+    <footer className="bg-[#FCFCFB] dark:bg-[#071520] border-t border-[#EEF2F7] dark:border-white/5 transition-colors duration-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
 
         {/* Main row */}
