@@ -25,6 +25,30 @@ const AuthContext = createContext<AuthContextValue>({
   signOut: async () => {},
 });
 
+// ─── Mock para testes E2E (VITE_USE_MOCK=true) ───────────────────────────────
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
+const MOCK_USER = {
+  id: 'mock-user-id',
+  email: 'morador@maayan.app',
+  app_metadata: {},
+  user_metadata: {},
+  aud: 'authenticated',
+  created_at: '2026-01-01T00:00:00Z',
+} as unknown as User;
+
+const MOCK_PROFILE: Profile = {
+  id: 'mock-user-id',
+  full_name: 'Morador Teste',
+  email: 'morador@maayan.app',
+  block: 'A',
+  apartment: '101',
+  role: 'resident',
+  status: 'approved',
+  created_at: '2026-01-01T00:00:00Z',
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function fetchProfile(userId: string): Promise<Profile | null> {
   if (!isSupabaseConfigured) return null;
   const { data } = await supabase
@@ -36,13 +60,15 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(USE_MOCK ? MOCK_USER : null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(!USE_MOCK);
+  const [profile, setProfile] = useState<Profile | null>(USE_MOCK ? MOCK_PROFILE : null);
   const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
+    if (USE_MOCK) return; // não chama Supabase em modo mock
+
     // Restore session on mount
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -61,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load profile whenever user changes
   useEffect(() => {
+    if (USE_MOCK) return; // perfil já está no estado inicial em modo mock
     if (!user) {
       setProfile(null);
       setProfileLoading(false);
