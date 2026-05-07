@@ -130,20 +130,20 @@ export default function HomePage() {
 
       {/* ─── Featured Listings ────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-8">
           <div>
-            <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
+            <h2 className="font-['Cormorant_Garamond'] text-2xl sm:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
               Anúncios recentes
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Os <span className="font-semibold text-slate-700 dark:text-slate-300">6</span> anúncios mais recentes do condomínio</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Os <span className="font-semibold text-slate-700 dark:text-slate-300">6</span> mais recentes do condomínio</p>
           </div>
           {!loading && featuredListings.length > 0 && (
             <Link
               to="/anuncios"
-              className="inline-flex items-center gap-1.5 text-[#0C5A86] dark:text-sky-400 text-sm font-medium px-4 py-2 rounded-xl border border-[#0C5A86]/25 dark:border-sky-400/20 hover:bg-[#0C5A86]/6 dark:hover:bg-sky-400/8 hover:border-[#0C5A86]/40 dark:hover:border-sky-400/35 transition-all duration-150 whitespace-nowrap"
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 text-[#0C5A86] dark:text-sky-400 text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-[#0C5A86]/25 dark:border-sky-400/20 hover:bg-[#0C5A86]/6 dark:hover:bg-sky-400/8 hover:border-[#0C5A86]/40 dark:hover:border-sky-400/35 transition-all duration-150 whitespace-nowrap"
             >
-              Ver todos os anúncios
-              <ArrowRight size={14} />
+              Ver todos
+              <ArrowRight size={13} />
             </Link>
           )}
         </div>
