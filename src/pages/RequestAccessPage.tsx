@@ -1,10 +1,21 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle, Loader2, Mail, User, Home, Building } from "lucide-react";
-import { submitAccessRequest } from "../services/accessRequestsService";
+import { Home, User, Mail, Building, CheckCircle } from "lucide-react";
+// Importe ou defina inputBase e submitAccessRequest conforme seu projeto
 
 const inputBase =
-  "w-full px-4 py-3 rounded-xl border border-[#EEF2F7] dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm outline-none transition-all focus:border-[#0C5A86] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0C5A86]/10 dark:focus:ring-sky-500/10";
+  "w-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-[#38B6D9]/40 transition-all duration-150 shadow-sm";
+
+async function submitAccessRequest(_data: {
+  full_name: string;
+  email: string;
+  block: string;
+  apartment: string;
+  message?: string;
+}) {
+  // Simulação de requisição (substitua pelo fetch real depois)
+  return new Promise<void>(resolve => setTimeout(resolve, 1200));
+}
 
 export default function RequestAccessPage() {
   const [form, setForm] = useState({
@@ -17,29 +28,41 @@ export default function RequestAccessPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ [k: string]: string }>({});
 
   const set =
     (field: string) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setForm(f => ({ ...f, [field]: e.target.value }));
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      setForm(f => ({ ...f, [field]: value }));
+      setFieldErrors(prev => {
+        if (!prev[field]) return prev;
+        let isValid = true;
+        if (field === "full_name") isValid = value.trim().length > 0;
+        if (field === "email")
+          isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        if (field === "block") isValid = value.trim().length > 0;
+        if (field === "apartment") isValid = value.trim().length > 0;
+        if (isValid) {
+          const { [field]: _, ...rest } = prev;
+          return rest;
+        }
+        return prev;
+      });
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (
-      !form.full_name.trim() ||
-      !form.email.trim() ||
-      !form.block.trim() ||
-      !form.apartment.trim()
-    ) {
-      setError("Preencha todos os campos obrigatórios.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setError("Informe um e-mail válido.");
-      return;
-    }
+    const errors: { [k: string]: string } = {};
+    if (!form.full_name.trim()) errors.full_name = "Informe seu nome completo.";
+    if (!form.email.trim()) errors.email = "Informe seu e-mail.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      errors.email = "Informe um e-mail válido (ex: seu@email.com).";
+    if (!form.block.trim()) errors.block = "Informe o bloco.";
+    if (!form.apartment.trim()) errors.apartment = "Informe o apartamento.";
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setSubmitting(true);
     try {
@@ -63,7 +86,7 @@ export default function RequestAccessPage() {
   if (success) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-20 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full max-w-xl min-h-[420px] text-center flex flex-col justify-center mx-auto">
           <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-emerald-200 dark:border-emerald-800">
             <CheckCircle
               className="w-8 h-8 text-emerald-600 dark:text-emerald-400"
@@ -82,11 +105,13 @@ export default function RequestAccessPage() {
             <strong className="text-white">{form.email}</strong> com o link de
             acesso quando for aprovado.
           </p>
-          <Link
-            to="/"
-            className="text-[#0C5A86] dark:text-sky-400 font-semibold text-sm hover:underline">
-            ← Voltar ao início
-          </Link>
+          <div className="flex justify-center">
+            <Link
+              to="/"
+              className="inline-block max-w-xs w-auto bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-[#0C5A86] dark:text-sky-400 font-semibold text-sm px-4 py-2 rounded-xl shadow hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#38B6D9]/40">
+              ← Voltar ao início
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -132,6 +157,11 @@ export default function RequestAccessPage() {
                 autoComplete="name"
               />
             </div>
+            {fieldErrors.full_name && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.full_name}
+              </div>
+            )}
           </div>
 
           {/* Email */}
@@ -145,11 +175,16 @@ export default function RequestAccessPage() {
                 type="email"
                 value={form.email}
                 onChange={set("email")}
-                placeholder="seu@email.com"
+                placeholder="ex: maria@email.com"
                 className={`${inputBase} pl-10`}
                 autoComplete="email"
               />
             </div>
+            {fieldErrors.email && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.email}
+              </div>
+            )}
           </div>
 
           {/* Bloco + Apartamento */}
@@ -169,6 +204,11 @@ export default function RequestAccessPage() {
                   className={`${inputBase} pl-10`}
                 />
               </div>
+              {fieldErrors.block && (
+                <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                  {fieldErrors.block}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
@@ -182,6 +222,11 @@ export default function RequestAccessPage() {
                 maxLength={10}
                 className={inputBase}
               />
+              {fieldErrors.apartment && (
+                <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                  {fieldErrors.apartment}
+                </div>
+              )}
             </div>
           </div>
 
@@ -193,7 +238,7 @@ export default function RequestAccessPage() {
             <textarea
               value={form.message}
               onChange={set("message")}
-              placeholder="Alguma informação adicional para o admin..."
+              placeholder="Alguma informação adicional para o admininistrador."
               rows={3}
               className={`${inputBase} resize-none`}
             />
@@ -209,25 +254,9 @@ export default function RequestAccessPage() {
             type="submit"
             disabled={submitting}
             className="w-full bg-[#0C5A86] text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:bg-[#1DAFD9] focus:bg-[#1DAFD9] hover:text-[#0C5A86] focus:text-[#0C5A86] hover:shadow-xl focus:shadow-xl hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2 mt-2 outline-none ring-2 ring-transparent focus:ring-[#38B6D9]/40">
-            {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Enviando…
-              </>
-            ) : (
-              "Enviar solicitação"
-            )}
+            {submitting ? "Enviando..." : "Enviar solicitação"}
           </button>
         </form>
-
-        <p className="text-center text-xs mt-6">
-          <span className="text-white">Já tem acesso?</span>{" "}
-          <Link
-            to="/entrar"
-            className="text-white font-semibold hover:underline drop-shadow-sm">
-            Entrar
-          </Link>
-        </p>
       </div>
     </div>
   );
