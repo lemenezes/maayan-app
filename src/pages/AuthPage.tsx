@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
-type Mode = 'login' | 'register';
+type Mode = "login" | "register";
 
 export default function AuthPage({ mode }: { mode: Mode }) {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string })?.from ?? '/';
+  const from = (location.state as { from?: string })?.from ?? "/";
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,9 @@ export default function AuthPage({ mode }: { mode: Mode }) {
     e.preventDefault();
     if (!email.trim() || password.length < 6) {
       setError(
-        !email.trim() ? 'Informe seu e-mail.' : 'A senha precisa ter pelo menos 6 caracteres.',
+        !email.trim()
+          ? "Informe seu e-mail."
+          : "A senha precisa ter pelo menos 6 caracteres."
       );
       return;
     }
@@ -30,7 +32,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
     setSubmitting(true);
     setError(null);
 
-    if (mode === 'login') {
+    if (mode === "login") {
       const { error: err } = await signIn(email.trim(), password);
       if (err) {
         setError(translateAuthError(err));
@@ -51,7 +53,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   };
 
   const inputBase =
-    'w-full px-4 py-3 rounded-xl border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm outline-none transition-all';
+    "w-full px-4 py-3 rounded-xl border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm outline-none transition-all";
 
   if (success) {
     return (
@@ -69,8 +71,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
         </p>
         <Link
           to="/entrar"
-          className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors"
-        >
+          className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors">
           Ir para o login →
         </Link>
       </div>
@@ -78,7 +79,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700/50 p-8">
@@ -88,23 +89,25 @@ export default function AuthPage({ mode }: { mode: Mode }) {
               <span className="text-white text-xl font-bold">M</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-              {mode === 'login' ? 'Bem-vindo de volta' : 'Criar conta'}
+              {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
             </h1>
             <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">
-              {mode === 'login'
-                ? 'Entre para gerenciar seus anúncios'
-                : 'Cadastre-se para publicar no Maayan'}
+              {mode === "login"
+                ? "Entre para gerenciar seus anúncios"
+                : "Cadastre-se para publicar no Maayan"}
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4"
+            noValidate>
             {/* Email */}
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
-              >
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 E-mail
               </label>
               <input
@@ -112,7 +115,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
                 type="email"
                 autoComplete="email"
                 value={email}
-                onChange={(e) => {
+                onChange={e => {
                   setEmail(e.target.value);
                   setError(null);
                 }}
@@ -125,30 +128,32 @@ export default function AuthPage({ mode }: { mode: Mode }) {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
-              >
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Senha
               </label>
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={
+                    mode === "login" ? "current-password" : "new-password"
+                  }
                   value={password}
-                  onChange={(e) => {
+                  onChange={e => {
                     setPassword(e.target.value);
                     setError(null);
                   }}
-                  placeholder={mode === 'register' ? 'Mínimo 6 caracteres' : '••••••••'}
+                  placeholder={
+                    mode === "register" ? "Mínimo 6 caracteres" : "••••••••"
+                  }
                   className={`${inputBase} pr-11 border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
                 />
                 <button
                   type="button"
                   tabIndex={-1}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                >
+                  onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
@@ -165,32 +170,29 @@ export default function AuthPage({ mode }: { mode: Mode }) {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white font-semibold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
-            >
+              className="w-full bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white font-semibold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1">
               {submitting && <Loader2 size={16} className="animate-spin" />}
-              {mode === 'login' ? 'Entrar' : 'Criar conta'}
+              {mode === "login" ? "Entrar" : "Criar conta"}
             </button>
           </form>
 
           {/* Switch mode */}
           <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
-            {mode === 'login' ? (
+            {mode === "login" ? (
               <>
-                Não tem conta?{' '}
+                Não tem conta?{" "}
                 <Link
                   to="/cadastro"
-                  className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors"
-                >
+                  className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors">
                   Cadastre-se
                 </Link>
               </>
             ) : (
               <>
-                Já tem conta?{' '}
+                Já tem conta?{" "}
                 <Link
                   to="/entrar"
-                  className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors"
-                >
+                  className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors">
                   Entrar
                 </Link>
               </>
@@ -210,11 +212,14 @@ export default function AuthPage({ mode }: { mode: Mode }) {
 }
 
 function translateAuthError(msg: string): string {
-  if (msg.includes('Invalid login credentials')) return 'E-mail ou senha incorretos.';
-  if (msg.includes('Email not confirmed')) return 'Confirme seu e-mail antes de entrar.';
-  if (msg.includes('User already registered')) return 'Este e-mail já está cadastrado.';
-  if (msg.includes('Password should be at least'))
-    return 'A senha precisa ter pelo menos 6 caracteres.';
-  if (msg.includes('Unable to validate email')) return 'E-mail inválido.';
+  if (msg.includes("Invalid login credentials"))
+    return "E-mail ou senha incorretos.";
+  if (msg.includes("Email not confirmed"))
+    return "Confirme seu e-mail antes de entrar.";
+  if (msg.includes("User already registered"))
+    return "Este e-mail já está cadastrado.";
+  if (msg.includes("Password should be at least"))
+    return "A senha precisa ter pelo menos 6 caracteres.";
+  if (msg.includes("Unable to validate email")) return "E-mail inválido.";
   return msg;
 }
