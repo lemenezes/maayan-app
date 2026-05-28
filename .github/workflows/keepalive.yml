@@ -1,0 +1,19 @@
+# Workflow para manter o Supabase ativo
+# Executa a cada 6 horas e permite execução manual
+
+name: Supabase Keepalive
+
+on:
+  schedule:
+    # Executa a cada 6 horas
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest # Usa a última versão do Ubuntu
+    steps:
+      - name: Realizar requisição keepalive
+        # Faz uma requisição HTTP simples para manter o Supabase ativo
+        run: |
+          curl -sSf https://maayan.leandrom.com.br
