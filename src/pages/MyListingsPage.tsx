@@ -1,15 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { PlusCircle, Pencil, Trash2, EyeOff, Eye, ImageOff, AlertTriangle, Clock, XCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { fetchUserListings, deleteListing, deactivateListing, reactivateListing } from '../services/listingsService';
-import { CATEGORIES } from '../types';
-import type { Listing } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import {
+  PlusCircle,
+  Pencil,
+  Trash2,
+  EyeOff,
+  Eye,
+  ImageOff,
+  AlertTriangle,
+  Clock,
+  XCircle
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import {
+  fetchUserListings,
+  deleteListing,
+  deactivateListing,
+  reactivateListing
+} from "../services/listingsService";
+import { CATEGORIES } from "../types";
+import type { Listing } from "../types";
 
 function SkeletonRow() {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100/60 dark:border-slate-700/40 overflow-hidden p-4 flex gap-4 animate-pulse">
+    <div className="bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-2xl border border-slate-100/60 dark:border-slate-700/40 overflow-hidden p-4 flex gap-4 animate-pulse">
       <div className="w-20 h-20 flex-shrink-0 rounded-xl bg-slate-200 dark:bg-slate-700" />
       <div className="flex-1 flex flex-col gap-2 py-1">
         <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/4" />
@@ -20,19 +35,22 @@ function SkeletonRow() {
   );
 }
 
-const priceFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const priceFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL"
+});
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
   });
 }
 
 function formatPrice(listing: Listing) {
   if (listing.price === undefined) return null;
-  return listing.category === 'servicos'
+  return listing.category === "servicos"
     ? `${priceFormatter.format(listing.price)}/h`
     : priceFormatter.format(listing.price);
 }
@@ -47,29 +65,27 @@ function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-fade-in"
-      onClick={onCancel}
-    >
+      onClick={onCancel}>
       <div
         className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-w-sm w-full animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
-      >
+        onClick={e => e.stopPropagation()}>
         <div className="flex items-start gap-4 mb-5">
           <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-950/40 flex items-center justify-center flex-shrink-0">
             <AlertTriangle size={18} className="text-red-500" />
           </div>
-          <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed pt-1.5">{message}</p>
+          <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed pt-1.5">
+            {message}
+          </p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-          >
+            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
-          >
+            className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">
             Excluir
           </button>
         </div>
@@ -82,26 +98,31 @@ function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
 interface MyListingCardProps {
   listing: Listing & { status: string };
   onDelete: (id: string) => void;
-  onToggleStatus: (id: string, current: 'active' | 'inactive') => void;
+  onToggleStatus: (id: string, current: "active" | "inactive") => void;
 }
-function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps) {
-  const category = CATEGORIES.find((c) => c.value === listing.category)!;
+function MyListingCard({
+  listing,
+  onDelete,
+  onToggleStatus
+}: MyListingCardProps) {
+  const category = CATEGORIES.find(c => c.value === listing.category)!;
   const status = listing.status;
-  const isActive = status === 'active';
-  const isPending = status === 'pending';
-  const isRejected = status === 'rejected';
+  const isActive = status === "active";
+  const isPending = status === "pending";
+  const isRejected = status === "rejected";
   const price = formatPrice(listing);
 
   return (
-    <article className={`bg-white dark:bg-slate-800 rounded-2xl border overflow-hidden transition-all ${
-      isPending
-        ? 'border-amber-200 dark:border-amber-800/50'
-        : isRejected
-        ? 'border-red-200 dark:border-red-900/50 opacity-70'
-        : isActive
-        ? 'border-slate-100/60 dark:border-slate-700/40 shadow-sm'
-        : 'border-slate-200 dark:border-slate-700 opacity-60'
-    }`}>
+    <article
+      className={`bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-2xl border overflow-hidden transition-all ${
+        isPending
+          ? "border-amber-200 dark:border-amber-800/50"
+          : isRejected
+            ? "border-red-200 dark:border-red-900/50 opacity-70"
+            : isActive
+              ? "border-slate-100/60 dark:border-slate-700/40 shadow-sm"
+              : "border-slate-200 dark:border-slate-700 opacity-60"
+      }`}>
       {/* Pending / Rejected notice banner */}
       {isPending && (
         <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-100 dark:border-amber-900/40">
@@ -124,10 +145,17 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
         {/* Thumbnail */}
         <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
           {listing.images[0] ? (
-            <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <ImageOff size={20} className="text-slate-300 dark:text-slate-600" />
+              <ImageOff
+                size={20}
+                className="text-slate-300 dark:text-slate-600"
+              />
             </div>
           )}
         </div>
@@ -135,7 +163,8 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${category.badgeClass}`}>
+            <span
+              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${category.badgeClass}`}>
               {category.icon} {category.label}
             </span>
             {!isActive && !isPending && !isRejected && (
@@ -150,7 +179,9 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
           </h3>
 
           {price && (
-            <p className="text-[#0C5A86] dark:text-sky-400 font-bold text-sm mb-1">{price}</p>
+            <p className="text-[#0C5A86] dark:text-sky-400 font-bold text-sm mb-1">
+              {price}
+            </p>
           )}
 
           <p className="text-slate-400 dark:text-slate-500 text-xs">
@@ -164,8 +195,7 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
         {!isPending && !isRejected && (
           <Link
             to={`/editar/${listing.id}`}
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-[#0C5A86] dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors"
-          >
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-[#0C5A86] dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors">
             <Pencil size={13} />
             Editar
           </Link>
@@ -173,19 +203,17 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
 
         {isActive && (
           <button
-            onClick={() => onToggleStatus(listing.id, 'active')}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-          >
+            onClick={() => onToggleStatus(listing.id, "active")}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30">
             <EyeOff size={13} />
             Desativar
           </button>
         )}
 
-        {status === 'inactive' && (
+        {status === "inactive" && (
           <button
-            onClick={() => onToggleStatus(listing.id, 'inactive')}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
-          >
+            onClick={() => onToggleStatus(listing.id, "inactive")}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
             <Eye size={13} />
             Reativar
           </button>
@@ -193,8 +221,7 @@ function MyListingCard({ listing, onDelete, onToggleStatus }: MyListingCardProps
 
         <button
           onClick={() => onDelete(listing.id)}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors ml-auto"
-        >
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors ml-auto">
           <Trash2 size={13} />
           Excluir
         </button>
@@ -208,7 +235,9 @@ export default function MyListingsPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
 
-  const [listings, setListings] = useState<(Listing & { status: string })[]>([]);
+  const [listings, setListings] = useState<(Listing & { status: string })[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -219,42 +248,56 @@ export default function MyListingsPage() {
       const data = await fetchUserListings(user.id);
       setListings(data as (Listing & { status: string })[]);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Erro ao carregar anúncios', 'error');
+      showToast(
+        err instanceof Error ? err.message : "Erro ao carregar anúncios",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   }, [user, showToast]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const handleDelete = async (id: string) => {
     setConfirmDeleteId(null);
     try {
       await deleteListing(id);
-      setListings((prev) => prev.filter((l) => l.id !== id));
-      showToast('Anúncio excluído com sucesso');
+      setListings(prev => prev.filter(l => l.id !== id));
+      showToast("Anúncio excluído com sucesso");
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
+      showToast(
+        err instanceof Error ? err.message : "Erro ao excluir",
+        "error"
+      );
     }
   };
 
-  const handleToggleStatus = async (id: string, current: 'active' | 'inactive') => {
+  const handleToggleStatus = async (
+    id: string,
+    current: "active" | "inactive"
+  ) => {
     try {
-      if (current === 'active') {
+      if (current === "active") {
         await deactivateListing(id);
-        setListings((prev) =>
-          prev.map((l) => (l.id === id ? { ...l, status: 'inactive' } : l)),
+        setListings(prev =>
+          prev.map(l => (l.id === id ? { ...l, status: "inactive" } : l))
         );
-        showToast('Anúncio desativado');
+        showToast("Anúncio desativado");
       } else {
         await reactivateListing(id);
-        setListings((prev) =>
-          prev.map((l) => (l.id === id ? { ...l, status: 'active' } : l)),
+        setListings(prev =>
+          prev.map(l => (l.id === id ? { ...l, status: "active" } : l))
         );
-        showToast('Anúncio reativado');
+        showToast("Anúncio reativado");
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Erro ao atualizar status', 'error');
+      showToast(
+        err instanceof Error ? err.message : "Erro ao atualizar status",
+        "error"
+      );
     }
   };
 
@@ -263,15 +306,17 @@ export default function MyListingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Meus anúncios</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+            Meus anúncios
+          </h1>
           <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">
-            {!loading && `${listings.length} anúncio${listings.length !== 1 ? 's' : ''}`}
+            {!loading &&
+              `${listings.length} anúncio${listings.length !== 1 ? "s" : ""}`}
           </p>
         </div>
         <Link
           to="/publicar"
-          className="flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
-        >
+          className="flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
           <PlusCircle size={15} />
           Publicar
         </Link>
@@ -280,7 +325,9 @@ export default function MyListingsPage() {
       {/* Loading */}
       {loading && (
         <div className="flex flex-col gap-4">
-          {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          {[1, 2, 3].map(i => (
+            <SkeletonRow key={i} />
+          ))}
         </div>
       )}
 
@@ -288,7 +335,10 @@ export default function MyListingsPage() {
       {!loading && listings.length === 0 && (
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <ImageOff size={28} className="text-slate-300 dark:text-slate-600" />
+            <ImageOff
+              size={28}
+              className="text-slate-300 dark:text-slate-600"
+            />
           </div>
           <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
             Nenhum anúncio ainda
@@ -298,8 +348,7 @@ export default function MyListingsPage() {
           </p>
           <Link
             to="/publicar"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
             <PlusCircle size={16} />
             Publicar anúncio
           </Link>
@@ -309,11 +358,11 @@ export default function MyListingsPage() {
       {/* Listing list */}
       {!loading && listings.length > 0 && (
         <div className="flex flex-col gap-4">
-          {listings.map((listing) => (
+          {listings.map(listing => (
             <MyListingCard
               key={listing.id}
               listing={listing}
-              onDelete={(id) => setConfirmDeleteId(id)}
+              onDelete={id => setConfirmDeleteId(id)}
               onToggleStatus={handleToggleStatus}
             />
           ))}

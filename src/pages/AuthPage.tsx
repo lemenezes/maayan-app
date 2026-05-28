@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -6,6 +7,10 @@ import { useAuth } from "../context/AuthContext";
 type Mode = "login" | "register";
 
 export default function AuthPage({ mode }: { mode: Mode }) {
+  // Sempre rola para o topo ao abrir a tela de login
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,12 +25,18 @@ export default function AuthPage({ mode }: { mode: Mode }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || password.length < 6) {
-      setError(
-        !email.trim()
-          ? "Informe seu e-mail."
-          : "A senha precisa ter pelo menos 6 caracteres."
-      );
+    const emailValue = email.trim();
+    if (!emailValue) {
+      setError("Informe seu e-mail.");
+      return;
+    }
+    // Regex simples para validar formato de e-mail
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      setError("Informe um e-mail válido (ex: seu@email.com).");
+      return;
+    }
+    if (password.length < 6) {
+      setError("A senha precisa ter pelo menos 6 caracteres.");
       return;
     }
 
@@ -82,16 +93,13 @@ export default function AuthPage({ mode }: { mode: Mode }) {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700/50 p-8">
+        <div className="bg-white/80 dark:bg-slate-800/90 backdrop-blur-md rounded-3xl shadow-lg dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700/50 p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0C5A86] to-[#1DAFD9] flex items-center justify-center mb-4">
               <span className="text-white text-xl font-bold">M</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-              {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
-            </h1>
-            <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">
+            <p className="text-center text-base font-semibold text-slate-700 dark:text-slate-200 mt-2">
               {mode === "login"
                 ? "Entre para gerenciar seus anúncios"
                 : "Cadastre-se para publicar no Maayan"}
@@ -122,6 +130,13 @@ export default function AuthPage({ mode }: { mode: Mode }) {
                 placeholder="seu@email.com"
                 className={`${inputBase} border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
               />
+              {(error === "Informe seu e-mail." ||
+                (typeof error === "string" &&
+                  error.startsWith("Informe um e-mail válido"))) && (
+                <div className="mt-2 text-red-600 dark:text-red-400 text-xs animate-fade-in">
+                  {error}
+                </div>
+              )}
             </div>
 
             {/* Password */}
@@ -157,14 +172,23 @@ export default function AuthPage({ mode }: { mode: Mode }) {
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
+              {error === "A senha precisa ter pelo menos 6 caracteres." && (
+                <div className="mt-2 text-red-600 dark:text-red-400 text-xs animate-fade-in">
+                  {error}
+                </div>
+              )}
             </div>
 
-            {/* Error */}
-            {error && (
-              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm px-4 py-3 rounded-xl animate-fade-in">
-                {error}
-              </div>
-            )}
+            {/* Error geral (exceto e-mail e senha) */}
+            {error &&
+              error !== "Informe seu e-mail." &&
+              error !== "Informe um e-mail válido." &&
+              // error !== "Informe um e-mail válido (ex: seu@email.com)." &&
+              error !== "A senha precisa ter pelo menos 6 caracteres." && (
+                <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm px-4 py-3 rounded-xl animate-fade-in">
+                  {error}
+                </div>
+              )}
 
             {/* Submit */}
             <button
@@ -201,8 +225,10 @@ export default function AuthPage({ mode }: { mode: Mode }) {
         </div>
 
         {/* Back link */}
-        <p className="text-center text-sm text-slate-400 dark:text-slate-600 mt-5">
-          <Link to="/" className="hover:text-[#0C5A86] transition-colors">
+        <p className="text-center text-sm mt-5">
+          <Link
+            to="/"
+            className="text-white font-semibold hover:text-[#0C5A86] transition-colors drop-shadow-sm">
             ← Voltar para a página inicial
           </Link>
         </p>

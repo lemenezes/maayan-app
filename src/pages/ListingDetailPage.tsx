@@ -1,25 +1,34 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { MessageCircle, MapPin, Calendar, ArrowLeft, Loader2 } from 'lucide-react';
-import { fetchListingById } from '../services/listingsService';
-import ListingGallery from '../components/ListingGallery';
-import { CATEGORIES } from '../types';
-import type { Listing } from '../types';
-import { buildWhatsAppUrl } from '../utils/whatsapp';
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  MessageCircle,
+  MapPin,
+  Calendar,
+  ArrowLeft,
+  Loader2
+} from "lucide-react";
+import { fetchListingById } from "../services/listingsService";
+import ListingGallery from "../components/ListingGallery";
+import { CATEGORIES } from "../types";
+import type { Listing } from "../types";
+import { buildWhatsAppUrl } from "../utils/whatsapp";
 
-const priceFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const priceFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL"
+});
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
   });
 }
 
 function formatPrice(listing: Listing) {
   if (listing.price === undefined) return null;
-  return listing.category === 'servicos'
+  return listing.category === "servicos"
     ? `${priceFormatter.format(listing.price)}/h`
     : priceFormatter.format(listing.price);
 }
@@ -49,11 +58,15 @@ export default function ListingDetailPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!id) { setNotFound(true); setLoading(false); return; }
+    if (!id) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetchListingById(id)
-      .then((data) => {
-        if (!data || data.status === 'inactive') {
+      .then(data => {
+        if (!data || data.status === "inactive") {
           setNotFound(true);
         } else {
           setListing(data);
@@ -79,8 +92,7 @@ export default function ListingDetailPage() {
         </p>
         <Link
           to="/anuncios"
-          className="inline-flex items-center gap-2 text-[#0C5A86] hover:text-[#0C5A86] font-medium text-sm"
-        >
+          className="inline-flex items-center gap-2 text-[#0C5A86] hover:text-[#0C5A86] font-medium text-sm">
           <ArrowLeft size={15} />
           Ver todos os anúncios
         </Link>
@@ -88,7 +100,7 @@ export default function ListingDetailPage() {
     );
   }
 
-  const category = CATEGORIES.find((c) => c.value === listing.category)!;
+  const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
   const price = formatPrice(listing);
 
@@ -97,8 +109,7 @@ export default function ListingDetailPage() {
       {/* Back */}
       <Link
         to="/anuncios"
-        className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-medium mb-6 transition-colors"
-      >
+        className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-medium mb-6 transition-colors">
         <ArrowLeft size={15} />
         Voltar aos anúncios
       </Link>
@@ -111,8 +122,7 @@ export default function ListingDetailPage() {
           rounded="page"
           overlay={
             <span
-              className={`absolute top-4 left-4 text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm ${category.badgeClass}`}
-            >
+              className={`absolute top-4 left-4 text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm ${category.badgeClass}`}>
               {category.icon} {category.label}
             </span>
           }
@@ -120,7 +130,7 @@ export default function ListingDetailPage() {
       </div>
 
       {/* Content card */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100/60 dark:border-slate-700/40 p-6 sm:p-8">
+      <div className="bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100/60 dark:border-slate-700/40 p-6 sm:p-8">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 leading-tight mb-3">
           {listing.title}
         </h1>
@@ -168,8 +178,7 @@ export default function ListingDetailPage() {
           href={whatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-3 w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-4 rounded-2xl text-base transition-all shadow-sm"
-        >
+          className="flex items-center justify-center gap-3 w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-4 rounded-2xl text-base transition-all shadow-sm">
           <MessageCircle size={20} />
           Entrar em contato via WhatsApp
         </a>

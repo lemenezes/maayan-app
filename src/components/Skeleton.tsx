@@ -1,6 +1,6 @@
 export function SkeletonCard() {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100/60 dark:border-slate-700/40 shadow-sm">
+    <div className="bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100/60 dark:border-slate-700/40 shadow-sm">
       <div className="aspect-[4/3] bg-slate-200 dark:bg-slate-700 animate-pulse" />
       <div className="p-4 flex flex-col gap-3">
         <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse w-4/5" />
@@ -35,8 +35,7 @@ export function SkeletonCategories() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-700/50 animate-pulse"
-        >
+          className="flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-700/50 animate-pulse">
           <div className="w-7 h-7 sm:w-10 sm:h-10 bg-slate-200 dark:bg-slate-700 rounded-full" />
           <div className="h-3 w-14 sm:h-3.5 sm:w-16 bg-slate-200 dark:bg-slate-700 rounded" />
           <div className="hidden sm:block h-2.5 w-12 bg-slate-200 dark:bg-slate-700 rounded" />
