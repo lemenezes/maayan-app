@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Upload, X, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -43,6 +43,10 @@ interface ImageEntry {
 }
 
 export default function NewListingPage() {
+  // Garante que a página sempre começa do topo ao entrar
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
