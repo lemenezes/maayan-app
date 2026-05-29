@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 
 export default function Header() {
@@ -23,13 +24,19 @@ export default function Header() {
   const { user, signOut } = useAuth();
   const isAdmin = useIsAdmin();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const close = () => setIsOpen(false);
 
   const handleSignOut = async () => {
     close();
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+      showToast("Erro ao sair. Tente novamente.", "error");
+    }
   };
 
   return (
