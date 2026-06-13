@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   ChevronRight,
   Building2,
+  Eye,
+  EyeOff,
   Loader2,
   Lock,
   Mail,
@@ -36,6 +38,7 @@ export default function MyAccountPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -233,6 +236,7 @@ export default function MyAccountPage() {
     setPasswordError(null);
     setNewPassword("");
     setConfirmNewPassword("");
+    setShowPasswords(false);
   };
 
   return (
@@ -483,18 +487,29 @@ export default function MyAccountPage() {
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Nova senha
                 </label>
-                <input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={e => {
-                    setNewPassword(e.target.value);
-                    setPasswordError(null);
-                  }}
-                  placeholder="Mínimo de 6 caracteres"
-                  className={`${inputBase} px-3.5 py-2.5 rounded-lg border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
-                  autoComplete="new-password"
-                />
+                <div className="relative">
+                  <input
+                    id="newPassword"
+                    type={showPasswords ? "text" : "password"}
+                    value={newPassword}
+                    onChange={e => {
+                      setNewPassword(e.target.value);
+                      setPasswordError(null);
+                    }}
+                    placeholder="Mínimo de 6 caracteres"
+                    className={`${inputBase} px-3.5 py-2.5 pr-10 rounded-lg border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    aria-label={
+                      showPasswords ? "Ocultar senha" : "Mostrar senha"
+                    }
+                    onClick={() => setShowPasswords(prev => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                    {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -503,18 +518,29 @@ export default function MyAccountPage() {
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Confirmar nova senha
                 </label>
-                <input
-                  id="confirmNewPassword"
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={e => {
-                    setConfirmNewPassword(e.target.value);
-                    setPasswordError(null);
-                  }}
-                  placeholder="Repita a nova senha"
-                  className={`${inputBase} px-3.5 py-2.5 rounded-lg border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
-                  autoComplete="new-password"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmNewPassword"
+                    type={showPasswords ? "text" : "password"}
+                    value={confirmNewPassword}
+                    onChange={e => {
+                      setConfirmNewPassword(e.target.value);
+                      setPasswordError(null);
+                    }}
+                    placeholder="Repita a nova senha"
+                    className={`${inputBase} px-3.5 py-2.5 pr-10 rounded-lg border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    aria-label={
+                      showPasswords ? "Ocultar senha" : "Mostrar senha"
+                    }
+                    onClick={() => setShowPasswords(prev => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                    {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               {passwordError && (
