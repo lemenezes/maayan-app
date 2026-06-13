@@ -46,14 +46,14 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-label={listing.title}
       onClick={onClose}>
       {/* Sheet/Dialog */}
       <div
-        className="bg-white/80 backdrop-blur-md dark:bg-slate-800 w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl shadow-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-slide-up sm:animate-scale-in"
+        className="bg-white/80 backdrop-blur-md dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto animate-scale-in"
         onClick={e => e.stopPropagation()}>
         {/* Gallery */}
         <ListingGallery
