@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.tsx";
 
 type Mode = "login" | "register";
 
@@ -90,19 +90,23 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
+    <div className="min-h-[calc(100vh-12rem)] flex items-start justify-center px-4 pt-6 pb-1 sm:pt-28 sm:pb-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-white/80 dark:bg-slate-800/90 backdrop-blur-md rounded-3xl shadow-lg dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700/50 p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0C5A86] to-[#1DAFD9] flex items-center justify-center mb-4">
-              <span className="text-white text-xl font-bold">M</span>
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl flex items-center justify-center overflow-hidden">
+              <img
+                src="/favicon.svg"
+                alt="Maayan"
+                className="w-full h-full object-contain scale-[1.35]"
+              />
             </div>
-            <p className="text-center text-base font-semibold text-slate-700 dark:text-slate-200 mt-2">
+            <p className="text-center text-base font-semibold text-slate-700 dark:text-slate-200 -mt-5">
               {mode === "login"
-                ? "Entre para gerenciar seus anúncios"
-                : "Cadastre-se para publicar no Maayan"}
+                ? "Acesse o portal dos moradores"
+                : "Solicite acesso ao portal do Maayan"}
             </p>
           </div>
 
@@ -204,11 +208,11 @@ export default function AuthPage({ mode }: { mode: Mode }) {
           <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
             {mode === "login" ? (
               <>
-                Não tem conta?{" "}
+                Ainda não possui acesso?{" "}
                 <Link
                   to="/cadastro"
                   className="text-[#0C5A86] font-semibold hover:text-[#0C5A86] transition-colors">
-                  Cadastre-se
+                  Solicitar acesso
                 </Link>
               </>
             ) : (
@@ -225,7 +229,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
         </div>
 
         {/* Back link */}
-        <p className="text-center text-sm mt-5">
+        <p className="text-center text-sm mt-3">
           <Link
             to="/"
             className="text-white font-semibold hover:text-[#0C5A86] transition-colors drop-shadow-sm">
