@@ -1,9 +1,56 @@
-import { useState } from "react";
+import type { ReactElement } from "react";
+import { Home, Megaphone, UserCog } from "lucide-react";
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon?: ReactElement;
+  end?: boolean;
+  requiresAuth?: boolean;
+  requiresAdmin?: boolean;
+  adminVariant?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { to: "/", label: "Início", icon: <Home size={16} />, end: true },
+  { to: "/anuncios", label: "Anúncios", icon: <Megaphone size={16} /> },
+  {
+    to: "/meus-anuncios",
+    label: "Meus anúncios",
+    icon: <LayoutList size={14} />,
+    requiresAuth: true
+  },
+  {
+    to: "/admin/anuncios",
+    label: "Moderação",
+    icon: <ShieldCheck size={14} />,
+    requiresAuth: true,
+    requiresAdmin: true,
+    adminVariant: true
+  },
+  {
+    to: "/admin/moradores",
+    label: "Residentes",
+    icon: <UserCog size={14} />,
+    requiresAuth: true,
+    requiresAdmin: true,
+    adminVariant: true
+  }
+];
+
+const navClass = (isActive: boolean, admin = false) =>
+  `px-3 py-2 text-[13px] transition-colors flex items-center gap-1.5 ${
+    isActive
+      ? admin
+        ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+        : "text-[#0C5A86] dark:text-sky-400 font-semibold"
+      : "font-normal text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+  }`;
+import { useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
-  Tag,
   PlusCircle,
   Sun,
   Moon,
@@ -20,6 +67,8 @@ import { useIsAdmin } from "../hooks/useIsAdmin";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
   const { theme, toggle } = useTheme();
   const { user, signOut } = useAuth();
   const isAdmin = useIsAdmin();
@@ -27,6 +76,19 @@ export default function Header() {
   const { showToast } = useToast();
 
   const close = () => setIsOpen(false);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        accountRef.current &&
+        !accountRef.current.contains(e.target as Node)
+      ) {
+        setIsAccountOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleSignOut = async () => {
     close();
@@ -47,127 +109,49 @@ export default function Header() {
           <Link
             to="/"
             onClick={close}
-            className="flex items-center gap-4 min-w-0">
+            className="flex items-center gap-4 flex-shrink-0">
             {/* Logo imagem */}
             <img
               src="/favicon.svg"
               alt="Logo Maayan"
               className="w-16 h-16 object-contain flex-shrink-0"
             />
-            <div className="leading-tight min-w-0 pl-1">
-              <span className="block text-3xl font-['Cormorant_Garamond'] font-extrabold tracking-[0.08em] text-[#0C5A86] dark:text-white">
+            <div className="leading-tight pl-1">
+              <span className="block text-2xl font-['Cormorant_Garamond'] font-extrabold tracking-[0.08em] text-[#0C5A86] dark:text-white">
                 Maayan
               </span>
-              <span className="hidden sm:block text-base text-slate-300 dark:text-slate-400 font-semibold tracking-[0.25em] uppercase truncate mt-0.5">
+              <span className="hidden sm:block text-xs text-slate-300 dark:text-slate-400 font-semibold tracking-[0.25em] uppercase mt-0.5\">
                 Cidade Jardim
               </span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                  isActive
-                    ? "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-                }`
-              }>
-              Início
-            </NavLink>
-            <NavLink
-              to="/anuncios"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-                }`
-              }>
-              <Tag size={14} />
-              Anúncios
-            </NavLink>
-            {user && (
+          <nav className="hidden md:flex items-center gap-1 ml-8">
+            {NAV_ITEMS.filter(item => {
+              if (item.requiresAdmin && !isAdmin) return false;
+              if (item.requiresAuth && !user) return false;
+              return true;
+            }).map(item => (
               <NavLink
-                to="/meus-anuncios"
+                key={item.to}
+                to={item.to}
+                end={item.end}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                    isActive
-                      ? "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  }`
+                  navClass(isActive, item.adminVariant)
                 }>
-                <LayoutList size={14} />
-                Meus anúncios
+                {item.icon}
+                {item.label}
               </NavLink>
-            )}
-            {isAdmin && (
-              <>
-                <NavLink
-                  to="/admin/anuncios"
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                      isActive
-                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-                    }`
-                  }>
-                  <ShieldCheck size={14} />
-                  Moderação
-                </NavLink>
-                <NavLink
-                  to="/admin/moradores"
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                      isActive
-                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-                    }`
-                  }>
-                  <User size={14} />
-                  Moradores
-                </NavLink>
-              </>
-            )}
+            ))}
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
-            {/* Theme toggle */}
-            <button
-              data-testid="theme-toggle"
-              onClick={toggle}
-              aria-label={
-                theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"
-              }
-              className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
+          <div className="flex items-center gap-1.5">
             {user ? (
               <>
-                {/* User avatar (desktop) */}
-                <div className="hidden md:flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 px-2">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0C5A86] to-[#1DAFD9] flex items-center justify-center flex-shrink-0">
-                    <User size={13} className="text-white" />
-                  </div>
-                  <span className="truncate max-w-[120px] text-xs font-medium">
-                    {user.email?.split("@")[0]}
-                  </span>
-                </div>
-                {/* Sign out (desktop) */}
-                <button
-                  onClick={handleSignOut}
-                  className="hidden md:flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 text-sm font-medium px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                  aria-label="Sair">
-                  <LogOut size={15} />
-                  Sair
-                </button>
                 {/* Publish CTA (desktop) */}
-                <div className="hidden md:block">
+                <div className="hidden md:block mr-1">
                   <Link
                     to="/publicar"
                     className="flex items-center gap-2 bg-[#0C5A86] hover:bg-[#09476B] text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm">
@@ -175,9 +159,61 @@ export default function Header() {
                     Publicar
                   </Link>
                 </div>
+                {/* Separator (desktop) */}
+                <div className="hidden md:block w-px h-5 bg-slate-200 dark:bg-slate-700/60 mx-1" />
+                {/* Theme toggle */}
+                <button
+                  data-testid="theme-toggle"
+                  onClick={toggle}
+                  aria-label={
+                    theme === "dark"
+                      ? "Ativar modo claro"
+                      : "Ativar modo escuro"
+                  }
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+                {/* Avatar dropdown (desktop) */}
+                <div ref={accountRef} className="relative hidden md:block">
+                  <button
+                    onClick={() => setIsAccountOpen(v => !v)}
+                    aria-label="Menu da conta"
+                    aria-expanded={isAccountOpen}
+                    className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0C5A86] to-[#1DAFD9] flex items-center justify-center flex-shrink-0 hover:opacity-75 transition-opacity">
+                    <User size={13} className="text-white" />
+                  </button>
+                  {isAccountOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-100 dark:border-slate-800 py-1 z-50">
+                      <p className="px-4 py-2.5 text-xs text-slate-400 dark:text-slate-500 truncate border-b border-slate-100 dark:border-slate-800">
+                        {user.email}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setIsAccountOpen(false);
+                          handleSignOut();
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+                        <LogOut size={14} />
+                        Sair da conta
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>
+                {/* Theme toggle */}
+                <button
+                  data-testid="theme-toggle"
+                  onClick={toggle}
+                  aria-label={
+                    theme === "dark"
+                      ? "Ativar modo claro"
+                      : "Ativar modo escuro"
+                  }
+                  className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                </button>
                 {/* Solicitar acesso (desktop) */}
                 <Link
                   to="/solicitar-acesso"
@@ -210,82 +246,36 @@ export default function Header() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 flex flex-col gap-1 animate-fade-in">
-          <NavLink
-            to="/"
-            end
-            onClick={close}
-            className={({ isActive }) =>
-              `px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-              }`
-            }>
-            Início
-          </NavLink>
-          <NavLink
-            to="/anuncios"
-            onClick={close}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-              }`
-            }>
-            <Tag size={16} />
-            Anúncios
-          </NavLink>
-
+          {NAV_ITEMS.filter(item => {
+            if (item.requiresAdmin && !isAdmin) return false;
+            if (item.requiresAuth && !user) return false;
+            return true;
+          }).map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              onClick={close}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
+                  isActive
+                    ? item.adminVariant
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
+                      : "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                }`
+              }>
+              {item.icon}
+              {item.label}
+            </NavLink>
+          ))}
+          {user && (
+            <p className="px-4 pt-2 pb-1 text-xs text-slate-400 dark:text-slate-500 truncate">
+              {user.email}
+            </p>
+          )}
           {user ? (
             <>
-              <div className="px-4 py-3 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-                <User size={13} />
-                {user.email}
-              </div>
-              <NavLink
-                to="/meus-anuncios"
-                onClick={close}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-sky-50 dark:bg-sky-950/60 text-[#0C5A86] dark:text-sky-400"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  }`
-                }>
-                <LayoutList size={16} />
-                Meus anúncios
-              </NavLink>
-              {isAdmin && (
-                <>
-                  <NavLink
-                    to="/admin/anuncios"
-                    onClick={close}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`
-                    }>
-                    <ShieldCheck size={16} />
-                    Moderação
-                  </NavLink>
-                  <NavLink
-                    to="/admin/moradores"
-                    onClick={close}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`
-                    }>
-                    <User size={16} />
-                    Moradores
-                  </NavLink>
-                </>
-              )}
               <Link
                 to="/publicar"
                 onClick={close}
