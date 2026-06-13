@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, User, Mail, Building, CheckCircle } from "lucide-react";
+import { Home, User, Mail, Phone, Building, CheckCircle } from "lucide-react";
 import { submitAccessRequest } from "../services/accessRequestsService";
 
 const inputBase =
@@ -10,6 +10,7 @@ export default function RequestAccessPage() {
   const [form, setForm] = useState({
     full_name: "",
     email: "",
+    whatsapp: "",
     block: "",
     apartment: "",
     message: ""
@@ -30,9 +31,10 @@ export default function RequestAccessPage() {
         if (field === "full_name") isValid = value.trim().length > 0;
         if (field === "email")
           isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        if (field === "whatsapp")
+          isValid = value.replace(/\D/g, "").length >= 10;
         if (field === "block") isValid = value.trim().length > 0;
         if (field === "apartment") isValid = value.trim().length > 0;
-        if (field === "message") isValid = value.trim().length > 0;
         if (isValid) {
           const { [field]: _, ...rest } = prev;
           return rest;
@@ -49,9 +51,13 @@ export default function RequestAccessPage() {
     if (!form.email.trim()) errors.email = "Informe seu e-mail.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       errors.email = "Informe um e-mail válido (ex: seu@email.com).";
+    if (!form.whatsapp.trim()) {
+      errors.whatsapp = "Informe seu WhatsApp.";
+    } else if (form.whatsapp.replace(/\D/g, "").length < 10) {
+      errors.whatsapp = "Informe um WhatsApp válido com DDD.";
+    }
     if (!form.block.trim()) errors.block = "Informe o bloco.";
     if (!form.apartment.trim()) errors.apartment = "Informe o apartamento.";
-    if (!form.message.trim()) errors.message = "Informe uma mensagem.";
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -60,9 +66,10 @@ export default function RequestAccessPage() {
       await submitAccessRequest({
         full_name: form.full_name.trim(),
         email: form.email.trim().toLowerCase(),
+        whatsapp: form.whatsapp.trim(),
         block: form.block.trim().toUpperCase(),
         apartment: form.apartment.trim(),
-        message: form.message.trim()
+        message: form.message.trim() || undefined
       });
       setSuccess(true);
     } catch (err) {
@@ -109,10 +116,10 @@ export default function RequestAccessPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-14 sm:py-20 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
-      <div className="w-full max-w-lg">
+    <div className="min-h-[calc(100vh-4rem)] flex items-start justify-center px-4 pt-6 pb-14 sm:pt-8 sm:pb-20 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
+      <div className="w-full max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 max-w-4xl mx-auto">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0C5A86]/10 to-[#1DAFD9]/10 dark:from-[#0C5A86]/20 dark:to-[#1DAFD9]/20 flex items-center justify-center mx-auto mb-5 border-1 border-[#0C5A86]/50 dark:border-sky-400/50">
             <Home
               className="w-6 h-6 text-white dark:text-sky-400"
@@ -120,18 +127,19 @@ export default function RequestAccessPage() {
             />
           </div>
           <h1 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-semibold text-white mb-2">
-            <span className="text-white">Solicitar acesso</span>
-          </h1>
-          <p className="text-white text-sm leading-relaxed max-w-sm mx-auto">
             <span className="text-white">
-              O Maayan é exclusivo para moradores do condomínio. Preencha o
-              formulário e aguarde a aprovação.
+              Bem-vindo ao portal do Maayan Cidade Jardim
             </span>
+          </h1>
+          <p className="text-white text-sm leading-relaxed">
+            Solicite seu acesso preenchendo os dados abaixo. Nossa administração
+            validará as informações antes da aprovação do cadastro. Você
+            receberá uma notificação por e-mail após a análise da solicitação.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl mx-auto">
           {/* Nome */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
@@ -174,6 +182,35 @@ export default function RequestAccessPage() {
             {fieldErrors.email && (
               <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
                 {fieldErrors.email}
+              </div>
+            )}
+          </div>
+
+          {/* WhatsApp */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+              <span className="text-white">WhatsApp *</span>
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                type="tel"
+                value={form.whatsapp}
+                onChange={set("whatsapp")}
+                placeholder="(21) 99999-9999"
+                className={`${inputBase} pl-10`}
+                autoComplete="tel"
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-white/90 leading-relaxed">
+              Este número poderá ser utilizado pela administração para contato
+              relacionado à análise e aprovação do seu cadastro. Após a
+              aprovação, ele também poderá ser exibido como forma de contato em
+              anúncios publicados por você.
+            </p>
+            {fieldErrors.whatsapp && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.whatsapp}
               </div>
             )}
           </div>
@@ -221,23 +258,23 @@ export default function RequestAccessPage() {
             </div>
           </div>
 
+          <p className="text-xs text-white/90 leading-relaxed -mt-1">
+            Essas informações serão utilizadas para validar que você é morador
+            do condomínio. Elas não serão exibidas para outros usuários.
+          </p>
+
           {/* Mensagem */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
-              <span className="text-white">Mensagem *</span>
+              <span className="text-white">Mensagem (opcional)</span>
             </label>
             <textarea
               value={form.message}
               onChange={set("message")}
-              placeholder="Descreva brevemente sua solicitacao para o administrador."
+              placeholder="Alguma informação adicional para a administração?"
               rows={3}
               className={`${inputBase} resize-none`}
             />
-            {fieldErrors.message && (
-              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
-                {fieldErrors.message}
-              </div>
-            )}
           </div>
 
           {error && (
@@ -252,6 +289,11 @@ export default function RequestAccessPage() {
             className="w-full bg-[#0C5A86] text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:bg-[#1DAFD9] focus:bg-[#1DAFD9] hover:text-[#0C5A86] focus:text-[#0C5A86] hover:shadow-xl focus:shadow-xl hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2 mt-2 outline-none ring-2 ring-transparent focus:ring-[#38B6D9]/40">
             {submitting ? "Enviando..." : "Enviar solicitação"}
           </button>
+
+          <p className="text-xs text-white/90 leading-relaxed text-center">
+            Ao enviar a solicitação, você concorda com o uso dessas informações
+            para validação do seu cadastro de morador.
+          </p>
         </form>
       </div>
     </div>

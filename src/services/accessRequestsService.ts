@@ -1,21 +1,23 @@
-import { supabase } from '../lib/supabase';
-import type { AccessRequest } from '../types';
+import { supabase } from "../lib/supabase";
+import type { AccessRequest } from "../types";
 
 // ─── Submeter solicitação (anônimo) ──────────────────────────────────────────
 
 export async function submitAccessRequest(data: {
   full_name: string;
   email: string;
+  whatsapp: string;
   block: string;
   apartment: string;
   message?: string;
 }): Promise<void> {
-  const { error } = await supabase.from('access_requests').insert({
+  const { error } = await supabase.from("access_requests").insert({
     full_name: data.full_name,
     email: data.email,
+    whatsapp: data.whatsapp ?? null,
     block: data.block,
     apartment: data.apartment,
-    message: data.message ?? null,
+    message: data.message ?? null
   });
   if (error) throw new Error(error.message);
 }
@@ -24,9 +26,9 @@ export async function submitAccessRequest(data: {
 
 export async function fetchAccessRequests(): Promise<AccessRequest[]> {
   const { data, error } = await supabase
-    .from('access_requests')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .from("access_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []) as AccessRequest[];
 }
@@ -36,40 +38,47 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
 export async function rejectAccessRequest(
   id: string,
   accessToken: string,
-  reason?: string,
+  reason?: string
 ): Promise<void> {
-  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? '';
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
   const res = await fetch(`${supabaseUrl}/functions/v1/reject-resident`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
     },
-    body: JSON.stringify({ requestId: id, reason }),
+    body: JSON.stringify({ requestId: id, reason })
   });
 
   if (!res.ok) {
     const body: { error?: string } = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? `Erro ao rejeitar solicitação (${res.status})`);
+    throw new Error(
+      body.error ?? `Erro ao rejeitar solicitação (${res.status})`
+    );
   }
 }
 
 // ─── Admin: aprovar solicitação (via Edge Function) ───────────────────────────
 // A Edge Function usa a service role para criar o auth user e enviar o convite.
 
-export async function approveAccessRequest(id: string, accessToken: string): Promise<void> {
-  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? '';
+export async function approveAccessRequest(
+  id: string,
+  accessToken: string
+): Promise<void> {
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
   const res = await fetch(`${supabaseUrl}/functions/v1/invite-resident`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
     },
-    body: JSON.stringify({ requestId: id }),
+    body: JSON.stringify({ requestId: id })
   });
 
   if (!res.ok) {
     const body: { error?: string } = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? `Erro ao aprovar solicitação (${res.status})`);
+    throw new Error(
+      body.error ?? `Erro ao aprovar solicitação (${res.status})`
+    );
   }
 }

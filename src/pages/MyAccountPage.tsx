@@ -348,8 +348,8 @@ export default function MyAccountPage() {
                 />
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-                Este número pode ser usado para contato relacionado aos seus
-                anúncios.
+                Este número poderá ser exibido nos anúncios que você publicar
+                para que moradores aprovados possam entrar em contato.
               </p>
               {!savingProfile && phoneHint && (
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1.5">

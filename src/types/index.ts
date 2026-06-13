@@ -25,6 +25,7 @@ export interface AccessRequest {
   id: string;
   full_name: string;
   email: string;
+  whatsapp: string | null;
   block: string;
   apartment: string;
   message: string | null;
