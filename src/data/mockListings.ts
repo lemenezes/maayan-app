@@ -13,7 +13,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Maria Oliveira",
-    apartment: "Apto 304",
     createdAt: "2026-04-28T10:00:00Z"
   },
   {
@@ -28,7 +27,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Carlos Mendes",
-    apartment: "Apto 512",
     createdAt: "2026-04-25T14:30:00Z"
   },
   {
@@ -43,7 +41,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Lucas Ferreira",
-    apartment: "Apto 710",
     createdAt: "2026-05-01T09:00:00Z"
   },
   {
@@ -58,7 +55,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1555963966-b7ae5404b6ed?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Roberto Santos",
-    apartment: "Apto 107",
     createdAt: "2026-04-20T09:00:00Z"
   },
   {
@@ -73,7 +69,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Ana Paula Lima",
-    apartment: "Apto 201",
     createdAt: "2026-04-22T16:00:00Z"
   },
   {
@@ -87,7 +82,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Juliana Costa",
-    apartment: "Apto 410",
     createdAt: "2026-04-15T12:00:00Z"
   },
   {
@@ -101,7 +95,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Fernando Rocha",
-    apartment: "Apto 305",
     createdAt: "2026-04-18T11:00:00Z"
   },
   {
@@ -115,7 +108,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Beatriz Alves",
-    apartment: "Apto 603",
     createdAt: "2026-04-10T08:00:00Z"
   },
   {
@@ -129,7 +121,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Diego Martins",
-    apartment: "Apto 802",
     createdAt: "2026-04-12T15:00:00Z"
   },
   {
@@ -144,7 +135,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1621929747188-0b4dc28498d2?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Renata Souza",
-    apartment: "Apto 1102",
     createdAt: "2026-05-01T11:00:00Z"
   },
   {
@@ -158,7 +148,6 @@ export const mockListings: Listing[] = [
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80"
     ],
     authorName: "Patricia Lima",
-    apartment: "Apto 405B",
     createdAt: "2026-05-03T09:30:00Z"
   }
 ];

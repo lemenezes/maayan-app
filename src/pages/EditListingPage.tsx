@@ -21,7 +21,6 @@ interface FormData {
   priceMode: ListingPriceMode;
   whatsapp: string;
   authorName: string;
-  apartment: string;
 }
 
 type FormErrors = Partial<Record<keyof FormData | "images", string>>;
@@ -56,8 +55,7 @@ export default function EditListingPage() {
     price: "",
     priceMode: defaultPriceModeForCategory("venda"),
     whatsapp: "",
-    authorName: "",
-    apartment: ""
+    authorName: ""
   });
   /** Existing image URLs kept from original listing */
   const [keptImages, setKeptImages] = useState<string[]>([]);
@@ -90,8 +88,7 @@ export default function EditListingPage() {
             ? String(listing.price).replace(".", ",")
             : "",
         whatsapp: listing.whatsapp,
-        authorName: listing.authorName,
-        apartment: listing.apartment ?? ""
+        authorName: listing.authorName
       });
       setKeptImages(listing.images);
     } catch {
@@ -209,7 +206,6 @@ export default function EditListingPage() {
         keptImageUrls: keptImages,
         newImageFiles: newImages.map(img => img.file),
         authorName: form.authorName.trim(),
-        apartment: form.apartment.trim() || undefined,
         userId: user.id
       });
       showToast("Anúncio atualizado com sucesso!");
@@ -364,8 +360,12 @@ export default function EditListingPage() {
               <label
                 htmlFor="price"
                 className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Preço
-                {form.category !== "indicacoes" && (
+                Valor
+                {form.category === "indicacoes" ? (
+                  <span className="ml-1 text-slate-400 dark:text-slate-500 font-normal">
+                    (opcional)
+                  </span>
+                ) : (
                   <span className="ml-1 text-red-500" aria-hidden="true">
                     *
                   </span>
@@ -546,56 +546,32 @@ export default function EditListingPage() {
           )}
         </div>
 
-        {/* Author + apartment */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="authorName"
-              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Seu nome <span className="text-red-400">*</span>
-            </label>
-            <input
-              id="authorName"
-              name="authorName"
-              type="text"
-              value={form.authorName}
-              onChange={handleChange}
-              placeholder="Ex: Maria Silva"
-              className={inputClass("authorName")}
-              maxLength={60}
-            />
-            {errors.authorName && (
-              <p className="text-red-500 text-xs mt-1">{errors.authorName}</p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="apartment"
-              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Apartamento{" "}
-              <span className="text-slate-400 dark:text-slate-500 font-normal">
-                (opcional)
-              </span>
-            </label>
-            <input
-              id="apartment"
-              name="apartment"
-              type="text"
-              value={form.apartment}
-              onChange={handleChange}
-              placeholder="Ex: Apto 304"
-              className={inputClass("apartment")}
-              maxLength={20}
-            />
-          </div>
+        <div>
+          <label
+            htmlFor="authorName"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Nome para contato <span className="text-red-400">*</span>
+          </label>
+          <input
+            id="authorName"
+            name="authorName"
+            type="text"
+            value={form.authorName}
+            onChange={handleChange}
+            placeholder="Ex: Maria Silva"
+            className={inputClass("authorName")}
+            maxLength={60}
+          />
+          {errors.authorName && (
+            <p className="text-red-500 text-xs mt-1">{errors.authorName}</p>
+          )}
         </div>
 
-        {/* WhatsApp */}
         <div>
           <label
             htmlFor="whatsapp"
             className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            WhatsApp <span className="text-red-400">*</span>
+            WhatsApp para contato <span className="text-red-400">*</span>
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm pointer-events-none">
@@ -620,6 +596,10 @@ export default function EditListingPage() {
               Os interessados entrarão em contato pelo WhatsApp
             </p>
           )}
+          <p className="text-slate-400 dark:text-slate-500 text-xs mt-2">
+            Essas informações não serão exibidas publicamente. Os interessados
+            entrarão em contato apenas pelo WhatsApp.
+          </p>
         </div>
 
         {/* Buttons */}

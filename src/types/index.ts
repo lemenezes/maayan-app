@@ -56,7 +56,6 @@ export interface Listing {
   whatsapp: string;
   images: string[];
   authorName: string;
-  apartment?: string;
   createdAt: string;
 }
 

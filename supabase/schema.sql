@@ -36,7 +36,6 @@ create table if not exists public.listings (
     whatsapp text not null,
     image_url text,
     author_name text not null,
-    apartment text,
     status text not null default 'pending' check (
         status in (
             'pending',

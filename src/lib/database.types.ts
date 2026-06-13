@@ -40,7 +40,6 @@ export type Database = {
           image_urls: string[] | null;
           user_id: string;
           author_name: string;
-          apartment: string | null;
           status: ListingStatus;
           created_at: string;
         };
@@ -56,7 +55,6 @@ export type Database = {
           image_urls?: string[] | null;
           user_id: string;
           author_name: string;
-          apartment?: string | null;
           status?: ListingStatus;
           created_at?: string;
         };
@@ -72,7 +70,6 @@ export type Database = {
           image_urls?: string[] | null;
           user_id?: string;
           author_name?: string;
-          apartment?: string | null;
           status?: ListingStatus;
           created_at?: string;
         };

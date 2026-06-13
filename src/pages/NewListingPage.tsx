@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Upload, X, Loader2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.tsx";
 import { createListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
 import type { Category, ListingPriceMode } from "../types";
@@ -20,7 +20,6 @@ interface FormData {
   priceMode: ListingPriceMode;
   whatsapp: string;
   authorName: string;
-  apartment: string;
 }
 
 const initialForm: FormData = {
@@ -30,8 +29,7 @@ const initialForm: FormData = {
   price: "",
   priceMode: defaultPriceModeForCategory("venda"),
   whatsapp: "",
-  authorName: "",
-  apartment: ""
+  authorName: ""
 };
 
 type FormErrors = Partial<Record<keyof FormData | "images", string>>;
@@ -79,7 +77,10 @@ export default function NewListingPage() {
       e.whatsapp = "Número inválido (mínimo 10 dígitos)";
     }
 
-    if (shouldRequirePriceValue(form.category, form.priceMode) && !form.price.trim()) {
+    if (
+      shouldRequirePriceValue(form.category, form.priceMode) &&
+      !form.price.trim()
+    ) {
       e.price = "Campo obrigatório";
     } else if (form.price) {
       const numStr = form.price.replace(",", ".");
@@ -170,7 +171,6 @@ export default function NewListingPage() {
         whatsapp: form.whatsapp.replace(/\D/g, ""),
         imageFiles: images.map(img => img.file),
         authorName: form.authorName.trim(),
-        apartment: form.apartment.trim() || undefined,
         userId: user.id
       });
       setSubmitted(true);
@@ -337,10 +337,16 @@ export default function NewListingPage() {
               <label
                 htmlFor="price"
                 className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Preço{" "}
-                <span className="text-slate-400 dark:text-slate-500 font-normal">
-                  {form.category === "indicacoes" ? "(opcional)" : "(obrigatório)"}
-                </span>
+                Valor
+                {form.category === "indicacoes" ? (
+                  <span className="ml-1 text-slate-400 dark:text-slate-500 font-normal">
+                    (opcional)
+                  </span>
+                ) : (
+                  <span className="ml-1 text-red-500" aria-hidden="true">
+                    *
+                  </span>
+                )}
               </label>
               {(form.category !== "servicos" || form.priceMode !== "quote") && (
                 <div className="relative">
@@ -389,7 +395,7 @@ export default function NewListingPage() {
                       price: priceMode === "quote" ? "" : prev.price
                     }));
                   }}
-                  className={inputClass("priceMode")} >
+                  className={inputClass("priceMode")}>
                   {priceModeOptions.map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -495,54 +501,32 @@ export default function NewListingPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="authorName"
-              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Seu nome <span className="text-red-400">*</span>
-            </label>
-            <input
-              id="authorName"
-              name="authorName"
-              type="text"
-              value={form.authorName}
-              onChange={handleChange}
-              placeholder="Ex: Maria Silva"
-              className={inputClass("authorName")}
-              maxLength={60}
-            />
-            {errors.authorName && (
-              <p className="text-red-500 text-xs mt-1">{errors.authorName}</p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="apartment"
-              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Apartamento{" "}
-              <span className="text-slate-400 dark:text-slate-500 font-normal">
-                (opcional)
-              </span>
-            </label>
-            <input
-              id="apartment"
-              name="apartment"
-              type="text"
-              value={form.apartment}
-              onChange={handleChange}
-              placeholder="Ex: Apto 304"
-              className={inputClass("apartment")}
-              maxLength={20}
-            />
-          </div>
+        <div>
+          <label
+            htmlFor="authorName"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Nome para contato <span className="text-red-400">*</span>
+          </label>
+          <input
+            id="authorName"
+            name="authorName"
+            type="text"
+            value={form.authorName}
+            onChange={handleChange}
+            placeholder="Ex: Maria Silva"
+            className={inputClass("authorName")}
+            maxLength={60}
+          />
+          {errors.authorName && (
+            <p className="text-red-500 text-xs mt-1">{errors.authorName}</p>
+          )}
         </div>
 
         <div>
           <label
             htmlFor="whatsapp"
             className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            WhatsApp <span className="text-red-400">*</span>
+            WhatsApp para contato <span className="text-red-400">*</span>
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm pointer-events-none">
@@ -567,6 +551,10 @@ export default function NewListingPage() {
               Os interessados entrarão em contato pelo WhatsApp
             </p>
           )}
+          <p className="text-slate-400 dark:text-slate-500 text-xs mt-2">
+            Essas informações não serão exibidas publicamente. Os interessados
+            entrarão em contato apenas pelo WhatsApp.
+          </p>
         </div>
 
         {submitError && (

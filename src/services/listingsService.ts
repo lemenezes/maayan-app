@@ -17,7 +17,6 @@ function rowToListing(row: {
   image_urls: string[] | null;
   user_id: string;
   author_name: string;
-  apartment: string | null;
   status: string;
   created_at: string;
 }): Listing & { status: string } {
@@ -39,7 +38,6 @@ function rowToListing(row: {
     whatsapp: row.whatsapp,
     images,
     authorName: row.author_name,
-    apartment: row.apartment ?? undefined,
     createdAt: row.created_at,
     status: row.status
   };
@@ -94,7 +92,6 @@ export interface CreateListingInput {
   whatsapp: string;
   imageFiles?: File[];
   authorName: string;
-  apartment?: string;
   userId: string;
 }
 
@@ -145,7 +142,6 @@ export async function createListing(
     image_urls: imageUrls.length > 0 ? imageUrls : null,
     user_id: input.userId,
     author_name: input.authorName,
-    apartment: input.apartment ?? null,
     status: "pending"
   };
 
@@ -192,7 +188,6 @@ export interface UpdateListingInput {
   /** New files to upload */
   newImageFiles: File[];
   authorName: string;
-  apartment?: string;
   userId: string;
 }
 
@@ -271,8 +266,7 @@ export async function updateListing(
       whatsapp: input.whatsapp,
       image_url: finalUrls[0] ?? null,
       image_urls: finalUrls.length > 0 ? finalUrls : null,
-      author_name: input.authorName,
-      apartment: input.apartment ?? null
+      author_name: input.authorName
     })
     .eq("id", id)
     .select()
