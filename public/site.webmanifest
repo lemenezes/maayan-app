@@ -1,0 +1,24 @@
+{
+  "name": "Desapega Maayan",
+  "short_name": "Maayan",
+  "description": "Classificados e indicações entre moradores do condomínio Maayan Cidade Jardim.",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "theme_color": "#0C5A86",
+  "background_color": "#FCFCFB",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/"
+}

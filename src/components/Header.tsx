@@ -109,18 +109,18 @@ export default function Header() {
           <Link
             to="/"
             onClick={close}
-            className="flex items-center gap-4 flex-shrink-0">
+            className="flex items-center flex-shrink-0">
             {/* Logo imagem */}
             <img
               src="/favicon.svg"
               alt="Logo Maayan"
-              className="w-16 h-16 object-contain flex-shrink-0"
+              className="w-[110px] h-[110px] object-contain flex-shrink-0"
             />
-            <div className="leading-tight pl-1">
+            <div className="leading-tight">
               <span className="block text-2xl font-['Cormorant_Garamond'] font-extrabold tracking-[0.08em] text-[#0C5A86] dark:text-white">
                 Maayan
               </span>
-              <span className="hidden sm:block text-xs text-slate-300 dark:text-slate-400 font-semibold tracking-[0.25em] uppercase mt-0.5\">
+              <span className="hidden sm:block text-xs text-slate-300 dark:text-slate-400 font-semibold tracking-[0.25em] uppercase mt-0.5">
                 Cidade Jardim
               </span>
             </div>
