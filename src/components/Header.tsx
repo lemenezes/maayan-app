@@ -120,7 +120,7 @@ export default function Header() {
               <span className="block text-2xl font-['Cormorant_Garamond'] font-extrabold tracking-[0.08em] text-[#0C5A86] dark:text-white">
                 Maayan
               </span>
-              <span className="hidden sm:block text-xs text-slate-300 dark:text-slate-400 font-semibold tracking-[0.25em] uppercase mt-0.5">
+              <span className="hidden sm:block text-xs text-slate-600 dark:text-slate-300 font-semibold tracking-[0.25em] uppercase mt-0.5">
                 Cidade Jardim
               </span>
             </div>
