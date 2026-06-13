@@ -1,19 +1,133 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, X } from "lucide-react";
+import {
+  Search,
+  X,
+  SlidersHorizontal,
+  LayoutGrid,
+  List,
+  Calendar,
+  ImageOff,
+  MessageCircle,
+  ChevronRight
+} from "lucide-react";
 import { useListings } from "../hooks/useListings";
+import { CATEGORIES } from "../types";
 import type { Category, Listing } from "../types";
 import ListingCard from "../components/ListingCard";
 import ListingModal from "../components/ListingModal";
 import CategoryFilter from "../components/CategoryFilter";
 import { SkeletonGrid } from "../components/Skeleton";
 import EmptyState from "../components/EmptyState";
-import { SlidersHorizontal } from "lucide-react";
+import { buildWhatsAppUrl } from "../utils/whatsapp";
+
+type ViewMode = "grid" | "list";
+
+const VIEW_MODE_STORAGE_KEY = "maayan:listings:view-mode";
+
+const priceFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL"
+});
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short"
+  });
+}
+
+function formatPrice(listing: Listing) {
+  if (listing.price === undefined) return null;
+  return listing.category === "servicos"
+    ? `${priceFormatter.format(listing.price)}/h`
+    : priceFormatter.format(listing.price);
+}
+
+interface ListingListItemProps {
+  listing: Listing;
+  onSelect: (listing: Listing) => void;
+}
+
+function ListingListItem({ listing, onSelect }: ListingListItemProps) {
+  const whatsappLink = buildWhatsAppUrl(listing);
+  const price = formatPrice(listing);
+  const category = CATEGORIES.find(c => c.value === listing.category)!;
+
+  return (
+    <article
+      className="group rounded-2xl border border-slate-200/80 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/70 backdrop-blur-md shadow-[0_2px_12px_rgba(12,90,134,0.06)] hover:shadow-[0_12px_28px_rgba(12,90,134,0.16)] hover:-translate-y-0.5 transition-all cursor-pointer"
+      onClick={() => onSelect(listing)}>
+      <div className="grid grid-cols-1 sm:grid-cols-[220px_minmax(0,1fr)_auto_20px] gap-3 sm:gap-4 p-2.5 sm:p-2.5 sm:h-[136px] items-center">
+        <div className="w-full sm:w-[220px] sm:h-[120px] flex-shrink-0">
+          <div className="aspect-[16/10] sm:aspect-auto sm:h-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+            {listing.images[0] ? (
+              <img
+                src={listing.images[0]}
+                alt={listing.title}
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
+                <ImageOff size={18} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="min-w-0 flex flex-col justify-center">
+          <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-sm sm:text-base leading-snug line-clamp-2 min-w-0">
+            {listing.title}
+          </h3>
+          <div className="mt-1 flex flex-col gap-1.5">
+            <p className="text-slate-500 dark:text-slate-300 text-[11px] sm:text-xs font-medium inline-flex items-center gap-1.5">
+              <Calendar size={12} />
+              {formatDate(listing.createdAt)}
+            </p>
+            <span
+              className={`inline-flex self-start w-fit items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full ${category.badgeClass}`}>
+              <span>{category.icon}</span>
+              {category.label}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center sm:items-end sm:flex-col gap-2 sm:gap-2 justify-self-start sm:justify-self-end">
+          {price && (
+            <p className="text-sky-600 dark:text-teal-500 font-bold text-sm sm:text-base tabular-nums whitespace-nowrap">
+              {price}
+            </p>
+          )}
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            className="inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-all shadow-sm flex-shrink-0">
+            <MessageCircle size={13} />
+            WhatsApp
+          </a>
+        </div>
+
+        <div className="hidden sm:flex items-center justify-center text-slate-300 dark:text-slate-600 self-stretch">
+          <ChevronRight size={18} />
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export default function ListingsPage() {
   const { listings, loading } = useListings();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "grid";
+    return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === "list"
+      ? "list"
+      : "grid";
+  });
 
   const searchText = searchParams.get("busca") ?? "";
   const activeCategory = (searchParams.get("categoria") as Category) || null;
@@ -27,6 +141,10 @@ export default function ListingsPage() {
   useEffect(() => {
     setInputValue(searchText);
   }, [searchText]);
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+  }, [viewMode]);
 
   const handleSearchChange = (value: string) => {
     setInputValue(value);
@@ -103,26 +221,67 @@ export default function ListingsPage() {
           )}
         </div>
 
-        {/* Category filter */}
-        <CategoryFilter
-          active={activeCategory}
-          onChange={cat => updateParam("categoria", cat)}
-        />
+        <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <CategoryFilter
+            active={activeCategory}
+            onChange={cat => updateParam("categoria", cat)}
+          />
+          <div className="inline-flex items-center p-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 backdrop-blur-md shadow-sm">
+            <button
+              type="button"
+              aria-label="Visualização em grade"
+              aria-pressed={viewMode === "grid"}
+              onClick={() => setViewMode("grid")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                viewMode === "grid"
+                  ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900"
+                  : "text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}>
+              <LayoutGrid size={14} />
+              Grid
+            </button>
+            <button
+              type="button"
+              aria-label="Visualização em lista"
+              aria-pressed={viewMode === "list"}
+              onClick={() => setViewMode("list")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                viewMode === "list"
+                  ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900"
+                  : "text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}>
+              <List size={14} />
+              Lista
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Listings grid */}
+      {/* Listings */}
       {loading ? (
         <SkeletonGrid count={6} />
       ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {filtered.map(listing => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              onSelect={setSelectedListing}
-            />
-          ))}
-        </div>
+        viewMode === "grid" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {filtered.map(listing => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                onSelect={setSelectedListing}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 sm:gap-4 max-w-[1200px] mx-auto w-full">
+            {filtered.map(listing => (
+              <ListingListItem
+                key={listing.id}
+                listing={listing}
+                onSelect={setSelectedListing}
+              />
+            ))}
+          </div>
+        )
       ) : (
         <EmptyState
           icon={

@@ -17,11 +17,19 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("pt-BR", {
+  const formatDate = (dateStr: string) => {
+    const parts = new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",
-      month: "short"
-    });
+      month: "short",
+      year: "numeric"
+    }).formatToParts(new Date(dateStr));
+
+    const day = parts.find(p => p.type === "day")?.value ?? "";
+    const month = parts.find(p => p.type === "month")?.value ?? "";
+    const year = parts.find(p => p.type === "year")?.value ?? "";
+
+    return `${day} ${month} ${year}`.trim();
+  };
 
   const formatPrice = (price: number) =>
     listing.category === "servicos"
@@ -68,9 +76,6 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
         <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-snug line-clamp-2 mb-1">
           {listing.title}
         </h3>
-        <p className="text-slate-400 dark:text-slate-500 text-xs line-clamp-2 mb-2 leading-relaxed">
-          {listing.description}
-        </p>
 
         {listing.price !== undefined && (
           <p className="text-sky-600 dark:text-teal-500 font-bold text-base sm:text-lg mb-2 tabular-nums">
@@ -80,15 +85,7 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
 
         <div className="flex items-end justify-between gap-2 mt-auto pt-2">
           <div className="min-w-0">
-            <p className="text-slate-700 dark:text-slate-300 text-xs font-medium leading-tight truncate">
-              {listing.authorName}
-            </p>
-            {listing.apartment && (
-              <p className="text-slate-400 dark:text-slate-500 text-xs truncate">
-                {listing.apartment}
-              </p>
-            )}
-            <p className="text-slate-300 dark:text-slate-600 text-xs mt-0.5">
+            <p className="text-slate-500 dark:text-slate-300 text-xs font-medium mt-0.5">
               {formatDate(listing.createdAt)}
             </p>
           </div>

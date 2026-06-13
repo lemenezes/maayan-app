@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import {
-  MessageCircle,
-  MapPin,
-  Calendar,
-  ArrowLeft,
-  Loader2
-} from "lucide-react";
+import { MessageCircle, Calendar, ArrowLeft, Loader2 } from "lucide-react";
 import { fetchListingById } from "../services/listingsService";
 import ListingGallery from "../components/ListingGallery";
 import { CATEGORIES } from "../types";
@@ -147,27 +141,9 @@ export default function ListingDetailPage() {
 
         <div className="border-t border-slate-100 dark:border-slate-700 mb-6" />
 
-        {/* Author */}
+        {/* Publication date */}
         <div className="flex flex-col gap-3 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900/60 dark:to-cyan-900/60 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-[#0C5A86] dark:text-sky-400">
-                {listing.authorName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
-                {listing.authorName}
-              </p>
-              {listing.apartment && (
-                <p className="text-slate-400 dark:text-slate-500 text-xs flex items-center gap-1 mt-0.5">
-                  <MapPin size={11} />
-                  {listing.apartment} · Condomínio Maayan
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-sm">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-300 text-sm font-medium">
             <Calendar size={14} />
             Publicado em {formatDate(listing.createdAt)}
           </div>
