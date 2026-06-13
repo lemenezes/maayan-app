@@ -50,7 +50,7 @@ export default function RequestAccessPage() {
     if (!form.full_name.trim()) errors.full_name = "Informe seu nome completo.";
     if (!form.email.trim()) errors.email = "Informe seu e-mail.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      errors.email = "Informe um e-mail válido (ex: seu@email.com).";
+      errors.email = "Informe um e-mail válido (ex: nome@exemplo.com.br).";
     if (!form.whatsapp.trim()) {
       errors.whatsapp = "Informe seu WhatsApp.";
     } else if (form.whatsapp.replace(/\D/g, "").length < 10) {

@@ -32,7 +32,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
     }
     // Regex simples para validar formato de e-mail
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
-      setError("Informe um e-mail válido (ex: seu@email.com).");
+      setError("Informe um e-mail válido (ex: nome@exemplo.com.br).");
       return;
     }
     if (password.length < 6) {
@@ -131,7 +131,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
                   setEmail(e.target.value);
                   setError(null);
                 }}
-                placeholder="seu@email.com"
+                placeholder="nome@exemplo.com.br"
                 className={`${inputBase} border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
               />
               {(error === "Informe seu e-mail." ||
@@ -187,7 +187,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
             {error &&
               error !== "Informe seu e-mail." &&
               error !== "Informe um e-mail válido." &&
-              // error !== "Informe um e-mail válido (ex: seu@email.com)." &&
+              // error !== "Informe um e-mail válido (ex: nome@exemplo.com.br)." &&
               error !== "A senha precisa ter pelo menos 6 caracteres." && (
                 <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm px-4 py-3 rounded-xl animate-fade-in">
                   {error}
