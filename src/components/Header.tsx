@@ -184,9 +184,13 @@ export default function Header() {
                   </button>
                   {isAccountOpen && (
                     <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-100 dark:border-slate-800 py-1 z-50">
-                      <p className="px-4 py-2.5 text-xs text-slate-400 dark:text-slate-500 truncate border-b border-slate-100 dark:border-slate-800">
-                        {user.email}
-                      </p>
+                      <Link
+                        to="/minha-conta"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <User size={14} />
+                        Minha conta
+                      </Link>
                       <button
                         onClick={() => {
                           setIsAccountOpen(false);
@@ -269,11 +273,6 @@ export default function Header() {
               {item.label}
             </NavLink>
           ))}
-          {user && (
-            <p className="px-4 pt-2 pb-1 text-xs text-slate-400 dark:text-slate-500 truncate">
-              {user.email}
-            </p>
-          )}
           {user ? (
             <>
               <Link
@@ -283,9 +282,16 @@ export default function Header() {
                 <PlusCircle size={16} />
                 Publicar Anúncio
               </Link>
+              <Link
+                to="/minha-conta"
+                onClick={close}
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <User size={16} />
+                Minha conta
+              </Link>
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors mt-1">
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
                 <LogOut size={16} />
                 Sair da conta
               </button>
