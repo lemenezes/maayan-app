@@ -1,92 +1,114 @@
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import { ThemeProvider } from './context/ThemeContext'
-import { AuthProvider } from './context/AuthContext'
-import { ToastProvider } from './context/ToastContext'
-import Layout from './components/Layout'
-import ProtectedRoute from './components/ProtectedRoute'
-import AdminRoute from './components/AdminRoute'
-import HomePage from './pages/HomePage'
-import ListingsPage from './pages/ListingsPage'
-import NewListingPage from './pages/NewListingPage'
-import MyListingsPage from './pages/MyListingsPage'
-import EditListingPage from './pages/EditListingPage'
-import ListingDetailPage from './pages/ListingDetailPage'
-import AdminListingsPage from './pages/AdminListingsPage'
-import ResidentsPage from './pages/admin/ResidentsPage'
-import AuthPage from './pages/AuthPage'
-import RequestAccessPage from './pages/RequestAccessPage'
-import PendingApprovalPage from './pages/PendingApprovalPage'
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate
+} from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+import HomePage from "./pages/HomePage";
+import ListingsPage from "./pages/ListingsPage";
+import NewListingPage from "./pages/NewListingPage";
+import MyListingsPage from "./pages/MyListingsPage";
+import EditListingPage from "./pages/EditListingPage";
+import ListingDetailPage from "./pages/ListingDetailPage";
+import AdminListingsPage from "./pages/AdminListingsPage";
+import ResidentsPage from "./pages/admin/ResidentsPage";
+import AuthPage from "./pages/AuthPage";
+import RequestAccessPage from "./pages/RequestAccessPage";
+import PendingApprovalPage from "./pages/PendingApprovalPage";
+import MyAccountPage from "./pages/MyAccountPage.tsx";
+import AccessNotApprovedPage from "./pages/AccessNotApprovedPage";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Layout />,
     children: [
       { index: true, element: <HomePage /> },
       {
-        path: 'anuncios',
+        path: "anuncios",
         element: (
           <ProtectedRoute>
             <ListingsPage />
           </ProtectedRoute>
-        ),
+        )
       },
       {
-        path: 'anuncios/:id',
+        path: "anuncios/:id",
         element: (
           <ProtectedRoute>
             <ListingDetailPage />
           </ProtectedRoute>
-        ),
+        )
       },
       {
-        path: 'publicar',
+        path: "publicar",
         element: (
           <ProtectedRoute>
             <NewListingPage />
           </ProtectedRoute>
-        ),
+        )
       },
       {
-        path: 'meus-anuncios',
+        path: "meus-anuncios",
         element: (
           <ProtectedRoute>
             <MyListingsPage />
           </ProtectedRoute>
-        ),
+        )
       },
       {
-        path: 'editar/:id',
+        path: "minha-conta",
+        element: (
+          <ProtectedRoute>
+            <MyAccountPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "perfil",
+        element: <Navigate to="/minha-conta" replace />
+      },
+      {
+        path: "editar/:id",
         element: (
           <ProtectedRoute>
             <EditListingPage />
           </ProtectedRoute>
-        ),
+        )
       },
-      { path: 'entrar', element: <AuthPage mode="login" /> },
+      { path: "entrar", element: <AuthPage mode="login" /> },
       // Cadastro público desabilitado — redireciona para solicitação de acesso
-      { path: 'cadastro', element: <Navigate to="/solicitar-acesso" replace /> },
-      { path: 'solicitar-acesso', element: <RequestAccessPage /> },
-      { path: 'aguardando-aprovacao', element: <PendingApprovalPage /> },
       {
-        path: 'admin/anuncios',
+        path: "cadastro",
+        element: <Navigate to="/solicitar-acesso" replace />
+      },
+      { path: "solicitar-acesso", element: <RequestAccessPage /> },
+      { path: "aguardando-aprovacao", element: <PendingApprovalPage /> },
+      { path: "acesso-nao-aprovado", element: <AccessNotApprovedPage /> },
+      {
+        path: "admin/anuncios",
         element: (
           <AdminRoute>
             <AdminListingsPage />
           </AdminRoute>
-        ),
+        )
       },
       {
-        path: 'admin/moradores',
+        path: "admin/moradores",
         element: (
           <AdminRoute>
             <ResidentsPage />
           </AdminRoute>
-        ),
-      },
-    ],
-  },
-])
+        )
+      }
+    ]
+  }
+]);
 
 export default function App() {
   return (
@@ -97,5 +119,5 @@ export default function App() {
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }

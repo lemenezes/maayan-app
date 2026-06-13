@@ -1,21 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, User, Mail, Building, CheckCircle } from "lucide-react";
-// Importe ou defina inputBase e submitAccessRequest conforme seu projeto
+import { submitAccessRequest } from "../services/accessRequestsService";
 
 const inputBase =
   "w-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-[#38B6D9]/40 transition-all duration-150 shadow-sm";
-
-async function submitAccessRequest(_data: {
-  full_name: string;
-  email: string;
-  block: string;
-  apartment: string;
-  message?: string;
-}) {
-  // Simulação de requisição (substitua pelo fetch real depois)
-  return new Promise<void>(resolve => setTimeout(resolve, 1200));
-}
 
 export default function RequestAccessPage() {
   const [form, setForm] = useState({
@@ -43,6 +32,7 @@ export default function RequestAccessPage() {
           isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
         if (field === "block") isValid = value.trim().length > 0;
         if (field === "apartment") isValid = value.trim().length > 0;
+        if (field === "message") isValid = value.trim().length > 0;
         if (isValid) {
           const { [field]: _, ...rest } = prev;
           return rest;
@@ -61,6 +51,7 @@ export default function RequestAccessPage() {
       errors.email = "Informe um e-mail válido (ex: seu@email.com).";
     if (!form.block.trim()) errors.block = "Informe o bloco.";
     if (!form.apartment.trim()) errors.apartment = "Informe o apartamento.";
+    if (!form.message.trim()) errors.message = "Informe uma mensagem.";
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -71,7 +62,7 @@ export default function RequestAccessPage() {
         email: form.email.trim().toLowerCase(),
         block: form.block.trim().toUpperCase(),
         apartment: form.apartment.trim(),
-        message: form.message.trim() || undefined
+        message: form.message.trim()
       });
       setSuccess(true);
     } catch (err) {
@@ -230,18 +221,23 @@ export default function RequestAccessPage() {
             </div>
           </div>
 
-          {/* Mensagem opcional */}
+          {/* Mensagem */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
-              <span className="text-white">Mensagem (opcional)</span>
+              <span className="text-white">Mensagem *</span>
             </label>
             <textarea
               value={form.message}
               onChange={set("message")}
-              placeholder="Alguma informação adicional para o admininistrador."
+              placeholder="Descreva brevemente sua solicitacao para o administrador."
               rows={3}
               className={`${inputBase} resize-none`}
             />
+            {fieldErrors.message && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.message}
+              </div>
+            )}
           </div>
 
           {error && (

@@ -1,12 +1,18 @@
 // Auto-generated types for the Supabase schema.
 // Re-run `supabase gen types typescript` after schema changes.
 
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
-export type ListingStatus = 'pending' | 'active' | 'inactive' | 'rejected';
-export type ProfileRole = 'user' | 'resident' | 'admin';
-export type ProfileStatus = 'approved' | 'suspended';
-export type AccessRequestStatus = 'pending' | 'approved' | 'rejected';
+export type ListingStatus = "pending" | "active" | "inactive" | "rejected";
+export type ProfileRole = "user" | "resident" | "admin";
+export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
+export type AccessRequestStatus = "pending" | "approved" | "rejected";
 
 export type Database = {
   public: {
@@ -16,7 +22,7 @@ export type Database = {
           id: string;
           title: string;
           description: string;
-          category: 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
+          category: "venda" | "servicos" | "indicacoes" | "doacao" | "imoveis";
           price: number | null;
           whatsapp: string;
           image_url: string | null;
@@ -31,7 +37,7 @@ export type Database = {
           id?: string;
           title: string;
           description: string;
-          category: 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
+          category: "venda" | "servicos" | "indicacoes" | "doacao" | "imoveis";
           price?: number | null;
           whatsapp: string;
           image_url?: string | null;
@@ -46,7 +52,7 @@ export type Database = {
           id?: string;
           title?: string;
           description?: string;
-          category?: 'venda' | 'servicos' | 'indicacoes' | 'doacao' | 'imoveis';
+          category?: "venda" | "servicos" | "indicacoes" | "doacao" | "imoveis";
           price?: number | null;
           whatsapp?: string;
           image_url?: string | null;
@@ -64,6 +70,7 @@ export type Database = {
           id: string;
           full_name: string | null;
           email: string | null;
+          whatsapp: string | null;
           block: string | null;
           apartment: string | null;
           role: ProfileRole;
@@ -74,6 +81,7 @@ export type Database = {
           id: string;
           full_name?: string | null;
           email?: string | null;
+          whatsapp?: string | null;
           block?: string | null;
           apartment?: string | null;
           role?: ProfileRole;
@@ -84,6 +92,7 @@ export type Database = {
           id?: string;
           full_name?: string | null;
           email?: string | null;
+          whatsapp?: string | null;
           block?: string | null;
           apartment?: string | null;
           role?: ProfileRole;
@@ -141,7 +150,8 @@ export type Database = {
   };
 };
 
-export type ListingRow = Database['public']['Tables']['listings']['Row'];
-export type ListingInsert = Database['public']['Tables']['listings']['Insert'];
-export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
-export type AccessRequestRow = Database['public']['Tables']['access_requests']['Row'];
+export type ListingRow = Database["public"]["Tables"]["listings"]["Row"];
+export type ListingInsert = Database["public"]["Tables"]["listings"]["Insert"];
+export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type AccessRequestRow =
+  Database["public"]["Tables"]["access_requests"]["Row"];

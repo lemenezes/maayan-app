@@ -1,7 +1,14 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import type { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { Profile } from '../types';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import type { Profile } from "../types";
 
 interface AuthContextValue {
   user: User | null;
@@ -9,8 +16,16 @@ interface AuthContextValue {
   loading: boolean;
   profile: Profile | null;
   profileLoading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  profileError: string | null;
+  refreshProfile: () => Promise<void>;
+  signUp: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -20,42 +35,53 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   profile: null,
   profileLoading: false,
+  profileError: null,
+  refreshProfile: async () => {},
   signUp: async () => ({ error: null }),
   signIn: async () => ({ error: null }),
-  signOut: async () => {},
+  signOut: async () => {}
 });
 
 // ─── Mock para testes E2E (VITE_USE_MOCK_AUTH=true) ─────────────────────────
-const USE_MOCK = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_AUTH === "true";
 
 const MOCK_USER = {
-  id: 'mock-user-id',
-  email: 'morador@maayan.app',
+  id: "mock-user-id",
+  email: "morador@maayan.app",
   app_metadata: {},
   user_metadata: {},
-  aud: 'authenticated',
-  created_at: '2026-01-01T00:00:00Z',
+  aud: "authenticated",
+  created_at: "2026-01-01T00:00:00Z"
 } as unknown as User;
 
 const MOCK_PROFILE: Profile = {
-  id: 'mock-user-id',
-  full_name: 'Morador Teste',
-  email: 'morador@maayan.app',
-  block: 'A',
-  apartment: '101',
-  role: 'resident',
-  status: 'approved',
-  created_at: '2026-01-01T00:00:00Z',
+  id: "mock-user-id",
+  full_name: "Morador Teste",
+  email: "morador@maayan.app",
+  whatsapp: "(11) 99999-9999",
+  block: "A",
+  apartment: "101",
+  role: "resident",
+  status: "approved",
+  created_at: "2026-01-01T00:00:00Z"
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
   if (!isSupabaseConfigured) return null;
-  const { data } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, block, apartment, role, status, created_at')
-    .eq('id', userId)
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      "id, full_name, email, whatsapp, block, apartment, role, status, created_at"
+    )
+    .eq("id", userId)
     .single();
+
+  // Perfil ainda não criado para o usuário: trata como ausência temporária de dados.
+  if (error?.code === "PGRST116") return null;
+  if (error) throw error;
+
   return (data as Profile | null) ?? null;
 }
 
@@ -63,50 +89,139 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(USE_MOCK ? MOCK_USER : null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(!USE_MOCK);
-  const [profile, setProfile] = useState<Profile | null>(USE_MOCK ? MOCK_PROFILE : null);
+  const [profile, setProfile] = useState<Profile | null>(
+    USE_MOCK ? MOCK_PROFILE : null
+  );
   const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const profileRef = useRef<Profile | null>(profile);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
+  const loadProfile = useCallback(
+    async (userId: string, showBlockingLoading: boolean) => {
+      if (USE_MOCK || !userId) return;
+
+      if (showBlockingLoading) {
+        setProfileLoading(true);
+      }
+      setProfileError(null);
+
+      try {
+        const loadedProfile = await fetchProfile(userId);
+        setProfile(loadedProfile);
+      } catch (error) {
+        // Não limpa profile em erro temporário: mantém UI estável.
+        setProfileError(
+          error instanceof Error ? error.message : "Falha ao carregar perfil."
+        );
+      } finally {
+        if (showBlockingLoading) {
+          setProfileLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  const refreshProfile = useCallback(async () => {
+    if (USE_MOCK || !user?.id) return;
+
+    // Se já temos profile, revalida sem loader bloqueante.
+    const shouldBlockUI = !profileRef.current;
+    await loadProfile(user.id, shouldBlockUI);
+  }, [loadProfile, user?.id]);
 
   useEffect(() => {
     if (USE_MOCK) return; // não chama Supabase em modo mock
 
-    // Restore session on mount
+    let isMounted = true;
+
+    // Restore session on mount (loading inicial)
     supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
       setSession(data.session);
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (!isMounted) return;
+
+      switch (event) {
+        case "INITIAL_SESSION":
+        case "SIGNED_IN":
+        case "TOKEN_REFRESHED":
+        case "USER_UPDATED":
+          // Atualiza sessão/usuário sem reset agressivo da UI.
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          setLoading(false);
+          break;
+
+        case "SIGNED_OUT":
+          // Logout: limpa tudo de forma explícita.
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setProfileError(null);
+          setProfileLoading(false);
+          setLoading(false);
+          break;
+
+        default:
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          setLoading(false);
+          break;
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Load profile whenever user changes
+  // Carrega perfil quando id do usuário muda.
   useEffect(() => {
-    if (USE_MOCK) return; // perfil já está no estado inicial em modo mock
-    if (!user) {
+    if (USE_MOCK) return;
+
+    const userId = user?.id;
+
+    if (!userId) {
       setProfile(null);
+      setProfileError(null);
       setProfileLoading(false);
       return;
     }
-    setProfileLoading(true);
-    fetchProfile(user.id)
-      .then(setProfile)
-      .finally(() => setProfileLoading(false));
-  }, [user]);
 
-  const signUp = async (email: string, password: string): Promise<{ error: string | null }> => {
+    const shouldBlockUI = !profileRef.current;
+    void loadProfile(userId, shouldBlockUI);
+  }, [loadProfile, user?.id]);
+
+  const signUp = async (
+    email: string,
+    password: string
+  ): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
     return { error: null };
   };
 
-  const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const signIn = async (
+    email: string,
+    password: string
+  ): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
     if (error) return { error: error.message };
     return { error: null };
   };
@@ -116,7 +231,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, profile, profileLoading, signUp, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        profile,
+        profileLoading,
+        profileError,
+        refreshProfile,
+        signUp,
+        signIn,
+        signOut
+      }}>
       {children}
     </AuthContext.Provider>
   );
