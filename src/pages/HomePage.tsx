@@ -129,7 +129,7 @@ export default function HomePage() {
         {loading ? (
           <SkeletonCategories />
         ) : (
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
             {CATEGORIES.map(cat => {
               const count = listings.filter(
                 l => l.category === cat.value
@@ -138,7 +138,7 @@ export default function HomePage() {
                 <button
                   key={cat.value}
                   onClick={() => navigate(`/anuncios?categoria=${cat.value}`)}
-                  className="group flex flex-col items-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-[30%] sm:w-36 lg:flex-1 bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl hover:shadow-sky-100/80 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-sky-200 dark:hover:border-sky-800/50">
+                  className="group flex flex-col items-center justify-center gap-1.5 sm:gap-3 p-3 sm:p-6 w-full min-h-[104px] sm:min-h-0 sm:w-36 lg:flex-1 bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl hover:shadow-sky-100/80 dark:hover:shadow-slate-900/60 hover:-translate-y-1.5 hover:scale-[1.03] transition-all duration-300 ease-out border border-slate-100 dark:border-slate-700/50 hover:border-sky-200 dark:hover:border-sky-800/50">
                   <span className="text-xl sm:text-3xl group-hover:scale-110 transition-transform duration-300 ease-out">
                     {cat.icon}
                   </span>
