@@ -1,17 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Upload, X, Loader2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.tsx";
 import { useToast } from "../context/ToastContext";
 import { fetchUserListings, updateListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
-import type { Category } from "../types";
+import type { Category, ListingPriceMode } from "../types";
+import {
+  defaultPriceModeForCategory,
+  getPriceModeOptions,
+  shouldRequirePriceValue,
+  shouldShowPriceInput
+} from "../utils/pricing";
 
 interface FormData {
   title: string;
   description: string;
   category: Category;
   price: string;
+  priceMode: ListingPriceMode;
   whatsapp: string;
   authorName: string;
   apartment: string;
@@ -47,6 +54,7 @@ export default function EditListingPage() {
     description: "",
     category: "venda",
     price: "",
+    priceMode: defaultPriceModeForCategory("venda"),
     whatsapp: "",
     authorName: "",
     apartment: ""
@@ -75,6 +83,8 @@ export default function EditListingPage() {
         title: listing.title,
         description: listing.description,
         category: listing.category,
+        priceMode:
+          listing.priceMode ?? defaultPriceModeForCategory(listing.category),
         price:
           listing.price !== undefined
             ? String(listing.price).replace(".", ",")
@@ -112,7 +122,12 @@ export default function EditListingPage() {
     if (!phone) e.whatsapp = "Campo obrigatório";
     else if (phone.length < 10)
       e.whatsapp = "Número inválido (mínimo 10 dígitos)";
-    if (form.price) {
+    if (
+      shouldRequirePriceValue(form.category, form.priceMode) &&
+      !form.price.trim()
+    ) {
+      e.price = "Campo obrigatório";
+    } else if (form.price) {
       const n = parseFloat(form.price.replace(",", "."));
       if (isNaN(n) || n < 0) e.price = "Valor inválido";
     }
@@ -189,6 +204,7 @@ export default function EditListingPage() {
         description: form.description.trim(),
         category: form.category,
         price: priceValue,
+        priceMode: form.priceMode,
         whatsapp: form.whatsapp.replace(/\D/g, ""),
         keptImageUrls: keptImages,
         newImageFiles: newImages.map(img => img.file),
@@ -238,7 +254,8 @@ export default function EditListingPage() {
     );
   }
 
-  const showPrice = form.category === "venda" || form.category === "servicos";
+  const showPrice = shouldShowPriceInput(form.category);
+  const priceModeOptions = getPriceModeOptions(form.category);
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
@@ -270,7 +287,12 @@ export default function EditListingPage() {
                 key={cat.value}
                 type="button"
                 onClick={() =>
-                  setForm(p => ({ ...p, category: cat.value, price: "" }))
+                  setForm(p => ({
+                    ...p,
+                    category: cat.value,
+                    price: "",
+                    priceMode: defaultPriceModeForCategory(cat.value)
+                  }))
                 }
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 text-sm font-medium transition-all ${
                   form.category === cat.value
@@ -337,32 +359,73 @@ export default function EditListingPage() {
 
         {/* Price */}
         {showPrice && (
-          <div>
-            <label
-              htmlFor="price"
-              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              {form.category === "servicos" ? "Valor por hora" : "Preço"}{" "}
-              <span className="text-slate-400 dark:text-slate-500 font-normal">
-                (opcional)
-              </span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm font-medium pointer-events-none">
-                R$
-              </span>
-              <input
-                id="price"
-                name="price"
-                type="text"
-                inputMode="decimal"
-                value={form.price}
-                onChange={handleChange}
-                placeholder="0,00"
-                className={`${inputClass("price")} pl-10`}
-              />
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="price"
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Preço
+                {form.category !== "indicacoes" && (
+                  <span className="ml-1 text-red-500" aria-hidden="true">
+                    *
+                  </span>
+                )}
+              </label>
+              {(form.category !== "servicos" || form.priceMode !== "quote") && (
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm font-medium pointer-events-none">
+                    R$
+                  </span>
+                  <input
+                    id="price"
+                    name="price"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="0,00"
+                    className={`${inputClass("price")} pl-10`}
+                  />
+                </div>
+              )}
+              {form.category === "servicos" && form.priceMode === "quote" && (
+                <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+                  O anúncio será exibido como Sob consulta.
+                </div>
+              )}
+              {errors.price && (
+                <p className="text-red-500 text-xs mt-1">{errors.price}</p>
+              )}
             </div>
-            {errors.price && (
-              <p className="text-red-500 text-xs mt-1">{errors.price}</p>
+
+            {priceModeOptions.length > 0 && (
+              <div>
+                <label
+                  htmlFor="priceMode"
+                  className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  {form.category === "servicos" ? "Cobrança" : "Tipo"}
+                  <span className="text-red-400"> *</span>
+                </label>
+                <select
+                  id="priceMode"
+                  name="priceMode"
+                  value={form.priceMode}
+                  onChange={e => {
+                    const priceMode = e.target.value as ListingPriceMode;
+                    setForm(prev => ({
+                      ...prev,
+                      priceMode,
+                      price: priceMode === "quote" ? "" : prev.price
+                    }));
+                  }}
+                  className={inputClass("priceMode")}>
+                  {priceModeOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </div>
         )}

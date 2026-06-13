@@ -18,6 +18,7 @@ import ListingModal from "../components/ListingModal";
 import { SkeletonGrid } from "../components/Skeleton";
 import { useListings } from "../hooks/useListings";
 import { buildWhatsAppUrl } from "../utils/whatsapp";
+import { formatListingPrice } from "../utils/pricing";
 import { CATEGORIES } from "../types";
 import type { Category, Listing } from "../types";
 
@@ -25,23 +26,11 @@ type ViewMode = "grid" | "list";
 
 const VIEW_MODE_STORAGE_KEY = "maayan:listings:view-mode";
 
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL"
-});
-
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short"
   });
-}
-
-function formatPrice(listing: Listing) {
-  if (listing.price === undefined) return null;
-  return listing.category === "servicos"
-    ? `${priceFormatter.format(listing.price)}/h`
-    : priceFormatter.format(listing.price);
 }
 
 interface ListingListItemProps {
@@ -51,7 +40,7 @@ interface ListingListItemProps {
 
 function ListingListItem({ listing, onSelect }: ListingListItemProps) {
   const whatsappLink = buildWhatsAppUrl(listing);
-  const price = formatPrice(listing);
+  const price = formatListingPrice(listing);
   const category = CATEGORIES.find(c => c.value === listing.category)!;
 
   return (

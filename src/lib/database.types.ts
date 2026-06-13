@@ -13,6 +13,16 @@ export type ListingStatus = "pending" | "active" | "inactive" | "rejected";
 export type ProfileRole = "user" | "resident" | "admin";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
 export type AccessRequestStatus = "pending" | "approved" | "rejected";
+export type ListingPriceMode =
+  | "fixed"
+  | "hour"
+  | "day"
+  | "project"
+  | "quote"
+  | "sale"
+  | "monthly"
+  | "season"
+  | "free";
 
 export type Database = {
   public: {
@@ -24,6 +34,7 @@ export type Database = {
           description: string;
           category: "venda" | "servicos" | "indicacoes" | "doacao" | "imoveis";
           price: number | null;
+          price_mode: ListingPriceMode | null;
           whatsapp: string;
           image_url: string | null;
           image_urls: string[] | null;
@@ -39,6 +50,7 @@ export type Database = {
           description: string;
           category: "venda" | "servicos" | "indicacoes" | "doacao" | "imoveis";
           price?: number | null;
+          price_mode?: ListingPriceMode | null;
           whatsapp: string;
           image_url?: string | null;
           image_urls?: string[] | null;
@@ -54,6 +66,7 @@ export type Database = {
           description?: string;
           category?: "venda" | "servicos" | "indicacoes" | "doacao" | "imoveis";
           price?: number | null;
+          price_mode?: ListingPriceMode | null;
           whatsapp?: string;
           image_url?: string | null;
           image_urls?: string[] | null;

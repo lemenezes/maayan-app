@@ -3,6 +3,7 @@ import { X, MessageCircle, Calendar } from "lucide-react";
 import { CATEGORIES } from "../types";
 import type { Listing } from "../types";
 import { buildWhatsAppUrl } from "../utils/whatsapp";
+import { formatListingPrice } from "../utils/pricing";
 import ListingGallery from "./ListingGallery";
 
 interface ListingModalProps {
@@ -10,14 +11,10 @@ interface ListingModalProps {
   onClose: () => void;
 }
 
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL"
-});
-
 export default function ListingModal({ listing, onClose }: ListingModalProps) {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
+  const price = formatListingPrice(listing);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -38,11 +35,6 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
       month: "long",
       year: "numeric"
     });
-
-  const formatPrice = (price: number) =>
-    listing.category === "servicos"
-      ? `${priceFormatter.format(price)}/h`
-      : priceFormatter.format(price);
 
   return (
     <div
@@ -82,9 +74,9 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
             {listing.title}
           </h2>
 
-          {listing.price !== undefined && (
+          {price && (
             <p className="text-3xl font-bold text-[#0C5A86] dark:text-sky-400 mb-5 tabular-nums">
-              {formatPrice(listing.price)}
+              {price}
             </p>
           )}
 

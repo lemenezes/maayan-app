@@ -5,6 +5,17 @@ export type Category =
   | "doacao"
   | "imoveis";
 
+export type ListingPriceMode =
+  | "fixed"
+  | "hour"
+  | "day"
+  | "project"
+  | "quote"
+  | "sale"
+  | "monthly"
+  | "season"
+  | "free";
+
 export type ProfileRole = "resident" | "admin" | "user";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
 export type RequestStatus = "pending" | "approved" | "rejected";
@@ -41,6 +52,7 @@ export interface Listing {
   description: string;
   category: Category;
   price?: number;
+  priceMode?: ListingPriceMode;
   whatsapp: string;
   images: string[];
   authorName: string;

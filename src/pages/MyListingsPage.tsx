@@ -21,6 +21,7 @@ import {
 } from "../services/listingsService";
 import { CATEGORIES } from "../types";
 import type { Listing } from "../types";
+import { formatListingPrice } from "../utils/pricing";
 
 function SkeletonRow() {
   return (
@@ -35,24 +36,12 @@ function SkeletonRow() {
   );
 }
 
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL"
-});
-
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short",
     year: "numeric"
   });
-}
-
-function formatPrice(listing: Listing) {
-  if (listing.price === undefined) return null;
-  return listing.category === "servicos"
-    ? `${priceFormatter.format(listing.price)}/h`
-    : priceFormatter.format(listing.price);
 }
 
 /* ── Confirmation dialog ── */
@@ -110,7 +99,7 @@ function MyListingCard({
   const isActive = status === "active";
   const isPending = status === "pending";
   const isRejected = status === "rejected";
-  const price = formatPrice(listing);
+  const price = formatListingPrice(listing);
 
   return (
     <article

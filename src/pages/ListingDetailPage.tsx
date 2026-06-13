@@ -6,11 +6,7 @@ import ListingGallery from "../components/ListingGallery";
 import { CATEGORIES } from "../types";
 import type { Listing } from "../types";
 import { buildWhatsAppUrl } from "../utils/whatsapp";
-
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL"
-});
+import { formatListingPrice } from "../utils/pricing";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR", {
@@ -18,13 +14,6 @@ function formatDate(dateStr: string) {
     month: "long",
     year: "numeric"
   });
-}
-
-function formatPrice(listing: Listing) {
-  if (listing.price === undefined) return null;
-  return listing.category === "servicos"
-    ? `${priceFormatter.format(listing.price)}/h`
-    : priceFormatter.format(listing.price);
 }
 
 function SkeletonDetail() {
@@ -96,7 +85,7 @@ export default function ListingDetailPage() {
 
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
-  const price = formatPrice(listing);
+  const price = formatListingPrice(listing);
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">

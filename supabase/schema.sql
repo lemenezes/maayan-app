@@ -20,6 +20,19 @@ create table if not exists public.listings (
         )
     ),
     price numeric(10, 2),
+        price_mode text not null default 'fixed' check (
+            price_mode in (
+                'fixed',
+                'hour',
+                'day',
+                'project',
+                'quote',
+                'sale',
+                'monthly',
+                'season',
+                'free'
+            )
+        ),
     whatsapp text not null,
     image_url text,
     author_name text not null,

@@ -2,20 +2,17 @@ import { MessageCircle, ImageOff, Images } from "lucide-react";
 import { CATEGORIES } from "../types";
 import type { Listing } from "../types";
 import { buildWhatsAppUrl } from "../utils/whatsapp";
+import { formatListingPrice } from "../utils/pricing";
 
 interface ListingCardProps {
   listing: Listing;
   onSelect: (listing: Listing) => void;
 }
 
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL"
-});
-
 export default function ListingCard({ listing, onSelect }: ListingCardProps) {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
+  const price = formatListingPrice(listing);
 
   const formatDate = (dateStr: string) => {
     const parts = new Intl.DateTimeFormat("pt-BR", {
@@ -30,11 +27,6 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
 
     return `${day} ${month} ${year}`.trim();
   };
-
-  const formatPrice = (price: number) =>
-    listing.category === "servicos"
-      ? `${priceFormatter.format(price)}/h`
-      : priceFormatter.format(price);
 
   return (
     <article
@@ -77,9 +69,9 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
           {listing.title}
         </h3>
 
-        {listing.price !== undefined && (
+        {price && (
           <p className="text-sky-600 dark:text-teal-500 font-bold text-base sm:text-lg mb-2 tabular-nums">
-            {formatPrice(listing.price)}
+            {price}
           </p>
         )}
 
