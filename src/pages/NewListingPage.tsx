@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Upload, X, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Upload,
+  X,
+  Loader2,
+  ChevronDown
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext.tsx";
 import { createListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
@@ -53,9 +60,11 @@ export default function NewListingPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState<FormData>(initialForm);
   const [images, setImages] = useState<ImageEntry[]>([]);
@@ -63,6 +72,24 @@ export default function NewListingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(e.target as Node)
+      ) {
+        setCategoryDropdownOpen(false);
+      }
+    };
+    if (categoryDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [categoryDropdownOpen]);
 
   const validate = (): boolean => {
     const e: FormErrors = {};
@@ -228,6 +255,16 @@ export default function NewListingPage() {
 
   const showPrice = shouldShowPriceInput(form.category);
   const priceModeOptions = getPriceModeOptions(form.category);
+  const valueMicrocopy =
+    form.category === "servicos"
+      ? "Defina como deseja cobrar pelo serviço."
+      : form.category === "imoveis"
+        ? "Informe o valor de venda ou locação."
+        : form.category === "doacao"
+          ? "Este anúncio será exibido como gratuito."
+          : form.category === "indicacoes"
+            ? "Valor opcional."
+            : "Informe o valor do anúncio.";
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
@@ -252,155 +289,68 @@ export default function NewListingPage() {
           <p className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
             Categoria <span className="text-red-400">*</span>
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.value}
-                type="button"
-                onClick={() =>
-                  setForm(p => ({
-                    ...p,
-                    category: cat.value,
-                    price: "",
-                    priceMode: defaultPriceModeForCategory(cat.value)
-                  }))
-                }
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                  form.category === cat.value
-                    ? "border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40 text-[#0C5A86] dark:text-sky-400"
-                    : "border-slate-200 dark:border-slate-700 bg-white/80 backdrop-blur-md dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/80 dark:hover:bg-slate-700"
-                }`}>
-                <span className="text-2xl">{cat.icon}</span>
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
+          <div ref={categoryDropdownRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+              className="w-full flex items-center justify-between px-4 py-2 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white/80 backdrop-blur-md dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-all"
+              aria-haspopup="listbox"
+              aria-expanded={categoryDropdownOpen}>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">
+                  {CATEGORIES.find(c => c.value === form.category)?.icon}
+                </span>
+                <span className="text-sm font-medium">
+                  {CATEGORIES.find(c => c.value === form.category)?.label}
+                </span>
+              </span>
+              <ChevronDown
+                size={18}
+                className={`text-slate-400 dark:text-slate-500 transition-transform ${
+                  categoryDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Título <span className="text-red-400">*</span>
-          </label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            value={form.title}
-            onChange={handleChange}
-            placeholder="Ex: Sofá 3 lugares em ótimo estado"
-            className={inputClass("title")}
-            maxLength={100}
-          />
-          {errors.title && (
-            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Descrição <span className="text-red-400">*</span>
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Descreva o que está anunciando com detalhes..."
-            rows={5}
-            className={`${inputClass("description")} resize-none`}
-            maxLength={1000}
-          />
-          <div className="flex justify-between mt-1">
-            {errors.description ? (
-              <p className="text-red-500 text-xs">{errors.description}</p>
-            ) : (
-              <span />
-            )}
-            <p className="text-slate-300 dark:text-slate-600 text-xs">
-              {form.description.length}/1000
-            </p>
-          </div>
-        </div>
-
-        {showPrice && (
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="price"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Valor
-                {form.category === "indicacoes" ? (
-                  <span className="ml-1 text-slate-400 dark:text-slate-500 font-normal">
-                    (opcional)
-                  </span>
-                ) : (
-                  <span className="ml-1 text-red-500" aria-hidden="true">
-                    *
-                  </span>
-                )}
-              </label>
-              {(form.category !== "servicos" || form.priceMode !== "quote") && (
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm font-medium pointer-events-none">
-                    R$
-                  </span>
-                  <input
-                    id="price"
-                    name="price"
-                    type="text"
-                    inputMode="decimal"
-                    value={form.price}
-                    onChange={handleChange}
-                    placeholder="0,00"
-                    className={`${inputClass("price")} pl-10`}
-                  />
-                </div>
-              )}
-              {form.category === "servicos" && form.priceMode === "quote" && (
-                <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
-                  O anúncio será exibido como Sob consulta.
-                </div>
-              )}
-              {errors.price && (
-                <p className="text-red-500 text-xs mt-1">{errors.price}</p>
-              )}
-            </div>
-
-            {priceModeOptions.length > 0 && (
-              <div>
-                <label
-                  htmlFor="priceMode"
-                  className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  {form.category === "servicos" ? "Cobrança" : "Tipo"}
-                  <span className="text-red-400"> *</span>
-                </label>
-                <select
-                  id="priceMode"
-                  name="priceMode"
-                  value={form.priceMode}
-                  onChange={e => {
-                    const priceMode = e.target.value as ListingPriceMode;
-                    setForm(prev => ({
-                      ...prev,
-                      priceMode,
-                      price: priceMode === "quote" ? "" : prev.price
-                    }));
-                  }}
-                  className={inputClass("priceMode")}>
-                  {priceModeOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+            {categoryDropdownOpen && (
+              <div
+                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-10"
+                role="listbox">
+                {CATEGORIES.map((cat, idx) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => {
+                      setForm(p => ({
+                        ...p,
+                        category: cat.value,
+                        price: "",
+                        priceMode: defaultPriceModeForCategory(cat.value)
+                      }));
+                      setCategoryDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm font-medium transition-all ${
+                      idx !== CATEGORIES.length - 1
+                        ? "border-b border-slate-100 dark:border-slate-700"
+                        : ""
+                    } ${
+                      form.category === cat.value
+                        ? "bg-sky-50 dark:bg-sky-950/40 text-[#0C5A86] dark:text-sky-400"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    }`}
+                    role="option"
+                    aria-selected={form.category === cat.value}>
+                    <span className="text-lg">{cat.icon}</span>
+                    <span>{cat.label}</span>
+                    {form.category === cat.value && (
+                      <span className="ml-auto text-[#1DAFD9]">✓</span>
+                    )}
+                  </button>
+                ))}
               </div>
             )}
           </div>
-        )}
+        </div>
 
         <div>
           <p className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -494,6 +444,140 @@ export default function NewListingPage() {
           {errors.images && (
             <p className="text-red-500 text-xs mt-1">{errors.images}</p>
           )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="title"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Título <span className="text-red-400">*</span>
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="Ex: Sofá 3 lugares em ótimo estado"
+            className={inputClass("title")}
+            maxLength={100}
+          />
+          {errors.title && (
+            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="price"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Valor
+              {form.category === "indicacoes" ? (
+                <span className="ml-1 text-slate-400 dark:text-slate-500 font-normal">
+                  (opcional)
+                </span>
+              ) : form.category === "doacao" ? null : (
+                <span className="ml-1 text-red-500" aria-hidden="true">
+                  *
+                </span>
+              )}
+            </label>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
+              {valueMicrocopy}
+            </p>
+            {showPrice &&
+              (form.category !== "servicos" || form.priceMode !== "quote") && (
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm font-medium pointer-events-none">
+                    R$
+                  </span>
+                  <input
+                    id="price"
+                    name="price"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="0,00"
+                    className={`${inputClass("price")} pl-10`}
+                  />
+                </div>
+              )}
+            {showPrice &&
+              form.category === "servicos" &&
+              form.priceMode === "quote" && (
+                <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+                  O anúncio será exibido como Sob consulta.
+                </div>
+              )}
+            {!showPrice && (
+              <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+                Este anúncio será exibido como gratuito.
+              </div>
+            )}
+            {showPrice && errors.price && (
+              <p className="text-red-500 text-xs mt-1">{errors.price}</p>
+            )}
+          </div>
+
+          {showPrice && priceModeOptions.length > 0 && (
+            <div>
+              <label
+                htmlFor="priceMode"
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                {form.category === "servicos" ? "Cobrança" : "Tipo"}
+                <span className="text-red-400"> *</span>
+              </label>
+              <select
+                id="priceMode"
+                name="priceMode"
+                value={form.priceMode}
+                onChange={e => {
+                  const priceMode = e.target.value as ListingPriceMode;
+                  setForm(prev => ({
+                    ...prev,
+                    priceMode,
+                    price: priceMode === "quote" ? "" : prev.price
+                  }));
+                }}
+                className={inputClass("priceMode")}>
+                {priceModeOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Descrição <span className="text-red-400">*</span>
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Descreva o que está anunciando com detalhes..."
+            rows={5}
+            className={`${inputClass("description")} resize-none`}
+            maxLength={1000}
+          />
+          <div className="flex justify-between mt-1">
+            {errors.description ? (
+              <p className="text-red-500 text-xs">{errors.description}</p>
+            ) : (
+              <span />
+            )}
+            <p className="text-slate-300 dark:text-slate-600 text-xs">
+              {form.description.length}/1000
+            </p>
+          </div>
         </div>
 
         <div>
