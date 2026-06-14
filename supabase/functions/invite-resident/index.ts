@@ -4,6 +4,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
 const APP_ENV = (Deno.env.get("APP_ENV") ?? "production").toLowerCase();
 const DEFAULT_PROD_SITE_URL = "https://maayan.leandrom.com.br";
 const DEFAULT_DEV_SITE_URL = "http://localhost:5175";
@@ -29,6 +31,7 @@ function resolveSiteUrl(): string {
 }
 
 const SITE_URL = resolveSiteUrl();
+const APPROVED_LOGIN_URL = "https://maayan.leandrom.com.br/entrar";
 
 function resolveAllowedOrigin(req: Request): string {
   const origin = req.headers.get("origin");
@@ -106,6 +109,46 @@ async function findAuthUserIdByEmail(
   }
 
   return null;
+}
+
+async function sendExistingUserApprovalEmail(email: string): Promise<void> {
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not set — skipping existing-user approval email");
+    return;
+  }
+
+  const subject = "Seu acesso ao Maayan foi aprovado";
+  const html = `
+    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1e293b">
+      <h1 style="font-size:20px;margin:0 0 12px;color:#0C5A86">Seu acesso foi aprovado</h1>
+      <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
+        Sua solicitação foi aprovada. Você já possui cadastro no Maayan e pode acessar sua conta agora.
+      </p>
+      <a href="${APPROVED_LOGIN_URL}"
+         style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;font-size:14px">
+        Entrar no Maayan
+      </a>
+    </div>
+  `;
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Resend existing-user approval email error:", errorBody);
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -287,6 +330,10 @@ Deno.serve(async (req: Request) => {
       reviewed_by: user.id
     })
     .eq("id", requestId);
+
+  if (isExistingUser) {
+    await sendExistingUserApprovalEmail(request.email);
+  }
 
   return new Response(
     JSON.stringify({
