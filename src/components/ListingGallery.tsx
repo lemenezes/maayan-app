@@ -34,7 +34,7 @@ export default function ListingGallery({
     <div>
       {/* Main image */}
       <div
-        className={`aspect-video relative bg-slate-50 dark:bg-slate-900 ${roundedClass} overflow-hidden`}>
+        className={`aspect-video relative bg-slate-50 dark:bg-slate-900 ${roundedClass} overflow-hidden flex items-center justify-center`}>
         {images.length > 0 ? (
           <>
             <button
@@ -46,7 +46,7 @@ export default function ListingGallery({
                 key={activeImg}
                 src={images[activeImg]}
                 alt={`${title} ${activeImg + 1}`}
-                className="w-full h-full object-contain animate-fade-in"
+                className="w-full h-full object-contain object-center p-2 sm:p-3 animate-fade-in"
               />
               {/* Zoom hint */}
               <span className="absolute bottom-3 right-3 w-8 h-8 bg-black/40 group-hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
