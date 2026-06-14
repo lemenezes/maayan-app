@@ -62,9 +62,7 @@ export default function ListingCard({
               alt={listing.title}
               loading="lazy"
               className={`w-full h-full object-cover transition-all duration-500 ${
-                isSold
-                  ? "opacity-85 grayscale-[15%]"
-                  : "group-hover:scale-105"
+                isSold ? "opacity-85 grayscale-[15%]" : "group-hover:scale-105"
               }`}
             />
             {listing.images.length > 1 && (
