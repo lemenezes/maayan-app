@@ -1,0 +1,11 @@
+name = "maayan-r2-images"
+main = "src/index.ts"
+compatibility_date = "2026-06-14"
+
+[vars]
+APP_ORIGIN = "https://maayan.leandrom.com.br"
+CDN_PUBLIC_URL = "https://cdn.maayan.leandrom.com.br"
+
+[[r2_buckets]]
+binding = "MAAYAN_LISTINGS_BUCKET"
+bucket_name = "maayan-listings"

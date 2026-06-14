@@ -4,6 +4,11 @@ import type { Listing } from "../types";
 import type { ListingWithStatus } from "../types";
 import type { Category } from "../types";
 import type { ListingPriceMode } from "../types";
+import {
+  deleteListingImageFromR2,
+  isR2CdnUrl,
+  uploadListingImageToR2
+} from "./r2StorageService";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -115,37 +120,18 @@ export async function createListing(
   input: CreateListingInput
 ): Promise<Listing> {
   const imageUrls: string[] = [];
+  const listingId = crypto.randomUUID();
 
   if (input.imageFiles && input.imageFiles.length > 0) {
     const files = input.imageFiles.slice(0, MAX_IMAGES);
     for (const file of files) {
-      const ext = file.name.split(".").pop();
-      const path = `${input.userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("listings")
-        .upload(path, file, { upsert: false });
-
-      if (uploadError) {
-        if (
-          uploadError.message.toLowerCase().includes("bucket") ||
-          uploadError.message.toLowerCase().includes("not found")
-        ) {
-          throw new Error(
-            'O bucket de imagens não existe. Crie o bucket "listings" no painel do Supabase em Storage → New Bucket (nome: listings, public: true).'
-          );
-        }
-        throw new Error(`Falha no upload: ${uploadError.message}`);
-      }
-
-      const { data: urlData } = supabase.storage
-        .from("listings")
-        .getPublicUrl(path);
-      imageUrls.push(urlData.publicUrl);
+      const result = await uploadListingImageToR2(file, listingId);
+      imageUrls.push(result.url);
     }
   }
 
   const insert: ListingInsert = {
+    id: listingId,
     title: input.title,
     description: input.description,
     category: input.category,
@@ -171,6 +157,37 @@ export async function createListing(
 }
 
 export async function deleteListing(id: string): Promise<void> {
+  const { data: current, error: fetchErr } = await supabase
+    .from("listings")
+    .select("image_urls, image_url")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr) throw new Error(fetchErr.message);
+
+  const urlsToDelete: string[] =
+    current.image_urls && current.image_urls.length > 0
+      ? current.image_urls
+      : current.image_url
+        ? [current.image_url]
+        : [];
+
+  for (const url of urlsToDelete) {
+    if (isR2CdnUrl(url)) {
+      try {
+        await deleteListingImageFromR2({ url });
+      } catch {
+        // Best effort para nao bloquear exclusao do anuncio.
+      }
+      continue;
+    }
+
+    const path = storagePathFromUrl(url);
+    if (path) {
+      await supabase.storage.from("listings").remove([path]);
+    }
+  }
+
   const { error } = await supabase.from("listings").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -252,6 +269,15 @@ export async function updateListing(
   // 2. Delete removed images from storage (best effort)
   const removedUrls = prevUrls.filter(u => !input.keptImageUrls.includes(u));
   for (const url of removedUrls) {
+    if (isR2CdnUrl(url)) {
+      try {
+        await deleteListingImageFromR2({ url });
+      } catch {
+        // Best effort para nao bloquear update quando falhar limpeza remota.
+      }
+      continue;
+    }
+
     const path = storagePathFromUrl(url);
     if (path) {
       await supabase.storage.from("listings").remove([path]);
@@ -262,16 +288,8 @@ export async function updateListing(
   const uploadedUrlsById = new Map<string, string>();
   for (const image of input.newImages) {
     const file = image.file;
-    const ext = file.name.split(".").pop();
-    const path = `${input.userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("listings")
-      .upload(path, file, { upsert: false });
-    if (upErr) throw new Error(`Falha no upload: ${upErr.message}`);
-    const { data: urlData } = supabase.storage
-      .from("listings")
-      .getPublicUrl(path);
-    uploadedUrlsById.set(image.id, urlData.publicUrl);
+    const result = await uploadListingImageToR2(file, id);
+    uploadedUrlsById.set(image.id, result.url);
   }
 
   // 4. Final image list in the exact order chosen by the user, capped at MAX_IMAGES
