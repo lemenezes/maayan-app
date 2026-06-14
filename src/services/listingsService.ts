@@ -207,8 +207,10 @@ export interface UpdateListingInput {
   priceMode: ListingPriceMode;
   /** URLs that were already saved and should be kept */
   keptImageUrls: string[];
-  /** New files to upload */
-  newImageFiles: File[];
+  /** New files to upload, keyed so the final order can be reconstructed */
+  newImages: { id: string; file: File }[];
+  /** Final visual order chosen by the user */
+  imageOrder: Array<{ kind: "kept"; url: string } | { kind: "new"; id: string }>;
   userId: string;
 }
 
@@ -255,8 +257,9 @@ export async function updateListing(
   }
 
   // 3. Upload new images
-  const uploadedUrls: string[] = [];
-  for (const file of input.newImageFiles) {
+  const uploadedUrlsById = new Map<string, string>();
+  for (const image of input.newImages) {
+    const file = image.file;
     const ext = file.name.split(".").pop();
     const path = `${input.userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error: upErr } = await supabase.storage
@@ -266,14 +269,16 @@ export async function updateListing(
     const { data: urlData } = supabase.storage
       .from("listings")
       .getPublicUrl(path);
-    uploadedUrls.push(urlData.publicUrl);
+    uploadedUrlsById.set(image.id, urlData.publicUrl);
   }
 
-  // 4. Final image list (kept + new), capped at MAX_IMAGES
-  const finalUrls = [...input.keptImageUrls, ...uploadedUrls].slice(
-    0,
-    MAX_IMAGES
-  );
+  // 4. Final image list in the exact order chosen by the user, capped at MAX_IMAGES
+  const finalUrls = input.imageOrder
+    .map(item =>
+      item.kind === "kept" ? item.url : uploadedUrlsById.get(item.id) ?? null
+    )
+    .filter((url): url is string => Boolean(url))
+    .slice(0, MAX_IMAGES);
 
   // 5. Update DB
   const { data, error } = await supabase

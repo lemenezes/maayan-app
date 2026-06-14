@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Clock,
   Upload,
+  Star,
   X,
   Loader2,
   ChevronDown
@@ -69,6 +70,17 @@ export default function NewListingPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const imagesRef = useRef<ImageEntry[]>([]);
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => {
+      imagesRef.current.forEach(img => URL.revokeObjectURL(img.preview));
+    };
+  }, []);
 
   // Fechar dropdown ao clicar fora
   useEffect(() => {
@@ -162,6 +174,17 @@ export default function NewListingPage() {
     });
   };
 
+  const setCoverImage = (index: number) => {
+    if (index === 0) return;
+
+    setImages(prev => {
+      const next = [...prev];
+      const [selected] = next.splice(index, 1);
+      next.unshift(selected);
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -245,7 +268,7 @@ export default function NewListingPage() {
           <button
             onClick={() => {
               setForm(initialForm);
-              images.forEach(img => URL.revokeObjectURL(img.preview));
+              imagesRef.current.forEach(img => URL.revokeObjectURL(img.preview));
               setImages([]);
               setSubmitted(false);
             }}
@@ -367,6 +390,9 @@ export default function NewListingPage() {
                 (opcional · máx. {MAX_IMAGES})
               </span>
             </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              A primeira foto aparece como capa. Você pode trocar a capa ou remover qualquer foto direto no card.
+            </p>
 
             {images.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 rounded-2xl bg-slate-100/80 dark:bg-slate-900/45 p-2 ring-1 ring-slate-200/70 dark:ring-slate-700/60">
@@ -382,15 +408,26 @@ export default function NewListingPage() {
                     <button
                       type="button"
                       onClick={() => removeImage(i)}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1.5 right-1.5 z-10 inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-white/92 px-2 text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:bg-white dark:bg-slate-900/88 dark:text-slate-100"
                       aria-label="Remover imagem">
-                      <X size={12} className="text-white" />
+                      <X size={14} />
                     </button>
-                    {i === 0 && (
-                      <span className="absolute bottom-1.5 left-1.5 text-[10px] font-semibold bg-black/50 text-white px-1.5 py-0.5 rounded-full">
-                        Capa
-                      </span>
-                    )}
+                    <div className="absolute inset-x-0 bottom-0 flex items-end p-2 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+                      {i === 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/95 px-2.5 py-1 text-[11px] font-semibold text-slate-900 shadow-sm">
+                          <Star size={12} fill="currentColor" />
+                          Capa
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setCoverImage(i)}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/94 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:bg-white dark:bg-slate-900/90 dark:text-slate-100">
+                          <Star size={12} />
+                          Definir capa
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {images.length < MAX_IMAGES && (

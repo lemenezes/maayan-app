@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, X, Loader2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Upload, X, Loader2, ChevronDown, Star } from "lucide-react";
 import { useAuth } from "../context/AuthContext.tsx";
 import { useToast } from "../context/ToastContext";
 import { fetchUserListings, updateListing } from "../services/listingsService";
@@ -33,9 +33,19 @@ const MAX_FILE_SIZE_MB = 5;
 const MAX_IMAGES = 4;
 
 interface NewImageEntry {
+  id: string;
   file: File;
   preview: string;
 }
+
+interface ExistingImageEntry {
+  id: string;
+  url: string;
+}
+
+type ListingImageEntry =
+  | ({ kind: "existing" } & ExistingImageEntry)
+  | ({ kind: "new" } & NewImageEntry);
 
 export default function EditListingPage() {
   const { id } = useParams<{ id: string }>();
@@ -54,13 +64,11 @@ export default function EditListingPage() {
     price: "",
     priceMode: defaultPriceModeForCategory("venda")
   });
-  /** Existing image URLs kept from original listing */
-  const [keptImages, setKeptImages] = useState<string[]>([]);
-  /** New files selected by user */
-  const [newImages, setNewImages] = useState<NewImageEntry[]>([]);
+  const [images, setImages] = useState<ListingImageEntry[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const imagesRef = useRef<ListingImageEntry[]>([]);
 
   // Fechar dropdown ao clicar fora
   useEffect(() => {
@@ -79,7 +87,21 @@ export default function EditListingPage() {
     }
   }, [categoryDropdownOpen]);
 
-  const totalImages = keptImages.length + newImages.length;
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => {
+      imagesRef.current.forEach(img => {
+        if (img.kind === "new") {
+          URL.revokeObjectURL(img.preview);
+        }
+      });
+    };
+  }, []);
+
+  const totalImages = images.length;
 
   // Load listing
   const loadListing = useCallback(async () => {
@@ -103,7 +125,13 @@ export default function EditListingPage() {
             ? String(listing.price).replace(".", ",")
             : ""
       });
-      setKeptImages(listing.images);
+      setImages(
+        listing.images.map((url, index) => ({
+          kind: "existing" as const,
+          id: `${index}-${url}`,
+          url
+        }))
+      );
     } catch {
       showToast("Erro ao carregar anúncio", "error");
       navigate("/meus-anuncios");
@@ -115,13 +143,6 @@ export default function EditListingPage() {
   useEffect(() => {
     loadListing();
   }, [loadListing]);
-
-  // Cleanup object URLs on unmount
-  useEffect(() => {
-    return () => {
-      newImages.forEach(img => URL.revokeObjectURL(img.preview));
-    };
-  }, [newImages]);
 
   const validate = (): boolean => {
     const e: FormErrors = {};
@@ -160,7 +181,7 @@ export default function EditListingPage() {
       }));
       return;
     }
-    const toAdd: NewImageEntry[] = [];
+    const toAdd: ListingImageEntry[] = [];
     for (const file of files.slice(0, remaining)) {
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
         setErrors(prev => ({
@@ -176,19 +197,36 @@ export default function EditListingPage() {
         }));
         continue;
       }
-      toAdd.push({ file, preview: URL.createObjectURL(file) });
+      toAdd.push({
+        kind: "new",
+        id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        preview: URL.createObjectURL(file)
+      });
     }
     setErrors(prev => ({ ...prev, images: undefined }));
-    setNewImages(prev => [...prev, ...toAdd]);
+    setImages(prev => [...prev, ...toAdd]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const removeKept = (url: string) =>
-    setKeptImages(prev => prev.filter(u => u !== url));
-  const removeNew = (index: number) => {
-    setNewImages(prev => {
-      URL.revokeObjectURL(prev[index].preview);
+  const removeImage = (index: number) => {
+    setImages(prev => {
+      const image = prev[index];
+      if (image?.kind === "new") {
+        URL.revokeObjectURL(image.preview);
+      }
       return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const setCoverImage = (index: number) => {
+    if (index === 0) return;
+
+    setImages(prev => {
+      const next = [...prev];
+      const [selected] = next.splice(index, 1);
+      next.unshift(selected);
+      return next;
     });
   };
 
@@ -210,8 +248,17 @@ export default function EditListingPage() {
         category: form.category,
         price: priceValue,
         priceMode: form.priceMode,
-        keptImageUrls: keptImages,
-        newImageFiles: newImages.map(img => img.file),
+        keptImageUrls: images
+          .filter((img): img is Extract<ListingImageEntry, { kind: "existing" }> => img.kind === "existing")
+          .map(img => img.url),
+        newImages: images
+          .filter((img): img is Extract<ListingImageEntry, { kind: "new" }> => img.kind === "new")
+          .map(img => ({ id: img.id, file: img.file })),
+        imageOrder: images.map(img =>
+          img.kind === "existing"
+            ? { kind: "kept" as const, url: img.url }
+            : { kind: "new" as const, id: img.id }
+        ),
         userId: user.id
       });
       showToast("Anúncio atualizado com sucesso!");
@@ -368,51 +415,50 @@ export default function EditListingPage() {
                 (opcional · máx. {MAX_IMAGES})
               </span>
             </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              A primeira foto aparece como capa. Você pode trocar a capa ou remover qualquer foto direto no card.
+            </p>
 
             {totalImages > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 rounded-2xl bg-slate-100/80 dark:bg-slate-900/45 p-2 ring-1 ring-slate-200/70 dark:ring-slate-700/60">
-                {keptImages.map((url, i) => (
+                {images.map((img, i) => (
                   <div
-                    key={`kept-${i}`}
+                    key={img.id}
                     className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 group">
                     <img
-                      src={url}
-                      alt={`Imagem ${i + 1}`}
+                      src={img.kind === "existing" ? img.url : img.preview}
+                      alt={img.kind === "existing" ? `Imagem ${i + 1}` : `Nova ${i + 1}`}
                       className="w-full h-full object-cover"
                     />
                     <button
                       type="button"
-                      onClick={() => removeKept(url)}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(i)}
+                      className="absolute top-1.5 right-1.5 z-10 inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-white/92 px-2 text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:bg-white dark:bg-slate-900/88 dark:text-slate-100"
                       aria-label="Remover imagem">
-                      <X size={12} className="text-white" />
+                      <X size={14} />
                     </button>
-                    {i === 0 && (
-                      <span className="absolute bottom-1.5 left-1.5 text-[10px] font-semibold bg-black/50 text-white px-1.5 py-0.5 rounded-full">
-                        Capa
-                      </span>
-                    )}
-                  </div>
-                ))}
-                {newImages.map((img, i) => (
-                  <div
-                    key={`new-${i}`}
-                    className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 group">
-                    <img
-                      src={img.preview}
-                      alt={`Nova ${i + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNew(i)}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      aria-label="Remover imagem">
-                      <X size={12} className="text-white" />
-                    </button>
-                    <span className="absolute bottom-1.5 left-1.5 text-[10px] font-semibold bg-[#0C5A86]/80 text-white px-1.5 py-0.5 rounded-full">
-                      Nova
-                    </span>
+                    <div className="absolute inset-x-0 bottom-0 flex items-end p-2 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+                      {i === 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/95 px-2.5 py-1 text-[11px] font-semibold text-slate-900 shadow-sm">
+                          <Star size={12} fill="currentColor" />
+                          Capa
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setCoverImage(i)}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/94 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:bg-white dark:bg-slate-900/90 dark:text-slate-100">
+                          <Star size={12} />
+                          Definir capa
+                        </button>
+                      )}
+
+                      {img.kind === "new" && i !== 0 && (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-[#0C5A86]/85 px-2 py-1 text-[10px] font-semibold text-white shadow-sm">
+                          Nova
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {totalImages < MAX_IMAGES && (
@@ -610,8 +656,8 @@ export default function EditListingPage() {
               className="w-full bg-[#0C5A86] hover:bg-[#09476B] text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {submitting && <Loader2 size={16} className="animate-spin" />}
               {submitting
-                ? newImages.length > 0
-                  ? `Enviando ${newImages.length} foto${newImages.length > 1 ? "s" : ""}…`
+                ? images.filter(img => img.kind === "new").length > 0
+                  ? `Enviando ${images.filter(img => img.kind === "new").length} foto${images.filter(img => img.kind === "new").length > 1 ? "s" : ""}…`
                   : "Salvando…"
                 : "Salvar alterações"}
             </button>
