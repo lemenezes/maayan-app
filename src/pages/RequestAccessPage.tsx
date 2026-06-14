@@ -395,17 +395,17 @@ export default function RequestAccessPage() {
                 autoComplete="tel"
               />
             </div>
+            {fieldErrors.whatsapp && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.whatsapp}
+              </div>
+            )}
             <p className="mt-1.5 text-xs text-white/90 leading-relaxed">
               Este número poderá ser utilizado pela administração para contato
               relacionado à análise e aprovação do seu cadastro. Após a
               aprovação, ele também poderá ser exibido como forma de contato em
               anúncios publicados por você.
             </p>
-            {fieldErrors.whatsapp && (
-              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
-                {fieldErrors.whatsapp}
-              </div>
-            )}
           </div>
 
           {/* Bloco + Apartamento */}
