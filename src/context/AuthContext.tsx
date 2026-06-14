@@ -227,6 +227,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    if (USE_MOCK) {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setProfileError(null);
+      setProfileLoading(false);
+      setLoading(false);
+      return;
+    }
+
     await supabase.auth.signOut();
   };
 
