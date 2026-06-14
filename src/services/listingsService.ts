@@ -4,6 +4,13 @@ import type { Listing } from "../types";
 import type { Category } from "../types";
 import type { ListingPriceMode } from "../types";
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_REGEX.test(value);
+}
+
 // Map DB row → frontend Listing shape
 function rowToListing(row: {
   id: string;
@@ -57,6 +64,9 @@ export async function fetchListings(): Promise<Listing[]> {
 export async function fetchUserListings(
   userId: string
 ): Promise<(Listing & { status: string })[]> {
+  // In mock auth mode, user id may not be a UUID accepted by Postgres.
+  if (!isUuid(userId)) return [];
+
   const { data, error } = await supabase
     .from("listings")
     .select("*")
@@ -306,6 +316,8 @@ export async function setListingStatus(
 }
 
 export async function fetchUserRole(userId: string): Promise<"admin" | "user"> {
+  if (!isUuid(userId)) return "user";
+
   const { data, error } = await supabase
     .from("profiles")
     .select("role")
