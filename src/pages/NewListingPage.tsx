@@ -271,27 +271,27 @@ export default function NewListingPage() {
             : "Informe o valor do anúncio.";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/80 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-9 sm:py-10">
         <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-medium mb-8 transition-colors">
-          <ArrowLeft size={16} />
-          Voltar
+          onClick={() => navigate("/anuncios")}
+          className="inline-flex items-center gap-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-medium mb-3 transition-colors">
+          <ArrowLeft size={14} />
+          Anúncios
         </button>
 
-        <div className="mb-8">
+        <div className="mb-5">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">
             Publicar anúncio
           </h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
             Preencha os dados e compartilhe com a comunidade
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-slate-200/60 bg-white/90 dark:bg-slate-900/70 dark:border-slate-700/60 shadow-sm backdrop-blur-sm p-5 sm:p-8 flex flex-col gap-6"
+          className="rounded-3xl border border-slate-200/90 bg-white dark:bg-slate-900/80 dark:border-slate-700 shadow-sm shadow-slate-900/5 backdrop-blur-sm p-5 sm:p-8 flex flex-col gap-6"
           noValidate>
           <div>
             <p className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
@@ -301,7 +301,7 @@ export default function NewListingPage() {
               <button
                 type="button"
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
                 aria-haspopup="listbox"
                 aria-expanded={categoryDropdownOpen}>
                 <span className="flex items-center gap-2">
@@ -322,7 +322,7 @@ export default function NewListingPage() {
 
               {categoryDropdownOpen && (
                 <div
-                  className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md z-10 overflow-hidden"
+                  className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md shadow-slate-900/5 z-10 overflow-hidden"
                   role="listbox">
                   {CATEGORIES.map((cat, idx) => (
                     <button
@@ -363,13 +363,13 @@ export default function NewListingPage() {
           <div>
             <p className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Fotos do anúncio{" "}
-              <span className="text-slate-400 dark:text-slate-500 font-normal">
+              <span className="text-slate-500 dark:text-slate-400 font-normal">
                 (opcional · máx. {MAX_IMAGES})
               </span>
             </p>
 
             {images.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 p-2 ring-1 ring-slate-200/60 dark:ring-slate-700/60">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 rounded-2xl bg-slate-100/80 dark:bg-slate-900/45 p-2 ring-1 ring-slate-200/70 dark:ring-slate-700/60">
                 {images.map((img, i) => (
                   <div
                     key={i}
@@ -397,12 +397,12 @@ export default function NewListingPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square rounded-xl border border-dashed border-slate-200/80 dark:border-slate-700 flex flex-col items-center justify-center gap-1 bg-white/70 dark:bg-slate-900/50 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-50/70 dark:hover:bg-sky-950/20 transition-all shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                    className="aspect-square rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-1 bg-white/85 dark:bg-slate-900/50 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-50/70 dark:hover:bg-sky-950/20 transition-all shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
                     <Upload
                       size={16}
                       className="text-slate-400 dark:text-slate-500"
                     />
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       Adicionar
                     </span>
                   </button>
@@ -417,19 +417,19 @@ export default function NewListingPage() {
                 className={`w-full flex flex-col items-center gap-3 py-10 rounded-2xl border-2 border-dashed transition-all ${
                   errors.images
                     ? "border-red-300 dark:border-red-500/60 bg-red-50 dark:bg-red-950/20"
-                    : "border-slate-200/80 dark:border-slate-700 bg-sky-50/60 dark:bg-slate-800/50 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-50/80 dark:hover:bg-sky-950/20"
+                    : "border-slate-200 dark:border-slate-700 bg-sky-100/70 dark:bg-slate-800/55 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-100/90 dark:hover:bg-sky-950/20"
                 }`}>
-                <div className="w-10 h-10 bg-white/90 dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <div className="w-10 h-10 bg-white/95 dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
                   <Upload
                     size={18}
                     className="text-slate-400 dark:text-slate-500"
                   />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     Clique para enviar fotos
                   </p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     JPG, PNG, WebP ou GIF · Máx. {MAX_FILE_SIZE_MB}MB cada · até{" "}
                     {MAX_IMAGES} fotos
                   </p>
@@ -564,26 +564,24 @@ export default function NewListingPage() {
               className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Descrição <span className="text-red-400">*</span>
             </label>
-            <textarea
-              id="description"
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Descreva o que está anunciando com detalhes..."
-              rows={5}
-              className={`${inputClass("description")} resize-none`}
-              maxLength={1000}
-            />
-            <div className="flex justify-between mt-1">
-              {errors.description ? (
-                <p className="text-red-500 text-xs">{errors.description}</p>
-              ) : (
-                <span />
-              )}
-              <p className="text-slate-300 dark:text-slate-600 text-xs">
-                {form.description.length}/1000
-              </p>
+            <div className="relative">
+              <textarea
+                id="description"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Descreva o que está anunciando com detalhes..."
+                rows={5}
+                className={`${inputClass("description")} resize-none pb-6`}
+                maxLength={1000}
+              />
+              <span className="absolute bottom-2 right-3 text-[11px] tabular-nums text-slate-400 dark:text-slate-500 pointer-events-none">
+                {form.description.length} / 1000
+              </span>
             </div>
+            {errors.description && (
+              <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+            )}
           </div>
 
           {submitError && (
@@ -592,17 +590,24 @@ export default function NewListingPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white font-bold py-4 rounded-2xl text-base hover:opacity-90 active:scale-[0.98] transition-all shadow-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-            {submitting && <Loader2 size={18} className="animate-spin" />}
-            {submitting
-              ? images.length > 0
-                ? `Enviando ${images.length} foto${images.length > 1 ? "s" : ""}…`
-                : "Publicando…"
-              : "Publicar Anúncio"}
-          </button>
+          <div className="flex flex-col gap-2 mt-2 max-w-[420px] mx-auto w-full">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-[#0C5A86] hover:bg-[#09476B] text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {submitting && <Loader2 size={16} className="animate-spin" />}
+              {submitting
+                ? images.length > 0
+                  ? `Enviando ${images.length} foto${images.length > 1 ? "s" : ""}…`
+                  : "Publicando…"
+                : "Publicar Anúncio"}
+            </button>
+            <Link
+              to="/meus-anuncios"
+              className="w-full text-center text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 py-1.5 transition-colors">
+              Cancelar
+            </Link>
+          </div>
         </form>
       </div>
     </div>

@@ -47,7 +47,9 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK_AUTH === "true";
 const USE_LOCAL_TEST_LOGIN =
   import.meta.env.VITE_USE_LOCAL_TEST_LOGIN === "true";
 const LOCAL_TEST_EMAIL = import.meta.env.LOCAL_TEST_EMAIL as string | undefined;
-const LOCAL_TEST_PASSWORD = import.meta.env.LOCAL_TEST_PASSWORD as string | undefined;
+const LOCAL_TEST_PASSWORD = import.meta.env.LOCAL_TEST_PASSWORD as
+  | string
+  | undefined;
 
 const MOCK_USER = {
   id: "mock-user-id",
