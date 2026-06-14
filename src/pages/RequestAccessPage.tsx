@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, User, Mail, Phone, Building, CheckCircle } from "lucide-react";
 import { submitAccessRequest } from "../services/accessRequestsService";
@@ -44,7 +44,38 @@ function sanitizeApartmentInput(value: string): string {
   return value.replace(/\D/g, "").slice(0, 4);
 }
 
+function sanitizeFullNameInput(value: string): string {
+  const normalized = value.normalize("NFC");
+
+  return normalized
+    .replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/^\s/, "");
+}
+
+function isValidFullName(value: string): boolean {
+  const trimmed = value.normalize("NFC").trim();
+  if (!trimmed) return false;
+
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length < 2) return false;
+
+  return words.every(word => /^[A-Za-zÀ-ÖØ-öø-ÿ]+$/.test(word));
+}
+
+function hasAtLeastTwoNameParts(value: string): boolean {
+  return value.trim().split(/\s+/).filter(Boolean).length >= 2;
+}
+
+function isStrictEmail(value: string): boolean {
+  const email = value.trim().toLowerCase();
+  return /^[^\s@]+@([^\s@.]+\.)+[^\s@.]{2,}$/.test(email);
+}
+
 export default function RequestAccessPage() {
+  type FieldKey = "full_name" | "email" | "whatsapp" | "block" | "apartment";
+
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -57,13 +88,100 @@ export default function RequestAccessPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [k: string]: string }>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [isComposingFullName, setIsComposingFullName] = useState(false);
+
+  const validateField = (field: FieldKey, value: string): string | null => {
+    if (field === "full_name") {
+      if (!value.trim()) return "Informe seu nome completo.";
+      if (!hasAtLeastTwoNameParts(value)) {
+        return "Informe nome e sobrenome.";
+      }
+      if (!isValidFullName(value)) {
+        return "Nome completo deve conter apenas letras e espaços.";
+      }
+      return null;
+    }
+
+    if (field === "email") {
+      const email = value.trim();
+      if (!email) return "Informe seu e-mail.";
+
+      const nativeEmailValid = emailInputRef.current?.validity.valid ?? true;
+      if (!nativeEmailValid || !isStrictEmail(email)) {
+        return "Informe um e-mail válido (ex: nome@exemplo.com.br).";
+      }
+
+      return null;
+    }
+
+    if (field === "whatsapp") {
+      const digits = normalizePhoneDigits(value);
+      if (!digits) return "Informe seu WhatsApp.";
+      if (digits.length < 10) return "Informe um WhatsApp válido com DDD.";
+      return null;
+    }
+
+    if (field === "block") {
+      if (!value.trim()) return "Informe o bloco (1 a 4).";
+      if (!/^[1-4]$/.test(value.trim())) {
+        return "Bloco deve ser um número entre 1 e 4.";
+      }
+      return null;
+    }
+
+    const apartmentDigits = value.replace(/\D/g, "");
+    if (!apartmentDigits) return "Informe o apartamento.";
+    if (!/^\d{3,4}$/.test(apartmentDigits)) {
+      return "Apartamento deve ter de 3 a 4 dígitos.";
+    }
+    return null;
+  };
+
+  const setFieldError = (field: FieldKey, nextError: string | null) => {
+    setFieldErrors(prev => {
+      if (!nextError) {
+        const { [field]: _ignored, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [field]: nextError };
+    });
+  };
+
+  const handleFieldBlur = (field: FieldKey) => () => {
+    setFieldError(field, validateField(field, form[field]));
+  };
+
+  const handleEmailBlur = () => {
+    setEmailFocused(false);
+    handleFieldBlur("email")();
+  };
+
+  const handleFullNameCompositionEnd = (
+    e: React.CompositionEvent<HTMLInputElement>
+  ) => {
+    setIsComposingFullName(false);
+
+    const sanitized = sanitizeFullNameInput(e.currentTarget.value);
+    setForm(f => ({ ...f, full_name: sanitized }));
+
+    if (submitAttempted) {
+      setFieldError("full_name", validateField("full_name", sanitized));
+    }
+  };
 
   const set =
-    (field: string) =>
+    (field: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const rawValue = e.target.value;
       let value = rawValue;
 
+      if (field === "full_name") {
+        value = isComposingFullName
+          ? rawValue
+          : sanitizeFullNameInput(rawValue);
+      }
       if (field === "whatsapp") value = formatWhatsappMask(rawValue);
 
       setForm(f => {
@@ -85,53 +203,46 @@ export default function RequestAccessPage() {
             ? sanitizeApartmentInput(rawValue)
             : value;
 
-      setFieldErrors(prev => {
-        if (!prev[field]) return prev;
-        let isValid = true;
-        if (field === "full_name") isValid = value.trim().length > 0;
-        if (field === "email")
-          isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(validationValue);
-        if (field === "whatsapp")
-          isValid = normalizePhoneDigits(validationValue).length >= 10;
-        if (field === "block") isValid = /^[1-4]$/.test(validationValue);
-        if (field === "apartment") isValid = /^\d{3,4}$/.test(validationValue);
-        if (isValid) {
-          const { [field]: _, ...rest } = prev;
-          return rest;
-        }
-        return prev;
-      });
+      if (
+        submitAttempted &&
+        (field === "full_name" ||
+          field === "whatsapp" ||
+          field === "block" ||
+          field === "apartment")
+      ) {
+        if (field === "full_name" && isComposingFullName) return;
+        setFieldError(field, validateField(field, validationValue));
+      }
+
+      if (field === "email" && submitAttempted && !emailFocused) {
+        setFieldError("email", validateField("email", value));
+      }
     };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const errors: { [k: string]: string } = {};
-    if (!form.full_name.trim()) errors.full_name = "Informe seu nome completo.";
-    if (!form.email.trim()) errors.email = "Informe seu e-mail.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      errors.email = "Informe um e-mail válido (ex: nome@exemplo.com.br).";
-    const whatsappDigits = normalizePhoneDigits(form.whatsapp);
-    if (!whatsappDigits) {
-      errors.whatsapp = "Informe seu WhatsApp.";
-    } else if (whatsappDigits.length < 10) {
-      errors.whatsapp = "Informe um WhatsApp válido com DDD.";
-    }
-    if (!form.block.trim()) {
-      errors.block = "Informe o bloco (1 a 4).";
-    } else if (!/^[1-4]$/.test(form.block.trim())) {
-      errors.block = "Bloco deve ser um número entre 1 e 4.";
-    }
+    setSubmitAttempted(true);
 
-    const apartmentDigits = form.apartment.replace(/\D/g, "");
-    if (!apartmentDigits) {
-      errors.apartment = "Informe o apartamento.";
-    } else if (!/^\d{3,4}$/.test(apartmentDigits)) {
-      errors.apartment =
-        "Apartamento deve ter de 3 a 4 dígitos (ex: 104 ou 1303).";
-    }
+    const errors: { [k: string]: string } = {};
+    const fieldsToValidate: FieldKey[] = [
+      "full_name",
+      "email",
+      "whatsapp",
+      "block",
+      "apartment"
+    ];
+
+    fieldsToValidate.forEach(field => {
+      const nextError = validateField(field, form[field]);
+      if (nextError) errors[field] = nextError;
+    });
+
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
+
+    const whatsappDigits = normalizePhoneDigits(form.whatsapp);
+    const apartmentDigits = form.apartment.replace(/\D/g, "");
 
     setSubmitting(true);
     try {
@@ -170,15 +281,14 @@ export default function RequestAccessPage() {
             Sua solicitação foi recebida e será analisada pelo administrador do
             site.
           </p>
+
           <p className="text-white text-sm mb-8">
             Você receberá um e-mail em{" "}
             <strong className="text-white">{form.email}</strong> com o link de
             acesso quando for aprovado.
           </p>
           <div className="flex justify-center">
-            <Link
-              to="/"
-              className="inline-block max-w-xs w-auto bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-[#0C5A86] dark:text-sky-400 font-semibold text-sm px-4 py-2 rounded-xl shadow hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#38B6D9]/40">
+            <Link to="/" className="text-white underline underline-offset-4">
               ← Voltar ao início
             </Link>
           </div>
@@ -211,7 +321,10 @@ export default function RequestAccessPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl mx-auto">
+        <form
+          noValidate
+          onSubmit={handleSubmit}
+          className="space-y-4 max-w-2xl mx-auto">
           {/* Nome */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
@@ -223,6 +336,9 @@ export default function RequestAccessPage() {
                 type="text"
                 value={form.full_name}
                 onChange={set("full_name")}
+                onCompositionStart={() => setIsComposingFullName(true)}
+                onCompositionEnd={handleFullNameCompositionEnd}
+                onBlur={handleFieldBlur("full_name")}
                 placeholder="Seu nome completo"
                 className={`${inputBase} pl-10`}
                 autoComplete="name"
@@ -243,9 +359,12 @@ export default function RequestAccessPage() {
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
+                ref={emailInputRef}
                 type="email"
                 value={form.email}
                 onChange={set("email")}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={handleEmailBlur}
                 placeholder="nome@exemplo.com"
                 className={`${inputBase} pl-10`}
                 autoComplete="email"
@@ -269,6 +388,7 @@ export default function RequestAccessPage() {
                 type="tel"
                 value={form.whatsapp}
                 onChange={set("whatsapp")}
+                onBlur={handleFieldBlur("whatsapp")}
                 inputMode="numeric"
                 placeholder="(21) 99999-9999"
                 className={`${inputBase} pl-10`}
@@ -300,6 +420,7 @@ export default function RequestAccessPage() {
                   type="text"
                   value={form.block}
                   onChange={set("block")}
+                  onBlur={handleFieldBlur("block")}
                   placeholder="Ex: 1, 2, 3 ou 4"
                   maxLength={1}
                   inputMode="numeric"
@@ -320,6 +441,7 @@ export default function RequestAccessPage() {
                 type="text"
                 value={form.apartment}
                 onChange={set("apartment")}
+                onBlur={handleFieldBlur("apartment")}
                 placeholder="Ex.: 999"
                 maxLength={4}
                 inputMode="numeric"
