@@ -76,6 +76,10 @@ export default function Header() {
   const { showToast } = useToast();
 
   const close = () => setIsOpen(false);
+  const handleLogoClick = () => {
+    close();
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -108,7 +112,7 @@ export default function Header() {
           {/* Logo */}
           <Link
             to="/"
-            onClick={close}
+            onClick={handleLogoClick}
             className="flex items-center flex-shrink-0">
             {/* Logo imagem */}
             <img
