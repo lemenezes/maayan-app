@@ -6,7 +6,6 @@ import {
   ImageOff,
   LayoutGrid,
   List,
-  MessageCircle,
   Search,
   SlidersHorizontal,
   X
@@ -17,8 +16,11 @@ import ListingCard from "../components/ListingCard";
 import ListingModal from "../components/ListingModal";
 import { SkeletonGrid } from "../components/Skeleton";
 import { useListings } from "../hooks/useListings";
-import { buildWhatsAppUrl } from "../utils/whatsapp";
 import { formatListingPrice } from "../utils/pricing";
+import {
+  readSoldListingEntries,
+  type SoldListingEntry
+} from "../utils/soldListings";
 import { CATEGORIES } from "../types";
 import type { Category, Listing } from "../types";
 
@@ -39,7 +41,6 @@ interface ListingListItemProps {
 }
 
 function ListingListItem({ listing, onSelect }: ListingListItemProps) {
-  const whatsappLink = buildWhatsAppUrl(listing);
   const price = formatListingPrice(listing);
   const category = CATEGORIES.find(c => c.value === listing.category)!;
 
@@ -49,7 +50,7 @@ function ListingListItem({ listing, onSelect }: ListingListItemProps) {
       onClick={() => onSelect(listing)}>
       <div className="grid grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[196px_minmax(0,1fr)_auto_20px] gap-2.5 sm:gap-4 p-2 sm:h-[108px] items-center">
         <div className="w-[72px] h-[72px] sm:w-[196px] sm:h-[100px] flex-shrink-0">
-          <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+          <div className="relative w-full h-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700">
             {listing.images[0] ? (
               <img
                 src={listing.images[0]}
@@ -90,15 +91,6 @@ function ListingListItem({ listing, onSelect }: ListingListItemProps) {
                 {price}
               </p>
             )}
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={e => e.stopPropagation()}
-              className="inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-full transition-all shadow-sm flex-shrink-0">
-              <MessageCircle size={13} />
-              WhatsApp
-            </a>
           </div>
         </div>
 
@@ -108,15 +100,6 @@ function ListingListItem({ listing, onSelect }: ListingListItemProps) {
               {price}
             </p>
           )}
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
-            className="inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-all shadow-sm flex-shrink-0">
-            <MessageCircle size={13} />
-            WhatsApp
-          </a>
         </div>
 
         <div className="hidden sm:flex items-center justify-center text-slate-300 dark:text-slate-600 self-stretch">
@@ -131,6 +114,9 @@ export default function ListingsPage() {
   const { listings, loading } = useListings();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [soldListings, setSoldListings] = useState<SoldListingEntry[]>(() =>
+    readSoldListingEntries()
+  );
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "grid";
     return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === "list"
@@ -151,6 +137,21 @@ export default function ListingsPage() {
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
   }, [viewMode]);
 
+  useEffect(() => {
+    const syncSoldListings = () => {
+      setSoldListings(readSoldListingEntries());
+    };
+
+    window.addEventListener("storage", syncSoldListings);
+    syncSoldListings();
+
+    return () => {
+      window.removeEventListener("storage", syncSoldListings);
+    };
+  }, []);
+
+  const soldById = new Map(soldListings.map(entry => [entry.id, entry.soldAt]));
+
   const updateParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -170,6 +171,7 @@ export default function ListingsPage() {
   const filtered = useMemo(
     () =>
       listings.filter(l => {
+        const isSold = soldById.has(l.id);
         const matchCat = !activeCategory || l.category === activeCategory;
         const q = searchText.toLowerCase();
         const matchSearch =
@@ -177,9 +179,9 @@ export default function ListingsPage() {
           l.title.toLowerCase().includes(q) ||
           l.description.toLowerCase().includes(q) ||
           l.authorName.toLowerCase().includes(q);
-        return matchCat && matchSearch;
+        return !isSold && matchCat && matchSearch;
       }),
-    [listings, activeCategory, searchText]
+    [listings, soldById, activeCategory, searchText]
   );
 
   return (

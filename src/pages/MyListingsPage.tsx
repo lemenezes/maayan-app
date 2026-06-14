@@ -4,8 +4,6 @@ import {
   PlusCircle,
   Pencil,
   Trash2,
-  EyeOff,
-  Eye,
   ImageOff,
   AlertTriangle,
   Clock,
@@ -13,15 +11,15 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import {
-  fetchUserListings,
-  deleteListing,
-  deactivateListing,
-  reactivateListing
-} from "../services/listingsService";
+import { fetchUserListings, deleteListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
 import type { Listing } from "../types";
 import { formatListingPrice } from "../utils/pricing";
+import {
+  readSoldListingEntries,
+  writeSoldListingEntries,
+  type SoldListingEntry
+} from "../utils/soldListings";
 
 function SkeletonRow() {
   return (
@@ -42,6 +40,20 @@ function formatDate(dateStr: string) {
     month: "short",
     year: "numeric"
   });
+}
+
+function formatSoldDate(dateStr: string) {
+  const parts = new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).formatToParts(new Date(dateStr));
+
+  const day = parts.find(p => p.type === "day")?.value ?? "";
+  const month = parts.find(p => p.type === "month")?.value ?? "";
+  const year = parts.find(p => p.type === "year")?.value ?? "";
+
+  return `${day} ${month} ${year}`.trim();
 }
 
 /* ── Confirmation dialog ── */
@@ -86,13 +98,17 @@ function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
 /* ── My Listing Card ── */
 interface MyListingCardProps {
   listing: Listing & { status: string };
+  isSold: boolean;
+  soldAt?: string;
   onDelete: (id: string) => void;
-  onToggleStatus: (id: string, current: "active" | "inactive") => void;
+  onToggleSold: (id: string, sold: boolean) => void;
 }
 function MyListingCard({
   listing,
+  isSold,
+  soldAt,
   onDelete,
-  onToggleStatus
+  onToggleSold
 }: MyListingCardProps) {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const status = listing.status;
@@ -132,12 +148,14 @@ function MyListingCard({
 
       <div className="flex gap-4 p-4">
         {/* Thumbnail */}
-        <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
           {listing.images[0] ? (
             <img
               src={listing.images[0]}
               alt={listing.title}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover transition-all ${
+                isSold ? "opacity-85 grayscale-[15%]" : ""
+              }`}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -146,6 +164,11 @@ function MyListingCard({
                 className="text-slate-300 dark:text-slate-600"
               />
             </div>
+          )}
+          {isSold && (
+            <span className="absolute top-1.5 right-1.5 text-[9px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded-full bg-slate-700/85 text-white backdrop-blur-sm">
+              Vendido
+            </span>
           )}
         </div>
 
@@ -176,12 +199,18 @@ function MyListingCard({
           <p className="text-slate-400 dark:text-slate-500 text-xs">
             {formatDate(listing.createdAt)}
           </p>
+
+          {isSold && soldAt && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              Vendido em {formatSoldDate(soldAt)}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Actions */}
       <div className="border-t border-slate-100 dark:border-slate-700/60 px-4 py-3 flex items-center gap-2">
-        {!isPending && !isRejected && (
+        {isActive && !isSold && !isPending && !isRejected && (
           <Link
             to={`/editar/${listing.id}`}
             className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-[#0C5A86] dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors">
@@ -190,21 +219,19 @@ function MyListingCard({
           </Link>
         )}
 
-        {isActive && (
+        {isActive && !isSold && !isPending && !isRejected && (
           <button
-            onClick={() => onToggleStatus(listing.id, "active")}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30">
-            <EyeOff size={13} />
-            Desativar
+            onClick={() => onToggleSold(listing.id, false)}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/70">
+            Marcar como vendido
           </button>
         )}
 
-        {status === "inactive" && (
+        {isSold && !isPending && !isRejected && (
           <button
-            onClick={() => onToggleStatus(listing.id, "inactive")}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
-            <Eye size={13} />
-            Reativar
+            onClick={() => onToggleSold(listing.id, true)}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/70">
+            Reativar anúncio
           </button>
         )}
 
@@ -227,8 +254,17 @@ export default function MyListingsPage() {
   const [listings, setListings] = useState<(Listing & { status: string })[]>(
     []
   );
+  const [soldListings, setSoldListings] = useState<SoldListingEntry[]>(() =>
+    readSoldListingEntries()
+  );
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const soldById = new Map(soldListings.map(entry => [entry.id, entry.soldAt]));
+
+  useEffect(() => {
+    writeSoldListingEntries(soldListings);
+  }, [soldListings]);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -255,6 +291,7 @@ export default function MyListingsPage() {
     try {
       await deleteListing(id);
       setListings(prev => prev.filter(l => l.id !== id));
+      setSoldListings(prev => prev.filter(entry => entry.id !== id));
       showToast("Anúncio excluído com sucesso");
     } catch (err) {
       showToast(
@@ -264,30 +301,18 @@ export default function MyListingsPage() {
     }
   };
 
-  const handleToggleStatus = async (
-    id: string,
-    current: "active" | "inactive"
-  ) => {
-    try {
-      if (current === "active") {
-        await deactivateListing(id);
-        setListings(prev =>
-          prev.map(l => (l.id === id ? { ...l, status: "inactive" } : l))
-        );
-        showToast("Anúncio desativado");
-      } else {
-        await reactivateListing(id);
-        setListings(prev =>
-          prev.map(l => (l.id === id ? { ...l, status: "active" } : l))
-        );
-        showToast("Anúncio reativado");
-      }
-    } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : "Erro ao atualizar status",
-        "error"
-      );
+  const handleToggleSold = (id: string, sold: boolean) => {
+    if (sold) {
+      setSoldListings(prev => prev.filter(entry => entry.id !== id));
+      showToast("Anúncio reativado.");
+      return;
     }
+
+    setSoldListings(prev => {
+      if (prev.some(entry => entry.id === id)) return prev;
+      return [...prev, { id, soldAt: new Date().toISOString() }];
+    });
+    showToast("Anúncio marcado como vendido.");
   };
 
   return (
@@ -351,8 +376,10 @@ export default function MyListingsPage() {
             <MyListingCard
               key={listing.id}
               listing={listing}
+              isSold={soldById.has(listing.id)}
+              soldAt={soldById.get(listing.id)}
               onDelete={id => setConfirmDeleteId(id)}
-              onToggleStatus={handleToggleStatus}
+              onToggleSold={handleToggleSold}
             />
           ))}
         </div>

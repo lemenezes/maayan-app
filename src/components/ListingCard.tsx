@@ -6,15 +6,36 @@ import { formatListingPrice } from "../utils/pricing";
 
 interface ListingCardProps {
   listing: Listing;
+  isSold?: boolean;
+  soldAt?: string;
   onSelect: (listing: Listing) => void;
 }
 
-export default function ListingCard({ listing, onSelect }: ListingCardProps) {
+export default function ListingCard({
+  listing,
+  isSold = false,
+  soldAt,
+  onSelect
+}: ListingCardProps) {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
   const price = formatListingPrice(listing);
 
   const formatDate = (dateStr: string) => {
+    const parts = new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }).formatToParts(new Date(dateStr));
+
+    const day = parts.find(p => p.type === "day")?.value ?? "";
+    const month = parts.find(p => p.type === "month")?.value ?? "";
+    const year = parts.find(p => p.type === "year")?.value ?? "";
+
+    return `${day} ${month} ${year}`.trim();
+  };
+
+  const formatSoldDate = (dateStr: string) => {
     const parts = new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",
       month: "short",
@@ -40,7 +61,11 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
               src={listing.images[0]}
               alt={listing.title}
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className={`w-full h-full object-cover transition-all duration-500 ${
+                isSold
+                  ? "opacity-85 grayscale-[15%]"
+                  : "group-hover:scale-105"
+              }`}
             />
             {listing.images.length > 1 && (
               <span className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
@@ -61,6 +86,11 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
           className={`absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm ${category.badgeClass}`}>
           {category.icon} {category.label}
         </span>
+        {isSold && (
+          <span className="absolute top-3 right-3 text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-slate-700/85 text-white backdrop-blur-sm">
+            Vendido
+          </span>
+        )}
       </div>
 
       {/* Content */}
@@ -80,16 +110,23 @@ export default function ListingCard({ listing, onSelect }: ListingCardProps) {
             <p className="text-slate-500 dark:text-slate-300 text-xs font-medium mt-0.5">
               {formatDate(listing.createdAt)}
             </p>
+            {isSold && soldAt && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Vendido em {formatSoldDate(soldAt)}
+              </p>
+            )}
           </div>
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
-            className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-semibold px-3 py-2 rounded-full transition-all shadow-sm flex-shrink-0">
-            <MessageCircle size={13} />
-            WhatsApp
-          </a>
+          {!isSold && (
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-semibold px-3 py-2 rounded-full transition-all shadow-sm flex-shrink-0">
+              <MessageCircle size={13} />
+              WhatsApp
+            </a>
+          )}
         </div>
       </div>
     </article>
