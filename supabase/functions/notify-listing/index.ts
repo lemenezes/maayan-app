@@ -1,12 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev';
-const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://maayan.app';
-const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET') ?? '';
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://maayan.app";
+const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
 
 interface WebhookPayload {
-  type: 'INSERT' | 'UPDATE' | 'DELETE';
+  type: "INSERT" | "UPDATE" | "DELETE";
   table: string;
   schema: string;
   record: Record<string, unknown> | null;
@@ -14,22 +14,32 @@ interface WebhookPayload {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   // Validate shared secret
-  if (WEBHOOK_SECRET && req.headers.get('x-webhook-secret') !== WEBHOOK_SECRET) {
-    console.log('Unauthorized: invalid webhook secret');
-    return new Response('Unauthorized', { status: 401 });
+  if (
+    WEBHOOK_SECRET &&
+    req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET
+  ) {
+    console.log("Unauthorized: invalid webhook secret");
+    return new Response("Unauthorized", { status: 401 });
   }
 
   const payload: WebhookPayload = await req.json();
   const { type, record, old_record } = payload;
 
-  console.log('Webhook received:', type, 'status:', record?.status, 'old_status:', old_record?.status);
+  console.log(
+    "Webhook received:",
+    type,
+    "status:",
+    record?.status,
+    "old_status:",
+    old_record?.status
+  );
 
-  if (!record) return new Response('No record', { status: 200 });
+  if (!record) return new Response("No record", { status: 200 });
 
   const userId = record.user_id as string;
   const title = record.title as string;
@@ -38,28 +48,36 @@ Deno.serve(async (req: Request) => {
   const oldStatus = old_record?.status as string | undefined;
 
   // Determine which email to send
-  const isBrandNew = type === 'INSERT' && newStatus === 'pending';
-  const justApproved = type === 'UPDATE' && newStatus === 'active' && oldStatus !== 'active';
-  const justRejected = type === 'UPDATE' && newStatus === 'rejected' && oldStatus !== 'rejected';
+  const isBrandNew = type === "INSERT" && newStatus === "pending";
+  const justApproved =
+    type === "UPDATE" && newStatus === "active" && oldStatus !== "active";
+  const justRejected =
+    type === "UPDATE" && newStatus === "rejected" && oldStatus !== "rejected";
 
   if (!isBrandNew && !justApproved && !justRejected) {
-    console.log('No email needed for this event');
-    return new Response('No email needed', { status: 200 });
+    console.log("No email needed for this event");
+    return new Response("No email needed", { status: 200 });
   }
 
-  console.log('Sending email to userId:', userId, 'event:', isBrandNew ? 'new' : justApproved ? 'approved' : 'rejected');
+  console.log(
+    "Sending email to userId:",
+    userId,
+    "event:",
+    isBrandNew ? "new" : justApproved ? "approved" : "rejected"
+  );
 
   // Get user email from auth.users via service role
   const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    { auth: { persistSession: false } },
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
-  const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+  const { data: userData, error: userError } =
+    await supabase.auth.admin.getUserById(userId);
   if (userError || !userData?.user?.email) {
-    console.error('Could not fetch user email:', userError);
-    return new Response('User not found', { status: 200 });
+    console.error("Could not fetch user email:", userError);
+    return new Response("User not found", { status: 200 });
   }
 
   const email = userData.user.email;
@@ -106,21 +124,21 @@ Deno.serve(async (req: Request) => {
   }
 
   // Send via Resend
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to: [email], subject, html }),
+    body: JSON.stringify({ from: FROM_EMAIL, to: [email], subject, html })
   });
 
   if (!res.ok) {
     const err = await res.text();
-    console.error('Resend error:', err);
-    return new Response('Email failed', { status: 500 });
+    console.error("Resend error:", err);
+    return new Response("Email failed", { status: 500 });
   }
 
-  console.log('Email sent successfully to:', email);
-  return new Response('OK', { status: 200 });
+  console.log("Email sent successfully to:", email);
+  return new Response("OK", { status: 200 });
 });
