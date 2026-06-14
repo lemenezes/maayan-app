@@ -205,12 +205,10 @@ export interface UpdateListingInput {
   category: Category;
   price?: number;
   priceMode: ListingPriceMode;
-  whatsapp: string;
   /** URLs that were already saved and should be kept */
   keptImageUrls: string[];
   /** New files to upload */
   newImageFiles: File[];
-  authorName: string;
   userId: string;
 }
 
@@ -286,10 +284,8 @@ export async function updateListing(
       category: input.category,
       price: input.price ?? null,
       price_mode: input.priceMode,
-      whatsapp: input.whatsapp,
       image_url: finalUrls[0] ?? null,
-      image_urls: finalUrls.length > 0 ? finalUrls : null,
-      author_name: input.authorName
+      image_urls: finalUrls.length > 0 ? finalUrls : null
     })
     .eq("id", id)
     .select()
