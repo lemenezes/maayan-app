@@ -87,7 +87,7 @@ describe('NewListingPage — validação do formulário', () => {
     await userEvent.type(screen.getByLabelText(/whatsapp/i), '11999000001');
     await userEvent.click(screen.getByRole('button', { name: /publicar/i }));
 
-    expect(await screen.findByText(/aguardando aprovação/i)).toBeInTheDocument();
+    expect(await screen.findByText(/publicado/i)).toBeInTheDocument();
   });
 });
 

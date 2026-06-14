@@ -9,7 +9,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type ListingStatus = "pending" | "active" | "inactive" | "rejected";
+export type ListingStatus = "active" | "sold" | "archived";
 export type ProfileRole = "user" | "resident" | "admin";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
 export type AccessRequestStatus = "pending" | "approved" | "rejected";
@@ -41,6 +41,7 @@ export type Database = {
           user_id: string;
           author_name: string;
           status: ListingStatus;
+          sold_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -56,6 +57,7 @@ export type Database = {
           user_id: string;
           author_name: string;
           status?: ListingStatus;
+          sold_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -71,6 +73,7 @@ export type Database = {
           user_id?: string;
           author_name?: string;
           status?: ListingStatus;
+          sold_at?: string | null;
           created_at?: string;
         };
         Relationships: [];

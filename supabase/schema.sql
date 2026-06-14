@@ -36,12 +36,16 @@ create table if not exists public.listings (
     whatsapp text not null,
     image_url text,
     author_name text not null,
-    status text not null default 'pending' check (
-        status in (
-            'pending',
-            'active',
-            'inactive',
-            'rejected'
+    status text not null default 'active' check (status in ('active', 'sold', 'archived')),
+    sold_at timestamptz,
+    constraint listings_sold_at_consistency_check check (
+        (
+            status = 'sold'
+            and sold_at is not null
+        )
+        or (
+            status in ('active', 'archived')
+            and sold_at is null
         )
     ),
     created_at timestamptz not null default now()

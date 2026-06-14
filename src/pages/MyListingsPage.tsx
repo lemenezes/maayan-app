@@ -5,21 +5,19 @@ import {
   Pencil,
   Trash2,
   ImageOff,
-  AlertTriangle,
-  Clock,
-  XCircle
+  AlertTriangle
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.tsx";
 import { useToast } from "../context/ToastContext";
-import { fetchUserListings, deleteListing } from "../services/listingsService";
-import { CATEGORIES } from "../types";
-import type { Listing } from "../types";
-import { formatListingPrice } from "../utils/pricing";
 import {
-  readSoldListingEntries,
-  writeSoldListingEntries,
-  type SoldListingEntry
-} from "../utils/soldListings";
+  fetchUserListings,
+  deleteListing,
+  markListingAsSold,
+  reactivateListing
+} from "../services/listingsService";
+import { CATEGORIES } from "../types";
+import type { ListingWithStatus } from "../types";
+import { formatListingPrice } from "../utils/pricing";
 
 function SkeletonRow() {
   return (
@@ -97,55 +95,27 @@ function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
 
 /* ── My Listing Card ── */
 interface MyListingCardProps {
-  listing: Listing & { status: string };
-  isSold: boolean;
-  soldAt?: string;
+  listing: ListingWithStatus;
   onDelete: (id: string) => void;
-  onToggleSold: (id: string, sold: boolean) => void;
+  onToggleSold: (id: string, currentlySold: boolean) => void;
 }
 function MyListingCard({
   listing,
-  isSold,
-  soldAt,
   onDelete,
   onToggleSold
 }: MyListingCardProps) {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
-  const status = listing.status;
-  const isActive = status === "active";
-  const isPending = status === "pending";
-  const isRejected = status === "rejected";
+  const isActive = listing.status === "active";
+  const isSold = listing.status === "sold";
   const price = formatListingPrice(listing);
 
   return (
     <article
       className={`bg-white/80 backdrop-blur-md dark:bg-slate-800 rounded-2xl border overflow-hidden transition-all ${
-        isPending
-          ? "border-amber-200 dark:border-amber-800/50"
-          : isRejected
-            ? "border-red-200 dark:border-red-900/50 opacity-70"
-            : isActive
-              ? "border-slate-100/60 dark:border-slate-700/40 shadow-sm"
-              : "border-slate-200 dark:border-slate-700 opacity-60"
+        isActive
+          ? "border-slate-100/60 dark:border-slate-700/40 shadow-sm"
+          : "border-slate-200 dark:border-slate-700 opacity-60"
       }`}>
-      {/* Pending / Rejected notice banner */}
-      {isPending && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-100 dark:border-amber-900/40">
-          <Clock size={13} className="text-amber-500 flex-shrink-0" />
-          <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-            Aguardando aprovação do administrador
-          </p>
-        </div>
-      )}
-      {isRejected && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-950/40 border-b border-red-100 dark:border-red-900/40">
-          <XCircle size={13} className="text-red-500 flex-shrink-0" />
-          <p className="text-xs text-red-600 dark:text-red-400 font-medium">
-            Anúncio rejeitado pelo administrador
-          </p>
-        </div>
-      )}
-
       <div className="flex gap-4 p-4">
         {/* Thumbnail */}
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
@@ -179,7 +149,7 @@ function MyListingCard({
               className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${category.badgeClass}`}>
               {category.icon} {category.label}
             </span>
-            {!isActive && !isPending && !isRejected && (
+            {!isActive && (
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                 Inativo
               </span>
@@ -200,9 +170,9 @@ function MyListingCard({
             {formatDate(listing.createdAt)}
           </p>
 
-          {isSold && soldAt && (
+          {isSold && listing.soldAt && (
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Vendido em {formatSoldDate(soldAt)}
+              Vendido em {formatSoldDate(listing.soldAt)}
             </p>
           )}
         </div>
@@ -210,7 +180,7 @@ function MyListingCard({
 
       {/* Actions */}
       <div className="border-t border-slate-100 dark:border-slate-700/60 px-4 py-3 flex items-center gap-2">
-        {isActive && !isSold && !isPending && !isRejected && (
+        {isActive && !isSold && (
           <Link
             to={`/editar/${listing.id}`}
             className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-[#0C5A86] dark:hover:text-sky-400 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors">
@@ -219,7 +189,7 @@ function MyListingCard({
           </Link>
         )}
 
-        {isActive && !isSold && !isPending && !isRejected && (
+        {isActive && !isSold && (
           <button
             onClick={() => onToggleSold(listing.id, false)}
             className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/70">
@@ -227,7 +197,7 @@ function MyListingCard({
           </button>
         )}
 
-        {isSold && !isPending && !isRejected && (
+        {isSold && (
           <button
             onClick={() => onToggleSold(listing.id, true)}
             className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/70">
@@ -251,27 +221,16 @@ export default function MyListingsPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
 
-  const [listings, setListings] = useState<(Listing & { status: string })[]>(
-    []
-  );
-  const [soldListings, setSoldListings] = useState<SoldListingEntry[]>(() =>
-    readSoldListingEntries()
-  );
+  const [listings, setListings] = useState<ListingWithStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-
-  const soldById = new Map(soldListings.map(entry => [entry.id, entry.soldAt]));
-
-  useEffect(() => {
-    writeSoldListingEntries(soldListings);
-  }, [soldListings]);
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
       const data = await fetchUserListings(user.id);
-      setListings(data as (Listing & { status: string })[]);
+      setListings(data);
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "Erro ao carregar anúncios",
@@ -291,7 +250,6 @@ export default function MyListingsPage() {
     try {
       await deleteListing(id);
       setListings(prev => prev.filter(l => l.id !== id));
-      setSoldListings(prev => prev.filter(entry => entry.id !== id));
       showToast("Anúncio excluído com sucesso");
     } catch (err) {
       showToast(
@@ -301,18 +259,31 @@ export default function MyListingsPage() {
     }
   };
 
-  const handleToggleSold = (id: string, sold: boolean) => {
-    if (sold) {
-      setSoldListings(prev => prev.filter(entry => entry.id !== id));
-      showToast("Anúncio reativado.");
-      return;
-    }
+  const handleToggleSold = async (id: string, currentlySold: boolean) => {
+    try {
+      if (currentlySold) {
+        await reactivateListing(id);
+        setListings(prev =>
+          prev.map(l =>
+            l.id === id ? { ...l, status: "active", soldAt: null } : l
+          )
+        );
+        showToast("Anúncio reativado.");
+        return;
+      }
 
-    setSoldListings(prev => {
-      if (prev.some(entry => entry.id === id)) return prev;
-      return [...prev, { id, soldAt: new Date().toISOString() }];
-    });
-    showToast("Anúncio marcado como vendido.");
+      const soldAt = new Date().toISOString();
+      await markListingAsSold(id);
+      setListings(prev =>
+        prev.map(l => (l.id === id ? { ...l, status: "sold", soldAt } : l))
+      );
+      showToast("Anúncio marcado como vendido.");
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Erro ao atualizar status",
+        "error"
+      );
+    }
   };
 
   return (
@@ -376,8 +347,6 @@ export default function MyListingsPage() {
             <MyListingCard
               key={listing.id}
               listing={listing}
-              isSold={soldById.has(listing.id)}
-              soldAt={soldById.get(listing.id)}
               onDelete={id => setConfirmDeleteId(id)}
               onToggleSold={handleToggleSold}
             />

@@ -49,7 +49,7 @@ export default function ListingDetailPage() {
     setLoading(true);
     fetchListingById(id)
       .then(data => {
-        if (!data || data.status === "inactive") {
+        if (!data || data.status !== "active") {
           setNotFound(true);
         } else {
           setListing(data);
@@ -71,7 +71,7 @@ export default function ListingDetailPage() {
           Anúncio não encontrado
         </h1>
         <p className="text-slate-400 dark:text-slate-500 text-sm mb-6">
-          Este anúncio pode ter sido removido ou está inativo.
+          Este anúncio pode ter sido removido ou não está mais ativo.
         </p>
         <Link
           to="/anuncios"

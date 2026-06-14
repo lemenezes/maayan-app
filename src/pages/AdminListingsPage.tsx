@@ -13,42 +13,36 @@ import {
   setListingStatus,
   deleteListing
 } from "../services/listingsService";
-import type { Listing } from "../types";
+import type { ListingWithStatus } from "../types";
 import type { ListingStatus } from "../lib/database.types.ts";
 import { CATEGORIES } from "../types";
 import { useToast } from "../context/ToastContext";
 
-type AdminListing = Listing & { status: string; userId: string };
+type AdminListing = ListingWithStatus & { userId: string };
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: {
-    label: "Pendente",
-    className:
-      "bg-amber-100  text-amber-700  dark:bg-amber-900/40  dark:text-amber-400"
-  },
   active: {
     label: "Ativo",
     className:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
   },
-  inactive: {
-    label: "Inativo",
+  sold: {
+    label: "Vendido",
+    className:
+      "bg-amber-100  text-amber-700  dark:bg-amber-900/40  dark:text-amber-400"
+  },
+  archived: {
+    label: "Arquivado",
     className:
       "bg-slate-100  text-slate-500  dark:bg-slate-800     dark:text-slate-400"
   },
-  rejected: {
-    label: "Rejeitado",
-    className:
-      "bg-red-100    text-red-600    dark:bg-red-900/40    dark:text-red-400"
-  }
 };
 
 const FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: "all", label: "Todos" },
-  { value: "pending", label: "Pendentes" },
   { value: "active", label: "Ativos" },
-  { value: "inactive", label: "Inativos" },
-  { value: "rejected", label: "Rejeitados" }
+  { value: "sold", label: "Vendidos" },
+  { value: "archived", label: "Arquivados" }
 ];
 
 function SkeletonRow() {
@@ -68,7 +62,7 @@ export default function AdminListingsPage() {
   const { showToast } = useToast();
   const [listings, setListings] = useState<AdminListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("pending");
+  const [filter, setFilter] = useState<string>("active");
   const [busy, setBusy] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
@@ -94,9 +88,9 @@ export default function AdminListingsPage() {
       await setListingStatus(id, status);
       setListings(prev => prev.map(l => (l.id === id ? { ...l, status } : l)));
       const labels: Record<string, string> = {
-        active: "Anúncio aprovado",
-        inactive: "Anúncio desativado",
-        rejected: "Anúncio rejeitado"
+        active: "Anúncio ativado",
+        sold: "Anúncio marcado como vendido",
+        archived: "Anúncio arquivado"
       };
       showToast(labels[status] ?? "Status atualizado", "success");
     } catch {
@@ -159,7 +153,7 @@ export default function AdminListingsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {(["pending", "active", "inactive", "rejected"] as const).map(s => {
+        {(["active", "sold", "archived"] as const).map(s => {
           const conf = STATUS_LABELS[s];
           return (
             <button
@@ -222,7 +216,7 @@ export default function AdminListingsPage() {
           filtered.map(listing => {
             const cat = CATEGORIES.find(c => c.value === listing.category);
             const statusConf =
-              STATUS_LABELS[listing.status] ?? STATUS_LABELS.inactive;
+              STATUS_LABELS[listing.status] ?? STATUS_LABELS.archived;
             const isBusy = busy.has(listing.id);
 
             return (
@@ -275,23 +269,23 @@ export default function AdminListingsPage() {
                       {listing.status !== "active" && (
                         <button
                           onClick={() => setStatus(listing.id, "active")}
-                          title="Aprovar"
+                          title="Ativar"
                           className="p-2 rounded-xl text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors">
                           <CheckCircle size={18} />
                         </button>
                       )}
-                      {listing.status !== "rejected" && (
+                      {listing.status !== "sold" && (
                         <button
-                          onClick={() => setStatus(listing.id, "rejected")}
-                          title="Rejeitar"
+                          onClick={() => setStatus(listing.id, "sold")}
+                          title="Marcar como vendido"
                           className="p-2 rounded-xl text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors">
                           <XCircle size={18} />
                         </button>
                       )}
-                      {listing.status === "active" && (
+                      {listing.status !== "archived" && (
                         <button
-                          onClick={() => setStatus(listing.id, "inactive")}
-                          title="Desativar"
+                          onClick={() => setStatus(listing.id, "archived")}
+                          title="Arquivar"
                           className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                           <EyeOff size={18} />
                         </button>

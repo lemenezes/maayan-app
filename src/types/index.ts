@@ -16,6 +16,8 @@ export type ListingPriceMode =
   | "season"
   | "free";
 
+export type ListingStatus = "active" | "sold" | "archived";
+
 export type ProfileRole = "resident" | "admin" | "user";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
 export type RequestStatus = "pending" | "approved" | "rejected";
@@ -57,6 +59,11 @@ export interface Listing {
   images: string[];
   authorName: string;
   createdAt: string;
+}
+
+export interface ListingWithStatus extends Listing {
+  status: ListingStatus;
+  soldAt: string | null;
 }
 
 export interface CategoryConfig {

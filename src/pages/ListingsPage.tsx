@@ -17,10 +17,6 @@ import ListingModal from "../components/ListingModal";
 import { SkeletonGrid } from "../components/Skeleton";
 import { useListings } from "../hooks/useListings";
 import { formatListingPrice } from "../utils/pricing";
-import {
-  readSoldListingEntries,
-  type SoldListingEntry
-} from "../utils/soldListings";
 import { CATEGORIES } from "../types";
 import type { Category, Listing } from "../types";
 
@@ -114,9 +110,6 @@ export default function ListingsPage() {
   const { listings, loading } = useListings();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
-  const [soldListings, setSoldListings] = useState<SoldListingEntry[]>(() =>
-    readSoldListingEntries()
-  );
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "grid";
     return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === "list"
@@ -137,21 +130,6 @@ export default function ListingsPage() {
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
   }, [viewMode]);
 
-  useEffect(() => {
-    const syncSoldListings = () => {
-      setSoldListings(readSoldListingEntries());
-    };
-
-    window.addEventListener("storage", syncSoldListings);
-    syncSoldListings();
-
-    return () => {
-      window.removeEventListener("storage", syncSoldListings);
-    };
-  }, []);
-
-  const soldById = new Map(soldListings.map(entry => [entry.id, entry.soldAt]));
-
   const updateParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
@@ -171,7 +149,6 @@ export default function ListingsPage() {
   const filtered = useMemo(
     () =>
       listings.filter(l => {
-        const isSold = soldById.has(l.id);
         const matchCat = !activeCategory || l.category === activeCategory;
         const q = searchText.toLowerCase();
         const matchSearch =
@@ -179,9 +156,9 @@ export default function ListingsPage() {
           l.title.toLowerCase().includes(q) ||
           l.description.toLowerCase().includes(q) ||
           l.authorName.toLowerCase().includes(q);
-        return !isSold && matchCat && matchSearch;
+        return matchCat && matchSearch;
       }),
-    [listings, soldById, activeCategory, searchText]
+    [listings, activeCategory, searchText]
   );
 
   return (

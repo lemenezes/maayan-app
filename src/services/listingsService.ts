@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase";
 import type { ListingInsert, ListingStatus } from "../lib/database.types";
 import type { Listing } from "../types";
+import type { ListingWithStatus } from "../types";
 import type { Category } from "../types";
 import type { ListingPriceMode } from "../types";
 
@@ -25,8 +26,9 @@ function rowToListing(row: {
   user_id: string;
   author_name: string;
   status: string;
+  sold_at: string | null;
   created_at: string;
-}): Listing & { status: string } {
+}): ListingWithStatus {
   const images =
     row.image_urls && row.image_urls.length > 0
       ? row.image_urls
@@ -46,7 +48,8 @@ function rowToListing(row: {
     images,
     authorName: row.author_name,
     createdAt: row.created_at,
-    status: row.status
+    status: row.status as ListingStatus,
+    soldAt: row.sold_at
   };
 }
 
@@ -63,7 +66,7 @@ export async function fetchListings(): Promise<Listing[]> {
 
 export async function fetchUserListings(
   userId: string
-): Promise<(Listing & { status: string })[]> {
+): Promise<ListingWithStatus[]> {
   // In mock auth mode, user id may not be a UUID accepted by Postgres.
   if (!isUuid(userId)) return [];
 
@@ -71,6 +74,7 @@ export async function fetchUserListings(
     .from("listings")
     .select("*")
     .eq("user_id", userId)
+    .in("status", ["active", "sold"])
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -79,7 +83,7 @@ export async function fetchUserListings(
 
 export async function fetchListingById(
   id: string
-): Promise<(Listing & { status: string }) | null> {
+): Promise<ListingWithStatus | null> {
   const { data, error } = await supabase
     .from("listings")
     .select("*")
@@ -152,7 +156,8 @@ export async function createListing(
     image_urls: imageUrls.length > 0 ? imageUrls : null,
     user_id: input.userId,
     author_name: input.authorName,
-    status: "pending"
+    status: "active",
+    sold_at: null
   };
 
   const { data, error } = await supabase
@@ -173,7 +178,7 @@ export async function deleteListing(id: string): Promise<void> {
 export async function deactivateListing(id: string): Promise<void> {
   const { error } = await supabase
     .from("listings")
-    .update({ status: "inactive" })
+    .update({ status: "archived", sold_at: null })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -181,7 +186,15 @@ export async function deactivateListing(id: string): Promise<void> {
 export async function reactivateListing(id: string): Promise<void> {
   const { error } = await supabase
     .from("listings")
-    .update({ status: "active" })
+    .update({ status: "active", sold_at: null })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function markListingAsSold(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("listings")
+    .update({ status: "sold", sold_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -290,7 +303,7 @@ export async function updateListing(
 // These require the caller to have admin role in RLS policies.
 
 export async function fetchAllListingsAdmin(): Promise<
-  (Listing & { status: string; userId: string })[]
+  (ListingWithStatus & { userId: string })[]
 > {
   const { data, error } = await supabase
     .from("listings")
@@ -308,9 +321,14 @@ export async function setListingStatus(
   id: string,
   status: ListingStatus
 ): Promise<void> {
+  const payload =
+    status === "sold"
+      ? { status, sold_at: new Date().toISOString() }
+      : { status, sold_at: null };
+
   const { error } = await supabase
     .from("listings")
-    .update({ status })
+    .update(payload)
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
