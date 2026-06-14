@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, ImageOff, AlertTriangle } from "lucide-react";
-import { useAuth } from "../context/AuthContext.tsx";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
   fetchUserListings,

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext.tsx";
+import { useAuth } from "../context/AuthContext";
 
 type Mode = "login" | "register";
 

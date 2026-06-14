@@ -9,7 +9,7 @@ import {
   Loader2,
   ChevronDown
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext.tsx";
+import { useAuth } from "../context/AuthContext";
 import { createListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
 import type { Category, ListingPriceMode } from "../types";

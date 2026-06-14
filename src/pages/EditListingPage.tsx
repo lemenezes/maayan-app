@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Upload, X, Loader2, ChevronDown, Star } from "lucide-react";
-import { useAuth } from "../context/AuthContext.tsx";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { fetchUserListings, updateListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
