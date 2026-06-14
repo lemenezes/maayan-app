@@ -251,15 +251,15 @@ export default function ListingsPage() {
           )}
         </div>
 
-        <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
+        <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex-1">
             <CategoryFilter
               active={activeCategory}
               onChange={cat => updateParam("categoria", cat)}
             />
           </div>
 
-          <div className="hidden lg:inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md self-start lg:self-auto">
+          <div className="hidden lg:inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md">
             <button
               type="button"
               aria-label="Visualização em grade"
@@ -315,36 +315,38 @@ export default function ListingsPage() {
           </div>
         )
       ) : (
-        <EmptyState
-          icon={
-            <SlidersHorizontal className="w-7 h-7 text-slate-300 dark:text-slate-500" />
-          }
-          title="Nenhum anúncio encontrado"
-          description="Tente outros termos ou limpe os filtros"
-          actions={
-            <>
-              {searchText && (
-                <button
-                  onClick={() => updateParam("busca", null)}
-                  className="text-[#0C5A86] dark:text-sky-400 text-sm font-medium hover:text-[#0C5A86] transition-colors">
-                  Limpar busca
-                </button>
-              )}
-              {activeCategory && (
-                <button
-                  onClick={() => updateParam("categoria", null)}
-                  className="text-[#0C5A86] dark:text-sky-400 text-sm font-medium hover:text-[#0C5A86] transition-colors">
-                  Limpar filtro
-                </button>
-              )}
-              <Link
-                to="/publicar"
-                className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
-                Publicar primeiro anúncio
-              </Link>
-            </>
-          }
-        />
+        <div className="-mt-8 sm:-mt-10 lg:-mt-14">
+          <EmptyState
+            icon={
+              <SlidersHorizontal className="w-7 h-7 text-slate-300 dark:text-slate-500" />
+            }
+            title="Nenhum anúncio encontrado"
+            description="Tente outros termos ou limpe os filtros"
+            actions={
+              <>
+                {searchText && (
+                  <button
+                    onClick={() => updateParam("busca", null)}
+                    className="text-[#0C5A86] dark:text-sky-400 text-sm font-medium hover:text-[#0C5A86] transition-colors">
+                    Limpar busca
+                  </button>
+                )}
+                {activeCategory && (
+                  <button
+                    onClick={() => updateParam("categoria", null)}
+                    className="text-[#0C5A86] dark:text-sky-400 text-sm font-medium hover:text-[#0C5A86] transition-colors">
+                    Limpar filtro
+                  </button>
+                )}
+                <Link
+                  to="/publicar"
+                  className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
+                  Publicar primeiro anúncio
+                </Link>
+              </>
+            }
+          />
+        </div>
       )}
 
       {selectedListing && (

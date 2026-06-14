@@ -11,7 +11,7 @@ export default function CategoryFilter({
   onChange
 }: CategoryFilterProps) {
   return (
-    <div className="flex flex-wrap justify-center gap-2 pb-0.5">
+    <div className="flex flex-wrap justify-center lg:flex-nowrap lg:items-center lg:justify-start gap-2 pb-0.5 lg:pb-0 lg:overflow-x-auto">
       <button
         type="button"
         onClick={() => onChange(null)}

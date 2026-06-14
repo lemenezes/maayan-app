@@ -37,12 +37,22 @@ export default function ListingLightbox({ images, initialIndex = 0, open, onClos
         padding: 4,
         gap: 8,
         imageFit: 'cover',
-        vignette: true,
+        vignette: false,
       }}
       animation={{ fade: 250, swipe: 300 }}
       carousel={{ preload: 1, finite: false }}
       styles={{
         container: { backgroundColor: 'rgba(0,0,0,0.93)' },
+        thumbnailsContainer: {
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+        },
+        thumbnailsTrack: {
+          display: 'flex',
+          flexWrap: 'nowrap',
+          width: 'max-content',
+        },
       }}
     />
   );
