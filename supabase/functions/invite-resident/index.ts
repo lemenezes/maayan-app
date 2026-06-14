@@ -251,7 +251,7 @@ Deno.serve(async (req: Request) => {
   // ── Enviar convite via Supabase Auth ──────────────────────────────────────
   const { data: inviteData, error: inviteError } =
     await adminClient.auth.admin.inviteUserByEmail(request.email, {
-      redirectTo: `${SITE_URL}/entrar`,
+      redirectTo: `${SITE_URL}/definir-senha`,
       data: {
         full_name: request.full_name,
         block: request.block,

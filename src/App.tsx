@@ -18,6 +18,7 @@ import ListingDetailPage from "./pages/ListingDetailPage";
 import AdminListingsPage from "./pages/AdminListingsPage";
 import ResidentsPage from "./pages/admin/ResidentsPage";
 import AuthPage from "./pages/AuthPage";
+import SetPasswordPage from "./pages/SetPasswordPage";
 import RequestAccessPage from "./pages/RequestAccessPage";
 import PendingApprovalPage from "./pages/PendingApprovalPage";
 import MyAccountPage from "./pages/MyAccountPage.tsx";
@@ -82,6 +83,7 @@ const router = createBrowserRouter([
         )
       },
       { path: "entrar", element: <AuthPage mode="login" /> },
+      { path: "definir-senha", element: <SetPasswordPage /> },
       // Cadastro público desabilitado — redireciona para solicitação de acesso
       {
         path: "cadastro",
