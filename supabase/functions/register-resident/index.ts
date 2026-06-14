@@ -40,7 +40,10 @@ function buildCorsHeaders(req: Request, extraHeaders?: HeadersInit): Headers {
   const headers = new Headers(extraHeaders);
   headers.set("Access-Control-Allow-Origin", resolveAllowedOrigin(req));
   headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+  headers.set(
+    "Access-Control-Allow-Headers",
+    "authorization, x-client-info, apikey, content-type"
+  );
   headers.set("Vary", "Origin");
   return headers;
 }
@@ -158,7 +161,7 @@ Deno.serve(async (req: Request) => {
     const normalizedMessage = (createUserError?.message ?? "").toLowerCase();
     const userFacingMessage = normalizedMessage.includes("already")
       ? "Este e-mail ja esta cadastrado. Tente entrar no portal."
-      : createUserError?.message ?? "Nao foi possivel criar o usuario.";
+      : (createUserError?.message ?? "Nao foi possivel criar o usuario.");
 
     return new Response(JSON.stringify({ error: userFacingMessage }), {
       status: normalizedMessage.includes("already") ? 409 : 500,

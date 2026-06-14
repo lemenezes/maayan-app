@@ -313,7 +313,10 @@ export default function RequestAccessPage() {
           </p>
 
           <p className="text-white text-sm mb-8">
-            Você receberá um e-mail em <strong className="text-white">{form.email}</strong> quando seu acesso for liberado. Depois, é só entrar com a senha que você acabou de criar.
+            Você receberá um e-mail em{" "}
+            <strong className="text-white">{form.email}</strong> quando seu
+            acesso for liberado. Depois, é só entrar com a senha que você acabou
+            de criar.
           </p>
           <div className="flex justify-center">
             <Link to="/" className="text-white underline underline-offset-4">
