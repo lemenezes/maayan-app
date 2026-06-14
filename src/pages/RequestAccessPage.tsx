@@ -96,7 +96,7 @@ export default function RequestAccessPage() {
           </h2>
           <p className="text-white text-sm leading-relaxed mb-2">
             Sua solicitação foi recebida e será analisada pelo administrador do
-            condomínio.
+            site.
           </p>
           <p className="text-white text-sm mb-8">
             Você receberá um e-mail em{" "}
