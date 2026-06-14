@@ -1,6 +1,15 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, User, Mail, Phone, Building, CheckCircle } from "lucide-react";
+import {
+  Home,
+  User,
+  Mail,
+  Phone,
+  Building,
+  CheckCircle,
+  Eye,
+  EyeOff
+} from "lucide-react";
 import { submitAccessRequest } from "../services/accessRequestsService";
 
 const inputBase =
@@ -100,6 +109,8 @@ export default function RequestAccessPage() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [isComposingFullName, setIsComposingFullName] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateField = (field: FieldKey, value: string): string | null => {
     if (field === "full_name") {
@@ -444,15 +455,25 @@ export default function RequestAccessPage() {
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
               <span className="text-white">Senha *</span>
             </label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={set("password")}
-              onBlur={handleFieldBlur("password")}
-              placeholder="Mínimo de 6 caracteres"
-              className={inputBase}
-              autoComplete="new-password"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={set("password")}
+                onBlur={handleFieldBlur("password")}
+                placeholder="Mínimo de 6 caracteres"
+                className={`${inputBase} pr-11`}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword(prev => !prev)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
             {fieldErrors.password && (
               <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
                 {fieldErrors.password}
@@ -465,15 +486,31 @@ export default function RequestAccessPage() {
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
               <span className="text-white">Confirmar senha *</span>
             </label>
-            <input
-              type="password"
-              value={form.confirm_password}
-              onChange={set("confirm_password")}
-              onBlur={handleFieldBlur("confirm_password")}
-              placeholder="Digite novamente sua senha"
-              className={inputBase}
-              autoComplete="new-password"
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                value={form.confirm_password}
+                onChange={set("confirm_password")}
+                onBlur={handleFieldBlur("confirm_password")}
+                placeholder="Digite novamente sua senha"
+                className={`${inputBase} pr-11`}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+                aria-label={
+                  showConfirmPassword ? "Ocultar senha" : "Mostrar senha"
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                {showConfirmPassword ? (
+                  <EyeOff size={17} />
+                ) : (
+                  <Eye size={17} />
+                )}
+              </button>
+            </div>
             {fieldErrors.confirm_password && (
               <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
                 {fieldErrors.confirm_password}
