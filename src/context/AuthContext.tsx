@@ -209,6 +209,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string
   ): Promise<{ error: string | null }> => {
+    if (USE_MOCK) {
+      setUser({ ...MOCK_USER, email } as User);
+      setProfile({ ...MOCK_PROFILE, email });
+      setSession(null);
+      setLoading(false);
+      return { error: null };
+    }
+
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
     return { error: null };
@@ -218,6 +226,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string
   ): Promise<{ error: string | null }> => {
+    if (USE_MOCK) {
+      setUser({ ...MOCK_USER, email } as User);
+      setProfile({ ...MOCK_PROFILE, email });
+      setSession(null);
+      setLoading(false);
+      return { error: null };
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
