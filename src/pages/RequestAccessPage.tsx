@@ -6,6 +6,44 @@ import { submitAccessRequest } from "../services/accessRequestsService";
 const inputBase =
   "w-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-[#38B6D9]/40 transition-all duration-150 shadow-sm";
 
+function normalizePhoneDigits(value: string): string {
+  const digitsOnly = value.replace(/\D/g, "");
+  const withoutCountryCode =
+    digitsOnly.length > 11 && digitsOnly.startsWith("55")
+      ? digitsOnly.slice(2)
+      : digitsOnly;
+  return withoutCountryCode.slice(0, 11);
+}
+
+function formatWhatsappMask(value: string): string {
+  const digits = normalizePhoneDigits(value);
+
+  if (!digits) return "";
+  if (digits.length <= 2) return `(${digits}`;
+
+  const ddd = digits.slice(0, 2);
+  const rest = digits.slice(2);
+
+  if (rest.length <= 4) return `(${ddd}) ${rest}`;
+
+  if (digits.length <= 10) {
+    return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4, 8)}`;
+  }
+
+  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5, 9)}`;
+}
+
+function sanitizeBlockInput(value: string, previousValue: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 1);
+  if (!digits) return "";
+  if (!/^[1-4]$/.test(digits)) return previousValue;
+  return digits;
+}
+
+function sanitizeApartmentInput(value: string): string {
+  return value.replace(/\D/g, "").slice(0, 4);
+}
+
 export default function RequestAccessPage() {
   const [form, setForm] = useState({
     full_name: "",
@@ -23,18 +61,40 @@ export default function RequestAccessPage() {
   const set =
     (field: string) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = e.target.value;
-      setForm(f => ({ ...f, [field]: value }));
+      const rawValue = e.target.value;
+      let value = rawValue;
+
+      if (field === "whatsapp") value = formatWhatsappMask(rawValue);
+
+      setForm(f => {
+        if (field === "block") {
+          return { ...f, block: sanitizeBlockInput(rawValue, f.block) };
+        }
+
+        if (field === "apartment") {
+          return { ...f, apartment: sanitizeApartmentInput(rawValue) };
+        }
+
+        return { ...f, [field]: value };
+      });
+
+      const validationValue =
+        field === "block"
+          ? sanitizeBlockInput(rawValue, form.block)
+          : field === "apartment"
+            ? sanitizeApartmentInput(rawValue)
+            : value;
+
       setFieldErrors(prev => {
         if (!prev[field]) return prev;
         let isValid = true;
         if (field === "full_name") isValid = value.trim().length > 0;
         if (field === "email")
-          isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+          isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(validationValue);
         if (field === "whatsapp")
-          isValid = value.replace(/\D/g, "").length >= 10;
-        if (field === "block") isValid = value.trim().length > 0;
-        if (field === "apartment") isValid = value.trim().length > 0;
+          isValid = normalizePhoneDigits(validationValue).length >= 10;
+        if (field === "block") isValid = /^[1-4]$/.test(validationValue);
+        if (field === "apartment") isValid = /^\d{3,4}$/.test(validationValue);
         if (isValid) {
           const { [field]: _, ...rest } = prev;
           return rest;
@@ -51,13 +111,25 @@ export default function RequestAccessPage() {
     if (!form.email.trim()) errors.email = "Informe seu e-mail.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       errors.email = "Informe um e-mail válido (ex: nome@exemplo.com.br).";
-    if (!form.whatsapp.trim()) {
+    const whatsappDigits = normalizePhoneDigits(form.whatsapp);
+    if (!whatsappDigits) {
       errors.whatsapp = "Informe seu WhatsApp.";
-    } else if (form.whatsapp.replace(/\D/g, "").length < 10) {
+    } else if (whatsappDigits.length < 10) {
       errors.whatsapp = "Informe um WhatsApp válido com DDD.";
     }
-    if (!form.block.trim()) errors.block = "Informe o bloco.";
-    if (!form.apartment.trim()) errors.apartment = "Informe o apartamento.";
+    if (!form.block.trim()) {
+      errors.block = "Informe o bloco (1 a 4).";
+    } else if (!/^[1-4]$/.test(form.block.trim())) {
+      errors.block = "Bloco deve ser um número entre 1 e 4.";
+    }
+
+    const apartmentDigits = form.apartment.replace(/\D/g, "");
+    if (!apartmentDigits) {
+      errors.apartment = "Informe o apartamento.";
+    } else if (!/^\d{3,4}$/.test(apartmentDigits)) {
+      errors.apartment =
+        "Apartamento deve ter de 3 a 4 dígitos (ex: 104 ou 1303).";
+    }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -66,9 +138,9 @@ export default function RequestAccessPage() {
       await submitAccessRequest({
         full_name: form.full_name.trim(),
         email: form.email.trim().toLowerCase(),
-        whatsapp: form.whatsapp.trim(),
-        block: form.block.trim().toUpperCase(),
-        apartment: form.apartment.trim(),
+        whatsapp: whatsappDigits,
+        block: form.block.trim(),
+        apartment: apartmentDigits,
         message: form.message.trim() || undefined
       });
       setSuccess(true);
@@ -174,7 +246,7 @@ export default function RequestAccessPage() {
                 type="email"
                 value={form.email}
                 onChange={set("email")}
-                placeholder="ex: maria@email.com"
+                placeholder="nome@exemplo.com"
                 className={`${inputBase} pl-10`}
                 autoComplete="email"
               />
@@ -197,6 +269,7 @@ export default function RequestAccessPage() {
                 type="tel"
                 value={form.whatsapp}
                 onChange={set("whatsapp")}
+                inputMode="numeric"
                 placeholder="(21) 99999-9999"
                 className={`${inputBase} pl-10`}
                 autoComplete="tel"
@@ -227,8 +300,9 @@ export default function RequestAccessPage() {
                   type="text"
                   value={form.block}
                   onChange={set("block")}
-                  placeholder="Ex: 3"
-                  maxLength={10}
+                  placeholder="Ex: 1, 2, 3 ou 4"
+                  maxLength={1}
+                  inputMode="numeric"
                   className={`${inputBase} pl-10`}
                 />
               </div>
@@ -246,8 +320,9 @@ export default function RequestAccessPage() {
                 type="text"
                 value={form.apartment}
                 onChange={set("apartment")}
-                placeholder="Ex: 301"
-                maxLength={10}
+                placeholder="Ex.: 999"
+                maxLength={4}
+                inputMode="numeric"
                 className={inputBase}
               />
               {fieldErrors.apartment && (

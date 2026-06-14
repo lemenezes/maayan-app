@@ -313,7 +313,7 @@ export default function MyAccountPage() {
                     setEmailInput(e.target.value);
                     setProfileError(null);
                   }}
-                  placeholder="seunome@email.com"
+                  placeholder="nome@exemplo.com"
                   className={`${inputBase} pl-10 border-slate-200 dark:border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/40`}
                 />
               </div>

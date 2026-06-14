@@ -11,10 +11,12 @@ export async function submitAccessRequest(data: {
   apartment: string;
   message?: string;
 }): Promise<void> {
+  const whatsappDigits = (data.whatsapp ?? "").replace(/\D/g, "") || null;
+
   const { error } = await supabase.from("access_requests").insert({
     full_name: data.full_name,
     email: data.email,
-    whatsapp: data.whatsapp ?? null,
+    whatsapp: whatsappDigits,
     block: data.block,
     apartment: data.apartment,
     message: data.message ?? null
