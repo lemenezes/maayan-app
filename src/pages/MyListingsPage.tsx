@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import {
-  PlusCircle,
-  Pencil,
-  Trash2,
-  ImageOff,
-  AlertTriangle
-} from "lucide-react";
+import { Pencil, Trash2, ImageOff, AlertTriangle } from "lucide-react";
 import { useAuth } from "../context/AuthContext.tsx";
 import { useToast } from "../context/ToastContext";
 import {
@@ -299,12 +293,6 @@ export default function MyListingsPage() {
               `${listings.length} anúncio${listings.length !== 1 ? "s" : ""}`}
           </p>
         </div>
-        <Link
-          to="/publicar"
-          className="flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
-          <PlusCircle size={15} />
-          Publicar
-        </Link>
       </div>
 
       {/* Loading */}
@@ -334,7 +322,6 @@ export default function MyListingsPage() {
           <Link
             to="/publicar"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-6 py-3 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
-            <PlusCircle size={16} />
             Publicar anúncio
           </Link>
         </div>

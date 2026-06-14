@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     label: "Arquivado",
     className:
       "bg-slate-100  text-slate-500  dark:bg-slate-800     dark:text-slate-400"
-  },
+  }
 };
 
 const FILTER_OPTIONS: { value: string; label: string }[] = [
