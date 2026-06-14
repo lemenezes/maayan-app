@@ -11,47 +11,60 @@
  *   Headers: { "x-webhook-secret": "<WEBHOOK_SECRET>" }
  */
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev';
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'lemenezes@gmail.com';
-const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://maayan.leandrom.com.br';
+declare const Deno: {
+  env: {
+    get: (key: string) => string | undefined;
+  };
+  serve: (handler: (req: Request) => Response | Promise<Response>) => void;
+};
+
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "lemenezes@gmail.com";
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://maayan.leandrom.com.br";
 
 interface WebhookPayload {
-  type: 'INSERT' | 'UPDATE' | 'DELETE';
+  type: "INSERT" | "UPDATE" | "DELETE";
   table: string;
   record: Record<string, unknown> | null;
 }
 
 Deno.serve(async (req: Request) => {
-  console.log('notify-access-request called', req.method);
+  console.log("notify-access-request called", req.method);
 
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   let payload: WebhookPayload;
   try {
-    payload = await req.json() as WebhookPayload;
+    payload = (await req.json()) as WebhookPayload;
   } catch (e) {
-    console.error('Failed to parse JSON body:', e);
-    return new Response('Invalid JSON', { status: 400 });
+    console.error("Failed to parse JSON body:", e);
+    return new Response("Invalid JSON", { status: 400 });
   }
 
-  console.log('Payload type:', payload.type, 'record:', JSON.stringify(payload.record)?.slice(0, 100));
+  console.log(
+    "Payload type:",
+    payload.type,
+    "record:",
+    JSON.stringify(payload.record)?.slice(0, 100)
+  );
 
   // Só processa novos INSERT com status pending
-  if (payload.type !== 'INSERT' || !payload.record) {
-    console.log('Skipped — not an INSERT or no record');
-    return new Response('Skipped', { status: 200 });
+  if (payload.type !== "INSERT" || !payload.record) {
+    console.log("Skipped — not an INSERT or no record");
+    return new Response("Skipped", { status: 200 });
   }
 
   const r = payload.record;
-  const fullName  = r.full_name as string;
-  const email     = r.email as string;
-  const block     = r.block as string;
+  const requestId = r.id as string;
+  const fullName = r.full_name as string;
+  const email = r.email as string;
+  const block = r.block as string;
   const apartment = r.apartment as string;
-  const message   = r.message as string | null;
-  const adminUrl  = `${SITE_URL}/admin/moradores`;
+  const message = r.message as string | null;
+  const adminUrl = `${SITE_URL}/admin/moradores?requestId=${encodeURIComponent(requestId)}`;
 
   const subject = `Nova solicitação de acesso — ${fullName}`;
   const html = `
@@ -79,10 +92,14 @@ Deno.serve(async (req: Request) => {
           <td style="padding:10px 0;color:#64748b;font-size:13px">Apartamento</td>
           <td style="padding:10px 0;font-weight:600;font-size:13px">${apartment}</td>
         </tr>
-        ${message ? `<tr>
+        ${
+          message
+            ? `<tr>
           <td style="padding:10px 0;color:#64748b;font-size:13px;vertical-align:top">Mensagem</td>
           <td style="padding:10px 0;font-size:13px;font-style:italic">"${message}"</td>
-        </tr>` : ''}
+        </tr>`
+            : ""
+        }
       </table>
 
       <a href="${adminUrl}"
@@ -95,24 +112,24 @@ Deno.serve(async (req: Request) => {
   `;
 
   if (!RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set — skipping email');
-    return new Response('Email skipped (no API key)', { status: 200 });
+    console.warn("RESEND_API_KEY not set — skipping email");
+    return new Response("Email skipped (no API key)", { status: 200 });
   }
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to: ADMIN_EMAIL, subject, html }),
+    body: JSON.stringify({ from: FROM_EMAIL, to: ADMIN_EMAIL, subject, html })
   });
 
   if (!res.ok) {
     const body = await res.text();
-    console.error('Resend error:', body);
-    return new Response('Email failed', { status: 500 });
+    console.error("Resend error:", body);
+    return new Response("Email failed", { status: 500 });
   }
 
-  return new Response('Email sent', { status: 200 });
+  return new Response("Email sent", { status: 200 });
 });
