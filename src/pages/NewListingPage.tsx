@@ -268,7 +268,9 @@ export default function NewListingPage() {
           <button
             onClick={() => {
               setForm(initialForm);
-              imagesRef.current.forEach(img => URL.revokeObjectURL(img.preview));
+              imagesRef.current.forEach(img =>
+                URL.revokeObjectURL(img.preview)
+              );
               setImages([]);
               setSubmitted(false);
             }}
@@ -391,7 +393,8 @@ export default function NewListingPage() {
               </span>
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-              A primeira foto aparece como capa. Você pode trocar a capa ou remover qualquer foto direto no card.
+              A primeira foto aparece como capa. Você pode trocar a capa ou
+              remover qualquer foto direto no card.
             </p>
 
             {images.length > 0 && (

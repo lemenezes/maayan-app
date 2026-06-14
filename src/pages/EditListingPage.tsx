@@ -249,10 +249,16 @@ export default function EditListingPage() {
         price: priceValue,
         priceMode: form.priceMode,
         keptImageUrls: images
-          .filter((img): img is Extract<ListingImageEntry, { kind: "existing" }> => img.kind === "existing")
+          .filter(
+            (img): img is Extract<ListingImageEntry, { kind: "existing" }> =>
+              img.kind === "existing"
+          )
           .map(img => img.url),
         newImages: images
-          .filter((img): img is Extract<ListingImageEntry, { kind: "new" }> => img.kind === "new")
+          .filter(
+            (img): img is Extract<ListingImageEntry, { kind: "new" }> =>
+              img.kind === "new"
+          )
           .map(img => ({ id: img.id, file: img.file })),
         imageOrder: images.map(img =>
           img.kind === "existing"
@@ -416,7 +422,8 @@ export default function EditListingPage() {
               </span>
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-              A primeira foto aparece como capa. Você pode trocar a capa ou remover qualquer foto direto no card.
+              A primeira foto aparece como capa. Você pode trocar a capa ou
+              remover qualquer foto direto no card.
             </p>
 
             {totalImages > 0 && (
@@ -427,7 +434,11 @@ export default function EditListingPage() {
                     className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 group">
                     <img
                       src={img.kind === "existing" ? img.url : img.preview}
-                      alt={img.kind === "existing" ? `Imagem ${i + 1}` : `Nova ${i + 1}`}
+                      alt={
+                        img.kind === "existing"
+                          ? `Imagem ${i + 1}`
+                          : `Nova ${i + 1}`
+                      }
                       className="w-full h-full object-cover"
                     />
                     <button
@@ -466,7 +477,10 @@ export default function EditListingPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="aspect-square rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-1 bg-white/85 dark:bg-slate-900/50 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-50/70 dark:hover:bg-sky-950/20 transition-all shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-                    <Upload size={16} className="text-slate-400 dark:text-slate-500" />
+                    <Upload
+                      size={16}
+                      className="text-slate-400 dark:text-slate-500"
+                    />
                     <span className="text-xs text-slate-500 dark:text-slate-400">
                       Adicionar
                     </span>
@@ -485,7 +499,10 @@ export default function EditListingPage() {
                     : "border-slate-200 dark:border-slate-700 bg-sky-100/70 dark:bg-slate-800/55 hover:border-[#1DAFD9]/60 dark:hover:border-sky-700 hover:bg-sky-100/90 dark:hover:bg-sky-950/20"
                 }`}>
                 <div className="w-10 h-10 bg-white/95 dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-                  <Upload size={18} className="text-slate-400 dark:text-slate-500" />
+                  <Upload
+                    size={18}
+                    className="text-slate-400 dark:text-slate-500"
+                  />
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -556,7 +573,8 @@ export default function EditListingPage() {
                 {valueMicrocopy}
               </p>
               {showPrice &&
-                (form.category !== "servicos" || form.priceMode !== "quote") && (
+                (form.category !== "servicos" ||
+                  form.priceMode !== "quote") && (
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm font-medium pointer-events-none">
                       R$

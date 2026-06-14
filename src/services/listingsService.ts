@@ -210,7 +210,9 @@ export interface UpdateListingInput {
   /** New files to upload, keyed so the final order can be reconstructed */
   newImages: { id: string; file: File }[];
   /** Final visual order chosen by the user */
-  imageOrder: Array<{ kind: "kept"; url: string } | { kind: "new"; id: string }>;
+  imageOrder: Array<
+    { kind: "kept"; url: string } | { kind: "new"; id: string }
+  >;
   userId: string;
 }
 
@@ -275,7 +277,7 @@ export async function updateListing(
   // 4. Final image list in the exact order chosen by the user, capped at MAX_IMAGES
   const finalUrls = input.imageOrder
     .map(item =>
-      item.kind === "kept" ? item.url : uploadedUrlsById.get(item.id) ?? null
+      item.kind === "kept" ? item.url : (uploadedUrlsById.get(item.id) ?? null)
     )
     .filter((url): url is string => Boolean(url))
     .slice(0, MAX_IMAGES);
