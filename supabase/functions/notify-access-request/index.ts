@@ -122,7 +122,12 @@ Deno.serve(async (req: Request) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${RESEND_API_KEY}`
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to: ADMIN_EMAIL, subject, html })
+    body: JSON.stringify({
+      from: `Maayan Desapego <${FROM_EMAIL}>`,
+      to: ADMIN_EMAIL,
+      subject,
+      html
+    })
   });
 
   if (!res.ok) {

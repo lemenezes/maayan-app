@@ -140,7 +140,7 @@ async function sendApprovalReleasedEmail(email: string): Promise<void> {
       Authorization: `Bearer ${RESEND_API_KEY}`
     },
     body: JSON.stringify({
-      from: FROM_EMAIL,
+      from: `Maayan Desapego <${FROM_EMAIL}>`,
       to: email,
       subject,
       html

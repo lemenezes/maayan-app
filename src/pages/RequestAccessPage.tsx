@@ -504,11 +504,7 @@ export default function RequestAccessPage() {
                   showConfirmPassword ? "Ocultar senha" : "Mostrar senha"
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                {showConfirmPassword ? (
-                  <EyeOff size={17} />
-                ) : (
-                  <Eye size={17} />
-                )}
+                {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
             {fieldErrors.confirm_password && (

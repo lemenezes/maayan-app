@@ -161,7 +161,7 @@ Deno.serve(async (req: Request) => {
       Authorization: `Bearer ${RESEND_API_KEY}`
     },
     body: JSON.stringify({
-      from: FROM_EMAIL,
+      from: `Maayan Desapego <${FROM_EMAIL}>`,
       to: request.email,
       subject: "Sua solicitação de acesso ao Maayan",
       html
