@@ -52,6 +52,7 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
           images={listing.images}
           title={listing.title}
           rounded="modal"
+          mainImageFit="contain"
           overlay={
             <>
               <button

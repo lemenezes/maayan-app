@@ -9,13 +9,16 @@ interface Props {
   overlay?: React.ReactNode;
   /** Rounded top corners style: 'modal' (rounded-t-3xl) or 'page' (none) */
   rounded?: "modal" | "page";
+  /** Main image fit mode */
+  mainImageFit?: "contain" | "cover";
 }
 
 export default function ListingGallery({
   images,
   title,
   overlay,
-  rounded = "modal"
+  rounded = "modal",
+  mainImageFit = "contain"
 }: Props) {
   const [activeImg, setActiveImg] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -46,7 +49,10 @@ export default function ListingGallery({
                 key={activeImg}
                 src={images[activeImg]}
                 alt={`${title} ${activeImg + 1}`}
-                className="w-full h-full object-contain object-center p-2 sm:p-3 animate-fade-in"
+                className={`block w-full h-full object-center p-2 sm:p-3 animate-fade-in ${
+                  mainImageFit === "contain" ? "object-contain" : "object-cover"
+                }`}
+                style={{ objectFit: mainImageFit, objectPosition: "center" }}
               />
               {/* Zoom hint */}
               <span className="absolute bottom-3 right-3 w-8 h-8 bg-black/40 group-hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">

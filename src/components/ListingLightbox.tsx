@@ -13,6 +13,7 @@ interface Props {
 
 export default function ListingLightbox({ images, initialIndex = 0, open, onClose }: Props) {
   const slides = images.map((src) => ({ src }));
+  const thumbnailPreload = Math.max(2, images.length - 1);
 
   return (
     <Lightbox
@@ -40,18 +41,20 @@ export default function ListingLightbox({ images, initialIndex = 0, open, onClos
         vignette: false,
       }}
       animation={{ fade: 250, swipe: 300 }}
-      carousel={{ preload: 1, finite: false }}
+      carousel={{ preload: thumbnailPreload, finite: true }}
       styles={{
         container: { backgroundColor: 'rgba(0,0,0,0.93)' },
         thumbnailsContainer: {
           overflowX: 'auto',
           overflowY: 'hidden',
           WebkitOverflowScrolling: 'touch',
+          width: '100%',
         },
         thumbnailsTrack: {
           display: 'flex',
           flexWrap: 'nowrap',
           width: 'max-content',
+          margin: '0 auto',
         },
       }}
     />
