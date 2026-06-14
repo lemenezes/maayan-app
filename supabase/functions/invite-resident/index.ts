@@ -65,6 +65,49 @@ interface AccessRequest {
   status: string;
 }
 
+function isAlreadyRegisteredError(message?: string): boolean {
+  if (!message) return false;
+  const normalized = message.toLowerCase();
+  return normalized.includes("already been registered");
+}
+
+async function findAuthUserIdByEmail(
+  adminClient: any,
+  email: string
+): Promise<string | null> {
+  let page = 1;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  while (page <= 20) {
+    const { data, error } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage: 100
+    });
+
+    if (error) {
+      console.error("listUsers error:", error);
+      return null;
+    }
+
+    const users = data?.users ?? [];
+    const match = users.find(
+      (u: any) => (u.email ?? "").trim().toLowerCase() === normalizedEmail
+    );
+
+    if (match?.id) {
+      return match.id;
+    }
+
+    if (users.length < 100) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: buildCorsHeaders(req) });
@@ -173,7 +216,12 @@ Deno.serve(async (req: Request) => {
       }
     });
 
-  if (inviteError || !inviteData?.user) {
+  const isExistingUser = isAlreadyRegisteredError(inviteError?.message);
+
+  if (
+    (inviteError && !isExistingUser) ||
+    (!inviteData?.user && !isExistingUser)
+  ) {
     console.error("Invite error:", inviteError);
     return new Response(
       JSON.stringify({
@@ -186,11 +234,18 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // ── Criar perfil aprovado ─────────────────────────────────────────────────
-  const { error: profileCreateError } = await adminClient
-    .from("profiles")
-    .upsert({
-      id: inviteData.user.id,
+  let targetUserId = inviteData?.user?.id ?? null;
+
+  if (isExistingUser && !targetUserId) {
+    targetUserId = await findAuthUserIdByEmail(adminClient, request.email);
+  }
+
+  // ── Criar/atualizar perfil aprovado ───────────────────────────────────────
+  let profileCreateError: unknown = null;
+
+  if (targetUserId) {
+    const result = await adminClient.from("profiles").upsert({
+      id: targetUserId,
       full_name: request.full_name,
       email: request.email,
       block: request.block,
@@ -198,6 +253,25 @@ Deno.serve(async (req: Request) => {
       role: "resident",
       status: "approved"
     });
+
+    profileCreateError = result.error;
+  } else {
+    const result = await adminClient
+      .from("profiles")
+      .update({
+        full_name: request.full_name,
+        block: request.block,
+        apartment: request.apartment,
+        role: "resident",
+        status: "approved"
+      })
+      .eq("email", request.email);
+
+    profileCreateError = result.error;
+    console.warn(
+      "Usuário já registrado sem userId localizado; profile atualizado por email"
+    );
+  }
 
   if (profileCreateError) {
     // Não falha — o convite já foi enviado. Registra para correção manual.
@@ -215,7 +289,11 @@ Deno.serve(async (req: Request) => {
     .eq("id", requestId);
 
   return new Response(
-    JSON.stringify({ success: true, userId: inviteData.user.id }),
+    JSON.stringify({
+      success: true,
+      userId: targetUserId,
+      invited: !isExistingUser
+    }),
     {
       status: 200,
       headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
