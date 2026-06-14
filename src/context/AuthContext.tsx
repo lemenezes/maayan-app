@@ -44,6 +44,10 @@ const AuthContext = createContext<AuthContextValue>({
 
 // ─── Mock para testes E2E (VITE_USE_MOCK_AUTH=true) ─────────────────────────
 const USE_MOCK = import.meta.env.VITE_USE_MOCK_AUTH === "true";
+const USE_LOCAL_TEST_LOGIN =
+  import.meta.env.VITE_USE_LOCAL_TEST_LOGIN === "true";
+const LOCAL_TEST_EMAIL = import.meta.env.LOCAL_TEST_EMAIL as string | undefined;
+const LOCAL_TEST_PASSWORD = import.meta.env.LOCAL_TEST_PASSWORD as string | undefined;
 
 const MOCK_USER = {
   id: "mock-user-id",
@@ -226,6 +230,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string
   ): Promise<{ error: string | null }> => {
+    if (
+      USE_LOCAL_TEST_LOGIN &&
+      LOCAL_TEST_EMAIL &&
+      LOCAL_TEST_PASSWORD &&
+      email === LOCAL_TEST_EMAIL &&
+      password === LOCAL_TEST_PASSWORD
+    ) {
+      setUser({ ...MOCK_USER, email } as User);
+      setProfile({ ...MOCK_PROFILE, email });
+      setSession(null);
+      setLoading(false);
+      return { error: null };
+    }
+
     if (USE_MOCK) {
       setUser({ ...MOCK_USER, email } as User);
       setProfile({ ...MOCK_PROFILE, email });
