@@ -117,6 +117,7 @@ export type Database = {
       access_requests: {
         Row: {
           id: string;
+          auth_user_id: string | null;
           full_name: string;
           email: string;
           whatsapp: string | null;
@@ -131,6 +132,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
+          auth_user_id?: string | null;
           full_name: string;
           email: string;
           whatsapp?: string | null;
@@ -145,6 +147,7 @@ export type Database = {
         };
         Update: {
           id?: string;
+          auth_user_id?: string | null;
           full_name?: string;
           email?: string;
           whatsapp?: string | null;

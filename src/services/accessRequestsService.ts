@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import type { AccessRequest } from "../types";
 
-// ─── Submeter solicitação (anônimo) ──────────────────────────────────────────
+// ─── Submeter solicitação (cadastro com senha) ───────────────────────────────
 
 export async function submitAccessRequest(data: {
   full_name: string;
@@ -10,18 +10,29 @@ export async function submitAccessRequest(data: {
   block: string;
   apartment: string;
   message?: string;
+  password: string;
 }): Promise<void> {
-  const whatsappDigits = (data.whatsapp ?? "").replace(/\D/g, "") || null;
-
-  const { error } = await supabase.from("access_requests").insert({
-    full_name: data.full_name,
-    email: data.email,
-    whatsapp: whatsappDigits,
-    block: data.block,
-    apartment: data.apartment,
-    message: data.message ?? null
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
+  const res = await fetch(`${supabaseUrl}/functions/v1/register-resident`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      full_name: data.full_name,
+      email: data.email,
+      whatsapp: data.whatsapp,
+      block: data.block,
+      apartment: data.apartment,
+      message: data.message ?? null,
+      password: data.password
+    })
   });
-  if (error) throw new Error(error.message);
+
+  if (!res.ok) {
+    const body: { error?: string } = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Erro ao enviar solicitacao (${res.status})`);
+  }
 }
 
 // ─── Admin: listar todas as solicitações ─────────────────────────────────────
@@ -61,7 +72,8 @@ export async function rejectAccessRequest(
 }
 
 // ─── Admin: aprovar solicitação (via Edge Function) ───────────────────────────
-// A Edge Function usa a service role para criar o auth user e enviar o convite.
+// Novo fluxo: aprova profile/access_request quando auth_user_id existir.
+// Fluxo legado: fallback com convite para requests antigas sem auth_user_id.
 
 export async function approveAccessRequest(
   id: string,

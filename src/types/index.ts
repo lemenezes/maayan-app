@@ -36,6 +36,7 @@ export interface Profile {
 
 export interface AccessRequest {
   id: string;
+  auth_user_id: string | null;
   full_name: string;
   email: string;
   whatsapp: string | null;

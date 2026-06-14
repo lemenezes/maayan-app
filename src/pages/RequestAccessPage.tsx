@@ -73,7 +73,14 @@ function isStrictEmail(value: string): boolean {
 }
 
 export default function RequestAccessPage() {
-  type FieldKey = "full_name" | "email" | "whatsapp" | "block" | "apartment";
+  type FieldKey =
+    | "full_name"
+    | "email"
+    | "whatsapp"
+    | "block"
+    | "apartment"
+    | "password"
+    | "confirm_password";
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
@@ -82,6 +89,8 @@ export default function RequestAccessPage() {
     whatsapp: "",
     block: "",
     apartment: "",
+    password: "",
+    confirm_password: "",
     message: ""
   });
   const [submitting, setSubmitting] = useState(false);
@@ -127,6 +136,22 @@ export default function RequestAccessPage() {
       if (!value.trim()) return "Informe o bloco (1 a 4).";
       if (!/^[1-4]$/.test(value.trim())) {
         return "Bloco deve ser um número entre 1 e 4.";
+      }
+      return null;
+    }
+
+    if (field === "password") {
+      if (!value) return "Crie uma senha.";
+      if (value.length < 6) {
+        return "A senha precisa ter pelo menos 6 caracteres.";
+      }
+      return null;
+    }
+
+    if (field === "confirm_password") {
+      if (!value) return "Confirme sua senha.";
+      if (value !== form.password) {
+        return "A confirmação da senha não confere.";
       }
       return null;
     }
@@ -208,7 +233,9 @@ export default function RequestAccessPage() {
         (field === "full_name" ||
           field === "whatsapp" ||
           field === "block" ||
-          field === "apartment")
+          field === "apartment" ||
+          field === "password" ||
+          field === "confirm_password")
       ) {
         if (field === "full_name" && isComposingFullName) return;
         setFieldError(field, validateField(field, validationValue));
@@ -230,7 +257,9 @@ export default function RequestAccessPage() {
       "email",
       "whatsapp",
       "block",
-      "apartment"
+      "apartment",
+      "password",
+      "confirm_password"
     ];
 
     fieldsToValidate.forEach(field => {
@@ -252,6 +281,7 @@ export default function RequestAccessPage() {
         whatsapp: whatsappDigits,
         block: form.block.trim(),
         apartment: apartmentDigits,
+        password: form.password,
         message: form.message.trim() || undefined
       });
       setSuccess(true);
@@ -283,9 +313,7 @@ export default function RequestAccessPage() {
           </p>
 
           <p className="text-white text-sm mb-8">
-            Você receberá um e-mail em{" "}
-            <strong className="text-white">{form.email}</strong> com o link de
-            acesso quando for aprovado.
+            Você receberá um e-mail em <strong className="text-white">{form.email}</strong> quando seu acesso for liberado. Depois, é só entrar com a senha que você acabou de criar.
           </p>
           <div className="flex justify-center">
             <Link to="/" className="text-white underline underline-offset-4">
@@ -406,6 +434,48 @@ export default function RequestAccessPage() {
               aprovação, ele também poderá ser exibido como forma de contato em
               anúncios publicados por você.
             </p>
+          </div>
+
+          {/* Senha */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+              <span className="text-white">Senha *</span>
+            </label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={set("password")}
+              onBlur={handleFieldBlur("password")}
+              placeholder="Mínimo de 6 caracteres"
+              className={inputBase}
+              autoComplete="new-password"
+            />
+            {fieldErrors.password && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.password}
+              </div>
+            )}
+          </div>
+
+          {/* Confirmar senha */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+              <span className="text-white">Confirmar senha *</span>
+            </label>
+            <input
+              type="password"
+              value={form.confirm_password}
+              onChange={set("confirm_password")}
+              onBlur={handleFieldBlur("confirm_password")}
+              placeholder="Digite novamente sua senha"
+              className={inputBase}
+              autoComplete="new-password"
+            />
+            {fieldErrors.confirm_password && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {fieldErrors.confirm_password}
+              </div>
+            )}
           </div>
 
           {/* Bloco + Apartamento */}

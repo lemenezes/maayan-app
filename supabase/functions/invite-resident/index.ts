@@ -61,6 +61,7 @@ function buildCorsHeaders(req: Request, extraHeaders?: HeadersInit): Headers {
 
 interface AccessRequest {
   id: string;
+  auth_user_id: string | null;
   full_name: string;
   email: string;
   whatsapp: string | null;
@@ -112,20 +113,18 @@ async function findAuthUserIdByEmail(
   return null;
 }
 
-async function sendExistingUserApprovalEmail(email: string): Promise<void> {
+async function sendApprovalReleasedEmail(email: string): Promise<void> {
   if (!RESEND_API_KEY) {
-    console.warn(
-      "RESEND_API_KEY not set — skipping existing-user approval email"
-    );
+    console.warn("RESEND_API_KEY not set — skipping approval email");
     return;
   }
 
-  const subject = "Seu acesso ao Maayan foi aprovado";
+  const subject = "Seu acesso foi liberado";
   const html = `
     <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1e293b">
-      <h1 style="font-size:20px;margin:0 0 12px;color:#0C5A86">Seu acesso foi aprovado</h1>
+      <h1 style="font-size:20px;margin:0 0 12px;color:#0C5A86">Seu acesso foi liberado</h1>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
-        Sua solicitação foi aprovada. Você já possui cadastro no Maayan e pode acessar sua conta agora.
+        Sua solicitacao foi aprovada. Agora voce ja pode entrar no Maayan com a senha cadastrada.
       </p>
       <a href="${APPROVED_LOGIN_URL}"
          style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;font-size:14px">
@@ -150,7 +149,7 @@ async function sendExistingUserApprovalEmail(email: string): Promise<void> {
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error("Resend existing-user approval email error:", errorBody);
+    console.error("Resend approval email error:", errorBody);
   }
 }
 
@@ -251,6 +250,57 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // ── Novo fluxo: já existe auth user e senha criada no cadastro ───────────
+  if (request.auth_user_id) {
+    const { error: profileApproveError } = await adminClient
+      .from("profiles")
+      .upsert({
+        id: request.auth_user_id,
+        full_name: request.full_name,
+        email: request.email,
+        whatsapp: request.whatsapp,
+        block: request.block,
+        apartment: request.apartment,
+        role: "resident",
+        status: "approved"
+      });
+
+    if (profileApproveError) {
+      console.error("Profile approve error:", profileApproveError);
+      return new Response(
+        JSON.stringify({ error: "Falha ao aprovar perfil do morador" }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
+
+    await adminClient
+      .from("access_requests")
+      .update({
+        status: "approved",
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: user.id
+      })
+      .eq("id", requestId);
+
+    await sendApprovalReleasedEmail(request.email);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        userId: request.auth_user_id,
+        invited: false,
+        flow: "register-password"
+      }),
+      {
+        status: 200,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
+  }
+
   // ── Enviar convite via Supabase Auth ──────────────────────────────────────
   const { data: inviteData, error: inviteError } =
     await adminClient.auth.admin.inviteUserByEmail(request.email, {
@@ -337,7 +387,7 @@ Deno.serve(async (req: Request) => {
     .eq("id", requestId);
 
   if (isExistingUser) {
-    await sendExistingUserApprovalEmail(request.email);
+    await sendApprovalReleasedEmail(request.email);
   }
 
   return new Response(

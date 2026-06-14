@@ -161,7 +161,7 @@ export default function ResidentsPage() {
       setRequests(prev =>
         prev.map(r => (r.id === req.id ? { ...r, status: "approved" } : r))
       );
-      showToast(`Convite enviado para ${req.email}`, "success");
+      showToast(`Acesso liberado para ${req.email}`, "success");
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "Erro ao aprovar",
