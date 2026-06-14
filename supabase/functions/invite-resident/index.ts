@@ -63,6 +63,7 @@ interface AccessRequest {
   id: string;
   full_name: string;
   email: string;
+  whatsapp: string | null;
   block: string;
   apartment: string;
   status: string;
@@ -113,7 +114,9 @@ async function findAuthUserIdByEmail(
 
 async function sendExistingUserApprovalEmail(email: string): Promise<void> {
   if (!RESEND_API_KEY) {
-    console.warn("RESEND_API_KEY not set — skipping existing-user approval email");
+    console.warn(
+      "RESEND_API_KEY not set — skipping existing-user approval email"
+    );
     return;
   }
 
@@ -291,6 +294,7 @@ Deno.serve(async (req: Request) => {
       id: targetUserId,
       full_name: request.full_name,
       email: request.email,
+      whatsapp: request.whatsapp,
       block: request.block,
       apartment: request.apartment,
       role: "resident",
@@ -303,6 +307,7 @@ Deno.serve(async (req: Request) => {
       .from("profiles")
       .update({
         full_name: request.full_name,
+        whatsapp: request.whatsapp,
         block: request.block,
         apartment: request.apartment,
         role: "resident",

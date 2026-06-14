@@ -35,7 +35,9 @@ export default function SetPasswordPage() {
     setError(null);
 
     if (!session) {
-      setError("Link inválido ou expirado. Solicite um novo convite ao administrador.");
+      setError(
+        "Link inválido ou expirado. Solicite um novo convite ao administrador."
+      );
       return;
     }
 
@@ -123,11 +125,15 @@ export default function SetPasswordPage() {
 
           {!session && (
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm px-4 py-3 rounded-xl mb-4">
-              Link inválido ou expirado. Solicite um novo convite ao administrador.
+              Link inválido ou expirado. Solicite um novo convite ao
+              administrador.
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4"
+            noValidate>
             <div>
               <label
                 htmlFor="password"
@@ -183,9 +189,15 @@ export default function SetPasswordPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   onClick={() => setShowConfirmPassword(v => !v)}
                   aria-label={
-                    showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"
+                    showConfirmPassword
+                      ? "Ocultar confirmação"
+                      : "Mostrar confirmação"
                   }>
-                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={17} />
+                  ) : (
+                    <Eye size={17} />
+                  )}
                 </button>
               </div>
             </div>
