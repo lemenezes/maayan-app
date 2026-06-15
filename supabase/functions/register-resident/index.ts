@@ -140,51 +140,63 @@ Deno.serve(async (req: Request) => {
     auth: { persistSession: false }
   });
 
-  const { data: pendingRequest } = await adminClient
+  // Verificar access_request existente (pending, approved ou rejected)
+  const { data: existingRequest } = await adminClient
     .from("access_requests")
-    .select("id")
+    .select("id, status, auth_user_id")
     .eq("email", email)
-    .eq("status", "pending")
+    .in("status", ["pending", "approved", "rejected"])
     .limit(1)
     .maybeSingle();
 
-  if (pendingRequest?.id) {
-    return new Response(
-      JSON.stringify({
-        error: "Ja existe uma solicitacao pendente para este e-mail."
-      }),
-      {
-        status: 409,
-        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
-      }
-    );
-  }
+  // Bloquear se solicitação está em análise ou já aprovada
+  if (
+    existingRequest &&
+    ["pending", "approved"].includes(existingRequest.status)
+  ) {
+    const errorMessage =
+      existingRequest.status === "pending"
+        ? "Ja existe uma solicitacao pendente para este e-mail."
+        : "Este e-mail já possui acesso ao portal. Faça login para continuar.";
 
-  const { data: createUserData, error: createUserError } =
-    await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: fullName,
-        block,
-        apartment
-      }
-    });
-
-  if (createUserError || !createUserData.user?.id) {
-    const normalizedMessage = (createUserError?.message ?? "").toLowerCase();
-    const userFacingMessage = normalizedMessage.includes("already")
-      ? "Este e-mail já possui acesso ao portal. Faça login para continuar."
-      : (createUserError?.message ?? "Nao foi possivel criar o usuario.");
-
-    return new Response(JSON.stringify({ error: userFacingMessage }), {
-      status: normalizedMessage.includes("already") ? 409 : 500,
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 409,
       headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
     });
   }
 
-  const authUserId = createUserData.user.id;
+  // Se rejected, reutilizar auth_user_id; senão criar novo
+  let authUserId: string;
+
+  if (existingRequest?.status === "rejected" && existingRequest.auth_user_id) {
+    authUserId = existingRequest.auth_user_id;
+  } else {
+    const { data: createUserData, error: createUserError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          block,
+          apartment
+        }
+      });
+
+    if (createUserError || !createUserData.user?.id) {
+      const normalizedMessage = (createUserError?.message ?? "").toLowerCase();
+      const userFacingMessage = normalizedMessage.includes("already")
+        ? "Este e-mail já possui acesso ao portal. Faça login para continuar."
+        : (createUserError?.message ?? "Nao foi possivel criar o usuario.");
+
+      return new Response(JSON.stringify({ error: userFacingMessage }), {
+        status: normalizedMessage.includes("already") ? 409 : 500,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      });
+    }
+
+    authUserId = createUserData.user.id;
+  }
 
   const { error: profileError } = await adminClient.from("profiles").upsert({
     id: authUserId,
@@ -199,7 +211,10 @@ Deno.serve(async (req: Request) => {
 
   if (profileError) {
     console.error("Profile upsert error:", profileError);
-    await adminClient.auth.admin.deleteUser(authUserId);
+    // Se for novo usuário (não rejected), deletar
+    if (existingRequest?.status !== "rejected") {
+      await adminClient.auth.admin.deleteUser(authUserId);
+    }
     return new Response(
       JSON.stringify({ error: "Falha ao preparar cadastro do morador." }),
       {
@@ -209,29 +224,55 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const { error: requestError } = await adminClient
-    .from("access_requests")
-    .insert({
-      auth_user_id: authUserId,
-      full_name: fullName,
-      email,
-      whatsapp,
-      block,
-      apartment,
-      message,
-      status: "pending"
-    });
+  // Atualizar access_request rejected ou criar novo
+  if (existingRequest?.status === "rejected") {
+    const { error: updateError } = await adminClient
+      .from("access_requests")
+      .update({
+        full_name: fullName,
+        whatsapp,
+        block,
+        apartment,
+        message,
+        status: "pending"
+      })
+      .eq("id", existingRequest.id);
 
-  if (requestError) {
-    console.error("Access request insert error:", requestError);
-    await adminClient.auth.admin.deleteUser(authUserId);
-    return new Response(
-      JSON.stringify({ error: "Falha ao registrar solicitacao de acesso." }),
-      {
-        status: 500,
-        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
-      }
-    );
+    if (updateError) {
+      console.error("Access request update error:", updateError);
+      return new Response(
+        JSON.stringify({ error: "Falha ao atualizar solicitacao de acesso." }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
+  } else {
+    const { error: requestError } = await adminClient
+      .from("access_requests")
+      .insert({
+        auth_user_id: authUserId,
+        full_name: fullName,
+        email,
+        whatsapp,
+        block,
+        apartment,
+        message,
+        status: "pending"
+      });
+
+    if (requestError) {
+      console.error("Access request insert error:", requestError);
+      await adminClient.auth.admin.deleteUser(authUserId);
+      return new Response(
+        JSON.stringify({ error: "Falha ao registrar solicitacao de acesso." }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
   }
 
   return new Response(JSON.stringify({ success: true }), {

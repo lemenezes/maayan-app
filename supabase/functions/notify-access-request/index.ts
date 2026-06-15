@@ -27,6 +27,7 @@ interface WebhookPayload {
   type: "INSERT" | "UPDATE" | "DELETE";
   table: string;
   record: Record<string, unknown> | null;
+  old_record?: Record<string, unknown> | null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -51,13 +52,31 @@ Deno.serve(async (req: Request) => {
     JSON.stringify(payload.record)?.slice(0, 100)
   );
 
-  // Só processa novos INSERT com status pending
-  if (payload.type !== "INSERT" || !payload.record) {
-    console.log("Skipped — not an INSERT or no record");
+  if (!payload.record) {
+    console.log("Skipped — no record");
     return new Response("Skipped", { status: 200 });
   }
 
   const r = payload.record;
+  const newStatus = r.status as string | undefined;
+  const oldStatus = payload.old_record?.status as string | undefined;
+  const shouldNotify =
+    (payload.type === "INSERT" && newStatus === "pending") ||
+    (payload.type === "UPDATE" &&
+      oldStatus === "rejected" &&
+      newStatus === "pending");
+
+  if (!shouldNotify) {
+    console.log(
+      "Skipped — event/status not eligible",
+      payload.type,
+      oldStatus,
+      "->",
+      newStatus
+    );
+    return new Response("Skipped", { status: 200 });
+  }
+
   const requestId = r.id as string;
   const fullName = r.full_name as string;
   const email = r.email as string;
