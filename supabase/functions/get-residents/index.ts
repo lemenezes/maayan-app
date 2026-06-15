@@ -29,17 +29,32 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── Verificar autenticação ───────────────────────────────────────────────
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response("Unauthorized", {
+  const authHeader =
+    req.headers.get("Authorization") ?? req.headers.get("authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Missing or invalid Authorization header" }),
+      {
+        status: 401,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
+  }
+
+  const token = authHeader.slice("Bearer ".length).trim();
+  if (!token) {
+    return new Response(JSON.stringify({ error: "Missing bearer token" }), {
       status: 401,
-      headers: buildCorsHeaders(req)
+      headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
     });
   }
 
+  const bearerToken = `Bearer ${token}`;
+
   // Client com sessão do usuário
   const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: authHeader } },
+    global: { headers: { Authorization: bearerToken } },
     auth: { persistSession: false }
   });
 
@@ -48,9 +63,9 @@ Deno.serve(async (req: Request) => {
     error: userError
   } = await userClient.auth.getUser();
   if (userError || !user) {
-    return new Response("Unauthorized", {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: buildCorsHeaders(req)
+      headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
     });
   }
 
@@ -62,11 +77,15 @@ Deno.serve(async (req: Request) => {
   // ── Verificar admin ──────────────────────────────────────────────────────
   const { data: callerProfile, error: profileError } = await adminClient
     .from("profiles")
-    .select("role")
+    .select("role, status")
     .eq("id", user.id)
     .single();
 
-  if (profileError || callerProfile?.role !== "admin") {
+  if (
+    profileError ||
+    callerProfile?.role !== "admin" ||
+    callerProfile?.status !== "approved"
+  ) {
     return new Response("Forbidden", {
       status: 403,
       headers: buildCorsHeaders(req)
@@ -141,9 +160,7 @@ Deno.serve(async (req: Request) => {
     const profileViaId = req.auth_user_id
       ? profileById.get(req.auth_user_id)
       : null;
-    const profileViaEmail = profileByEmail.get(
-      req.email?.trim().toLowerCase()
-    );
+    const profileViaEmail = profileByEmail.get(req.email?.trim().toLowerCase());
     const profile = profileViaId ?? profileViaEmail;
 
     let operational_status: string;

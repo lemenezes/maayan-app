@@ -31,9 +31,18 @@ export default function TermsOfUsePage() {
 
           {/* Introdução */}
           <p className="text-slate-700 dark:text-slate-300 mb-8">
-            Ao acessar e usar o Desapega Maayan, você concorda com estes termos.
+            Ao acessar e usar o portal Maayan, você concorda com estes termos.
             Se não concorda, por favor não use o portal.
           </p>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-8">
+            <p className="text-blue-900 dark:text-blue-100 font-medium m-0">
+              <strong>Independência do Portal:</strong> Este portal é uma
+              iniciativa independente criada para facilitar anúncios e serviços
+              entre moradores. Não possui vínculo oficial com o síndico,
+              administração condominial ou comissão de moradores.
+            </p>
+          </div>
 
           {/* Seções */}
           <section className="mb-8">

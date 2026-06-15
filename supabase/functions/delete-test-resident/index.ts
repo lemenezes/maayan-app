@@ -11,7 +11,8 @@ const DEV_ORIGINS = new Set([
   "http://localhost:5175",
   "http://127.0.0.1:5175"
 ]);
-const REQUIRED_CONFIRMATION = "EXCLUIR TESTE";
+const REQUIRED_CONFIRMATION = "EXCLUIR CADASTRO";
+const LEGACY_REQUIRED_CONFIRMATION = "EXCLUIR TESTE";
 
 interface DeletePayload {
   requestId?: string;
@@ -51,28 +52,6 @@ function buildCorsHeaders(req: Request, extraHeaders?: HeadersInit): Headers {
   );
   headers.set("Vary", "Origin");
   return headers;
-}
-
-function isLikelyTestData(request: AccessRequestRow): boolean {
-  const text = `${request.full_name} ${request.email} ${request.message ?? ""}`
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-  const hints = [
-    "teste",
-    "test",
-    "qa",
-    "sandbox",
-    "demo",
-    "exemplo",
-    "example",
-    "fake",
-    "dummy",
-    "temp"
-  ];
-
-  return hints.some(hint => text.includes(hint));
 }
 
 Deno.serve(async (req: Request) => {
@@ -153,7 +132,11 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  if (confirmationText !== REQUIRED_CONFIRMATION) {
+  const isConfirmationValid =
+    confirmationText === REQUIRED_CONFIRMATION ||
+    confirmationText === LEGACY_REQUIRED_CONFIRMATION;
+
+  if (!isConfirmationValid) {
     return new Response(
       JSON.stringify({
         error: `Digite exatamente \"${REQUIRED_CONFIRMATION}\" para confirmar.`
@@ -211,19 +194,6 @@ Deno.serve(async (req: Request) => {
       }),
       {
         status: 409,
-        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
-      }
-    );
-  }
-
-  if (!isLikelyTestData(request)) {
-    return new Response(
-      JSON.stringify({
-        error:
-          "Exclusão permitida apenas para dados de teste. Registro não parece ser de teste."
-      }),
-      {
-        status: 403,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
       }
     );

@@ -9,6 +9,32 @@ export interface ResidentEditableFields {
   apartment: string;
 }
 
+async function resolveAccessToken(providedToken?: string): Promise<string> {
+  const directToken = providedToken?.trim();
+  if (directToken) return directToken;
+
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (session?.access_token) {
+    return session.access_token;
+  }
+
+  const { data: refreshed, error: refreshError } =
+    await supabase.auth.refreshSession();
+
+  if (refreshed.session?.access_token) {
+    return refreshed.session.access_token;
+  }
+
+  if (refreshError) {
+    throw new Error("Sessão expirada. Faça login novamente.");
+  }
+
+  throw new Error("Sessão não encontrada. Faça login novamente.");
+}
+
 // ─── Submeter solicitação (cadastro com senha) ───────────────────────────────
 
 export async function submitAccessRequest(data: {
@@ -45,14 +71,11 @@ export async function submitAccessRequest(data: {
 
 // ─── Admin: listar todas as solicitações (via Edge Function com service role) ─
 
-export async function fetchAccessRequests(): Promise<AccessRequest[]> {
+export async function fetchAccessRequests(
+  accessToken?: string
+): Promise<AccessRequest[]> {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData?.session?.access_token;
-
-  if (!token) {
-    throw new Error("Not authenticated");
-  }
+  const token = await resolveAccessToken(accessToken);
 
   const res = await fetch(`${supabaseUrl}/functions/v1/get-residents`, {
     method: "GET",
@@ -64,9 +87,16 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(
-      error.error ?? `Failed to fetch residents (${res.status})`
-    );
+
+    if (res.status === 401) {
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+
+    if (res.status === 403) {
+      throw new Error("Acesso permitido apenas para admin aprovado.");
+    }
+
+    throw new Error(error.error ?? `Failed to fetch residents (${res.status})`);
   }
 
   return (await res.json()) as AccessRequest[];
@@ -184,17 +214,47 @@ export async function deleteTestResident(
   accessToken: string
 ): Promise<void> {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
-  const res = await fetch(`${supabaseUrl}/functions/v1/delete-test-resident`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`
-    },
-    body: JSON.stringify({ requestId, confirmationText })
-  });
+
+  const postDelete = async (phrase: string) => {
+    const res = await fetch(
+      `${supabaseUrl}/functions/v1/delete-test-resident`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ requestId, confirmationText: phrase })
+      }
+    );
+
+    const body: { error?: string } = await res.json().catch(() => ({}));
+    return { res, body };
+  };
+
+  const normalized = confirmationText.trim().toUpperCase();
+  let phrase = confirmationText;
+  let fallback: string | null = null;
+
+  if (normalized === "EXCLUIR CADASTRO") {
+    fallback = "EXCLUIR TESTE";
+  } else if (normalized === "EXCLUIR TESTE") {
+    fallback = "EXCLUIR CADASTRO";
+  }
+
+  let { res, body } = await postDelete(phrase);
+
+  // Compatibilidade durante rollout entre frontend e edge function antiga.
+  if (!res.ok && res.status === 400 && fallback) {
+    const errorText = (body.error ?? "").toUpperCase();
+    const asksForLegacy = errorText.includes("EXCLUIR TESTE");
+    const asksForNew = errorText.includes("EXCLUIR CADASTRO");
+    if (asksForLegacy || asksForNew) {
+      ({ res, body } = await postDelete(fallback));
+    }
+  }
 
   if (!res.ok) {
-    const body: { error?: string } = await res.json().catch(() => ({}));
     throw new Error(body.error ?? `Erro ao excluir registro (${res.status})`);
   }
 }

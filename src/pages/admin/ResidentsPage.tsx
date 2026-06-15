@@ -114,10 +114,11 @@ function InitialAvatar({ name }: { name: string }) {
 
 export default function ResidentsPage() {
   const [searchParams] = useSearchParams();
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [requests, setRequests] = useState<AccessRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<RequestStatus | "all">("all");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [pulsingId, setPulsingId] = useState<string | null>(null);
@@ -131,20 +132,42 @@ export default function ResidentsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const load = useCallback(async () => {
+    if (!session?.access_token) {
+      setRequests([]);
+      setLoadError("Sessão indisponível. Faça login novamente.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setLoadError(null);
     try {
-      const data = await fetchAccessRequests();
+      const data = await fetchAccessRequests(session.access_token);
       setRequests(data);
-    } catch {
-      showToast("Erro ao carregar solicitações", "error");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Erro ao carregar solicitações";
+      setLoadError(message);
+      showToast(message, "error");
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [session?.access_token, showToast]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (authLoading) {
+      return;
+    }
+
+    if (!session?.access_token) {
+      setLoading(false);
+      setRequests([]);
+      setLoadError("Sessão indisponível. Faça login novamente.");
+      return;
+    }
+
+    void load();
+  }, [authLoading, session?.access_token, load]);
 
   const filtered =
     filter === "all"
@@ -274,7 +297,7 @@ export default function ResidentsPage() {
     try {
       await deleteTestResident(req.id, deleteConfirmText, session.access_token);
       setRequests(prev => prev.filter(r => r.id !== req.id));
-      showToast("Registro de teste removido do banco", "success");
+      showToast("Cadastro removido com sucesso", "success");
       cancelDelete();
     } catch (err) {
       showToast(
@@ -471,7 +494,7 @@ export default function ResidentsPage() {
         </div>
         <button
           onClick={load}
-          disabled={loading}
+          disabled={loading || authLoading || !session?.access_token}
           className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           Atualizar
@@ -532,6 +555,23 @@ export default function ResidentsPage() {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#EEF2F7] dark:border-slate-800 overflow-hidden shadow-sm">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center py-14 text-center px-6">
+            <AlertCircle className="w-8 h-8 text-red-400 mb-3" />
+            <p className="text-slate-700 dark:text-slate-200 text-sm font-medium">
+              Não foi possível carregar os residentes.
+            </p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-1 max-w-md">
+              {loadError}
+            </p>
+            <button
+              onClick={load}
+              disabled={authLoading || !session?.access_token}
+              className="mt-4 inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Tentar novamente
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 text-center px-4">
             <AlertCircle className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-3" />
@@ -834,13 +874,16 @@ export default function ResidentsPage() {
                             Excluir
                           </p>
                           <p className="text-[11px] text-rose-700/90 dark:text-rose-300/90 leading-relaxed">
-                            Para confirmar, digite{" "}
-                            <strong>EXCLUIR TESTE</strong>.
+                            Para confirmar, digite a frase{" "}
+                            <span className="font-mono font-semibold">
+                              excluir cadastro
+                            </span>
+                            .
                           </p>
                           <input
                             value={deleteConfirmText}
                             onChange={e => setDeleteConfirmText(e.target.value)}
-                            placeholder="Digite EXCLUIR TESTE"
+                            placeholder="Digite a frase de confirmação"
                             className="w-full text-xs px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-rose-400"
                           />
                           <div className="flex flex-wrap gap-2">
@@ -853,7 +896,7 @@ export default function ResidentsPage() {
                               ) : (
                                 <Trash2 className="w-3.5 h-3.5" />
                               )}
-                              Remover teste
+                              Remover cadastro
                             </button>
                             <button
                               onClick={cancelDelete}
@@ -868,7 +911,7 @@ export default function ResidentsPage() {
                           disabled={isBusy}
                           className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-900/25 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
-                          Excluir teste
+                          Excluir cadastro
                         </button>
                       )}
                     </div>

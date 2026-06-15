@@ -13,6 +13,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 import { submitAccessRequest } from "../services/accessRequestsService";
+import PrivacyPolicyModal from "../components/PrivacyPolicyModal";
 
 const inputBase =
   "w-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-[#38B6D9]/40 transition-all duration-150 shadow-sm";
@@ -115,6 +116,7 @@ export default function RequestAccessPage() {
   const [isComposingFullName, setIsComposingFullName] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const { user, session, loading } = useAuth();
   const { withLoading } = useLoadingOverlay();
 
@@ -272,7 +274,9 @@ export default function RequestAccessPage() {
 
     // Validar aceite da política
     if (!agreedToPrivacyPolicy) {
-      setPrivacyError("Você deve concordar com a Política de Privacidade.");
+      setPrivacyError(
+        "Você deve concordar com os Termos de Uso e a Política de Privacidade."
+      );
       return;
     }
     setPrivacyError(null);
@@ -400,8 +404,8 @@ export default function RequestAccessPage() {
             </span>
           </h1>
           <p className="text-white text-sm leading-relaxed">
-            Solicite seu acesso preenchendo os dados abaixo. Nossa administração
-            validará as informações antes da aprovação do cadastro. Você
+            Solicite seu acesso preenchendo os dados abaixo. O administrador do
+            portal validará as informações antes da aprovação do cadastro. Você
             receberá uma notificação por e-mail após a análise da solicitação.
           </p>
         </div>
@@ -487,8 +491,8 @@ export default function RequestAccessPage() {
               </div>
             )}
             <p className="mt-1.5 text-xs text-white/90 leading-relaxed">
-              Este número poderá ser utilizado pela administração para contato
-              relacionado à análise e aprovação do seu cadastro. Após a
+              Este número poderá ser utilizado pelo administrador do portal para
+              contato relacionado à análise e aprovação do seu cadastro. Após a
               aprovação, ele também poderá ser exibido como forma de contato em
               anúncios publicados por você.
             </p>
@@ -618,7 +622,7 @@ export default function RequestAccessPage() {
             <textarea
               value={form.message}
               onChange={set("message")}
-              placeholder="Alguma informação adicional para a administração?"
+              placeholder="Alguma informação adicional para o administrador do portal?"
               rows={3}
               className={`${inputBase} resize-none`}
             />
@@ -630,9 +634,9 @@ export default function RequestAccessPage() {
             </p>
           )}
 
-          {/* Checkbox - Política de Privacidade */}
+          {/* Checkbox - Termos e Política */}
           <div className="pt-2">
-            <label className="flex items-start gap-3 cursor-pointer group">
+            <div className="flex items-start gap-3 group">
               <input
                 type="checkbox"
                 checked={agreedToPrivacyPolicy}
@@ -645,15 +649,27 @@ export default function RequestAccessPage() {
                 className="w-5 h-5 mt-0.5 rounded border-2 border-white/50 bg-white/10 checked:bg-white checked:border-white text-[#0C5A86] cursor-pointer accent-[#0C5A86] focus:ring-2 focus:ring-white/40 transition-colors flex-shrink-0"
               />
               <span className="text-white text-sm leading-relaxed">
-                Li e concordo com a{" "}
+                Li e concordo com os{" "}
                 <Link
-                  to="/politica-de-privacidade"
-                  className="underline underline-offset-2 hover:text-white/80 transition-colors">
+                  to="/termos-de-uso"
+                  onClick={e => e.stopPropagation()}
+                  className="underline underline-offset-2 hover:text-white/80 transition-colors text-white font-inherit">
+                  Termos de Uso
+                </Link>{" "}
+                e a{" "}
+                <button
+                  type="button"
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsPrivacyModalOpen(true);
+                  }}
+                  className="underline underline-offset-2 hover:text-white/80 transition-colors bg-none border-none p-0 cursor-pointer text-white font-inherit">
                   Política de Privacidade
-                </Link>
+                </button>
                 .*
               </span>
-            </label>
+            </div>
             {privacyError && (
               <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
                 {privacyError}
@@ -673,6 +689,10 @@ export default function RequestAccessPage() {
             para validação do seu cadastro de morador.
           </p>
         </form>
+        <PrivacyPolicyModal
+          isOpen={isPrivacyModalOpen}
+          onClose={() => setIsPrivacyModalOpen(false)}
+        />
       </div>
     </div>
   );

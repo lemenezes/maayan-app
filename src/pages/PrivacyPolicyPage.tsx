@@ -34,10 +34,23 @@ export default function PrivacyPolicyPage() {
             <p className="text-blue-900 dark:text-blue-100 font-medium m-0">
               <strong>Independência do Portal:</strong> Este portal é uma
               iniciativa independente criada para facilitar anúncios e serviços
-              entre moradores. Não possui vínculo oficial com a administração do
-              condomínio.
+              entre moradores. Não possui vínculo oficial com o síndico,
+              administração condominial ou comissão de moradores.
             </p>
           </div>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              Responsável pelo portal
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300 mb-2">
+              <strong>Leandro Miglioli</strong>
+            </p>
+            <p className="text-slate-700 dark:text-slate-300">
+              Caso deseje solicitar correção ou remoção dos seus dados, entre em
+              contato com o administrador do portal.
+            </p>
+          </section>
 
           {/* Seções */}
           <section className="mb-8">
@@ -45,8 +58,7 @@ export default function PrivacyPolicyPage() {
               1. O que coletamos
             </h2>
             <p className="text-slate-700 dark:text-slate-300 mb-4">
-              Para usar o Desapega Maayan, coletamos as seguintes informações
-              pessoais:
+              Para utilizar o portal Maayan, coletamos as seguintes informações:
             </p>
             <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300">
               <li>
