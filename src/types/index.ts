@@ -21,7 +21,7 @@ export type ListingStatus = "active" | "sold" | "archived";
 export type ProfileRole = "resident" | "admin" | "user";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
 export type AccessRequestStatus = "pending" | "approved" | "rejected";
-export type RequestStatus = AccessRequestStatus | "suspended";
+export type RequestStatus = AccessRequestStatus | "suspended" | "inconsistent";
 
 export interface Profile {
   id: string;

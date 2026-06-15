@@ -114,12 +114,25 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
 
   return requests.map(request => ({
     ...request,
-    operational_status:
-      (request.auth_user_id
+    operational_status: (() => {
+      const statusFromId = request.auth_user_id
         ? profileStatusById.get(request.auth_user_id)
-        : undefined) ??
-      profileStatusByEmail.get(request.email.trim().toLowerCase()) ??
-      request.status,
+        : undefined;
+      const statusFromEmail = profileStatusByEmail.get(
+        request.email.trim().toLowerCase()
+      );
+      const resolvedProfileStatus = statusFromId ?? statusFromEmail;
+
+      if (resolvedProfileStatus) {
+        return resolvedProfileStatus;
+      }
+
+      if (request.status === "approved") {
+        return "inconsistent";
+      }
+
+      return request.status;
+    })(),
     has_profile:
       Boolean(
         request.auth_user_id && profileStatusById.has(request.auth_user_id)

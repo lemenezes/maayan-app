@@ -50,6 +50,11 @@ const STATUS_LABELS: Record<
     label: "Suspenso",
     className:
       "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+  },
+  inconsistent: {
+    label: "Cadastro inconsistente",
+    className:
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
   }
 };
 
@@ -58,7 +63,8 @@ const FILTER_OPTIONS: { value: RequestStatus | "all"; label: string }[] = [
   { value: "pending", label: "Pendentes" },
   { value: "approved", label: "Aprovadas" },
   { value: "rejected", label: "Rejeitadas" },
-  { value: "suspended", label: "Suspensas" }
+  { value: "suspended", label: "Suspensas" },
+  { value: "inconsistent", label: "Inconsistentes" }
 ];
 
 function sanitizeWhatsAppInput(value: string): string {
@@ -473,8 +479,16 @@ export default function ResidentsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {(["pending", "approved", "rejected", "suspended"] as const).map(s => {
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        {(
+          [
+            "pending",
+            "approved",
+            "rejected",
+            "suspended",
+            "inconsistent"
+          ] as const
+        ).map(s => {
           const conf = STATUS_LABELS[s];
           return (
             <button
@@ -799,6 +813,16 @@ export default function ResidentsPage() {
                           ) : null}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {operationalStatus === "inconsistent" && (
+                    <div className="mt-3">
+                      <p className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2 leading-relaxed">
+                        Solicitação aprovada sem perfil vinculado. Refaça a
+                        aprovação para recriar/vincular o perfil antes de
+                        moderar este morador.
+                      </p>
                     </div>
                   )}
 
