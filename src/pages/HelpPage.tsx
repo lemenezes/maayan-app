@@ -51,11 +51,11 @@ const HELP_CATEGORIES: HelpCategory[] = [
     articles: [
       {
         title: "⭐ Como publicar meu primeiro anúncio",
-        body: "Clique em Publicar, preencha título, preço, categoria e descrição. Depois, adicione fotos e publique para aparecer para os moradores."
+        body: "Clique em Publicar, preencha título, preço, categoria e descrição. Depois, adicione fotos e conclua a publicação para aparecer para os moradores."
       },
       {
         title: "Como criar um anúncio",
-        body: "Clique em Publicar, preencha título, preço, categoria e descrição. Depois, adicione fotos e publique para aparecer para os moradores."
+        body: "Clique em Publicar, preencha título, preço, categoria e descrição. Depois, adicione fotos e conclua a publicação para aparecer para os moradores."
       },
       {
         title: "Como editar um anúncio",
@@ -67,7 +67,7 @@ const HELP_CATEGORIES: HelpCategory[] = [
       },
       {
         title: "Como excluir um anúncio",
-        body: "Em Meus anúncios, abra o anúncio e escolha Excluir. Essa ação remove o anúncio da listagem para os outros moradores."
+        body: "Em Meus anúncios, abra o anúncio e escolha Excluir. Essa ação marca o anúncio como excluído e remove da listagem para os outros moradores."
       }
     ]
   },
@@ -95,11 +95,11 @@ const HELP_CATEGORIES: HelpCategory[] = [
     articles: [
       {
         title: "Esqueci minha senha, o que faço",
-        body: "Quando a recuperação de senha estiver disponível no portal, use essa opção na tela de login. Enquanto isso, entre em contato com a administração para apoio no acesso."
+        body: "Entre em contato com o administrador do portal para receber ajuda com o acesso à sua conta."
       },
       {
         title: "O que fazer se não consigo entrar",
-        body: "Confira e-mail e senha, tente recuperar o acesso e verifique se seu cadastro está aprovado. Se continuar com problema, contate a administração."
+        body: "Confira e-mail e senha e verifique se seu cadastro está aprovado. Se continuar com problema, entre em contato com o administrador do portal."
       }
     ]
   },
@@ -111,7 +111,7 @@ const HELP_CATEGORIES: HelpCategory[] = [
     articles: [
       {
         title: "Quem pode anunciar",
-        body: "Somente moradores autenticados e aprovados no portal podem publicar anúncios para a comunidade."
+        body: "Somente usuários autenticados e aprovados no portal podem publicar anúncios para a comunidade."
       },
       {
         title: "Boas práticas",
@@ -262,12 +262,12 @@ export default function HelpPage() {
               Não encontrou sua resposta?
             </h3>
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed mb-5">
-              Entre em contato com a administração do condomínio.
+              Fale com o responsável pelo portal.
             </p>
             <a
               href="mailto:lemenezes@gmail.com"
               className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-[#0C5A86] hover:bg-[#09476B] text-white text-sm font-semibold transition-colors">
-              Falar com a administração
+              Falar com o responsável
             </a>
           </article>
         </div>
