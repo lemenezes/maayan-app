@@ -89,7 +89,11 @@ export default function ProtectedRoute({
     return <Navigate to="/aguardando-aprovacao" replace />;
   }
 
-  if (status === "rejected" || status === "suspended") {
+  if (status === "suspended") {
+    return <Navigate to="/acesso-suspenso" replace />;
+  }
+
+  if (status === "rejected") {
     return <Navigate to="/acesso-nao-aprovado" replace />;
   }
 

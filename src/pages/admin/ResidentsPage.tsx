@@ -5,13 +5,21 @@ import {
   Loader2,
   RefreshCw,
   Clock,
-  AlertCircle
+  AlertCircle,
+  PauseCircle,
+  PlayCircle,
+  Pencil,
+  Save
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import {
   fetchAccessRequests,
   approveAccessRequest,
-  rejectAccessRequest
+  rejectAccessRequest,
+  suspendResident,
+  reactivateResident,
+  updateResidentProfile,
+  type ResidentEditableFields
 } from "../../services/accessRequestsService";
 import type { AccessRequest, RequestStatus } from "../../types";
 import { useToast } from "../../context/ToastContext";
@@ -35,6 +43,11 @@ const STATUS_LABELS: Record<
     label: "Rejeitado",
     className:
       "bg-red-100    text-red-600    dark:bg-red-900/40    dark:text-red-400"
+  },
+  suspended: {
+    label: "Suspenso",
+    className:
+      "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
   }
 };
 
@@ -42,8 +55,25 @@ const FILTER_OPTIONS: { value: RequestStatus | "all"; label: string }[] = [
   { value: "all", label: "Todas" },
   { value: "pending", label: "Pendentes" },
   { value: "approved", label: "Aprovadas" },
-  { value: "rejected", label: "Rejeitadas" }
+  { value: "rejected", label: "Rejeitadas" },
+  { value: "suspended", label: "Suspensas" }
 ];
+
+function sanitizeWhatsAppInput(value: string): string {
+  const digitsOnly = value.replace(/\D/g, "");
+  if (!digitsOnly) return "";
+
+  const withoutCountryCode =
+    digitsOnly.length > 11 && digitsOnly.startsWith("55")
+      ? digitsOnly.slice(2)
+      : digitsOnly;
+
+  return withoutCountryCode.slice(0, 11);
+}
+
+function getOperationalStatus(req: AccessRequest): RequestStatus {
+  return req.operational_status ?? req.status;
+}
 
 function SkeletonRow() {
   return (
@@ -87,6 +117,8 @@ export default function ResidentsPage() {
   // id da solicitação com o painel de rejeição aberto → string | null
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<ResidentEditableFields | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -105,11 +137,16 @@ export default function ResidentsPage() {
   }, [load]);
 
   const filtered =
-    filter === "all" ? requests : requests.filter(r => r.status === filter);
+    filter === "all"
+      ? requests
+      : requests.filter(r => getOperationalStatus(r) === filter);
   const targetRequestId = searchParams.get("requestId");
-  const pending = requests.filter(r => r.status === "pending").length;
+  const pending = requests.filter(
+    r => getOperationalStatus(r) === "pending"
+  ).length;
   const counts = requests.reduce<Record<string, number>>((acc, r) => {
-    acc[r.status] = (acc[r.status] ?? 0) + 1;
+    const operationalStatus = getOperationalStatus(r);
+    acc[operationalStatus] = (acc[operationalStatus] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -159,7 +196,11 @@ export default function ResidentsPage() {
     try {
       await approveAccessRequest(req.id, session.access_token);
       setRequests(prev =>
-        prev.map(r => (r.id === req.id ? { ...r, status: "approved" } : r))
+        prev.map(r =>
+          r.id === req.id
+            ? { ...r, status: "approved", operational_status: "approved" }
+            : r
+        )
       );
       showToast(`Acesso liberado para ${req.email}`, "success");
     } catch (err) {
@@ -186,6 +227,136 @@ export default function ResidentsPage() {
     setRejectReason("");
   };
 
+  const openEdit = (req: AccessRequest) => {
+    setEditingId(req.id);
+    setEditForm({
+      full_name: req.full_name,
+      email: req.email,
+      whatsapp: req.whatsapp ?? "",
+      block: req.block,
+      apartment: req.apartment
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm(null);
+  };
+
+  const saveEdit = async (req: AccessRequest) => {
+    if (!session?.access_token) {
+      showToast("Sessão expirada — faça login novamente", "error");
+      return;
+    }
+
+    if (!editForm) return;
+
+    const normalized: ResidentEditableFields = {
+      full_name: editForm.full_name.trim(),
+      email: editForm.email.trim().toLowerCase(),
+      whatsapp: sanitizeWhatsAppInput(editForm.whatsapp),
+      block: editForm.block.trim().toUpperCase(),
+      apartment: editForm.apartment.replace(/\D/g, "").slice(0, 4)
+    };
+
+    if (
+      !normalized.full_name ||
+      !normalized.email ||
+      !normalized.whatsapp ||
+      !normalized.block ||
+      !normalized.apartment
+    ) {
+      showToast("Preencha todos os campos para salvar", "error");
+      return;
+    }
+
+    setBusy(s => new Set(s).add(req.id));
+    try {
+      await updateResidentProfile(req.id, normalized, session.access_token);
+      setRequests(prev =>
+        prev.map(r =>
+          r.id === req.id
+            ? {
+                ...r,
+                ...normalized
+              }
+            : r
+        )
+      );
+      showToast("Dados do morador atualizados", "success");
+      cancelEdit();
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Erro ao salvar dados",
+        "error"
+      );
+    } finally {
+      setBusy(s => {
+        const n = new Set(s);
+        n.delete(req.id);
+        return n;
+      });
+    }
+  };
+
+  const handleSuspend = async (req: AccessRequest) => {
+    if (!session?.access_token) {
+      showToast("Sessão expirada — faça login novamente", "error");
+      return;
+    }
+
+    setBusy(s => new Set(s).add(req.id));
+    try {
+      await suspendResident(req.id, session.access_token);
+      setRequests(prev =>
+        prev.map(r =>
+          r.id === req.id ? { ...r, operational_status: "suspended" } : r
+        )
+      );
+      showToast(`Morador ${req.full_name} suspenso`, "success");
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Erro ao suspender morador",
+        "error"
+      );
+    } finally {
+      setBusy(s => {
+        const n = new Set(s);
+        n.delete(req.id);
+        return n;
+      });
+    }
+  };
+
+  const handleReactivate = async (req: AccessRequest) => {
+    if (!session?.access_token) {
+      showToast("Sessão expirada — faça login novamente", "error");
+      return;
+    }
+
+    setBusy(s => new Set(s).add(req.id));
+    try {
+      await reactivateResident(req.id, session.access_token);
+      setRequests(prev =>
+        prev.map(r =>
+          r.id === req.id ? { ...r, operational_status: "approved" } : r
+        )
+      );
+      showToast(`Morador ${req.full_name} reativado`, "success");
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Erro ao reativar morador",
+        "error"
+      );
+    } finally {
+      setBusy(s => {
+        const n = new Set(s);
+        n.delete(req.id);
+        return n;
+      });
+    }
+  };
+
   const confirmReject = async (req: AccessRequest) => {
     if (!session?.access_token) {
       showToast("Sessão expirada — faça login novamente", "error");
@@ -205,6 +376,7 @@ export default function ResidentsPage() {
             ? {
                 ...r,
                 status: "rejected",
+                operational_status: "rejected",
                 rejection_reason: rejectReason || null
               }
             : r
@@ -260,8 +432,8 @@ export default function ResidentsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {(["pending", "approved", "rejected"] as const).map(s => {
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {(["pending", "approved", "rejected", "suspended"] as const).map(s => {
           const conf = STATUS_LABELS[s];
           return (
             <button
@@ -318,7 +490,8 @@ export default function ResidentsPage() {
         ) : (
           filtered.map(req => {
             const isBusy = busy.has(req.id);
-            const { label, className } = STATUS_LABELS[req.status];
+            const operationalStatus = getOperationalStatus(req);
+            const { label, className } = STATUS_LABELS[operationalStatus];
             return (
               <div
                 id={`access-request-${req.id}`}
@@ -357,7 +530,7 @@ export default function ResidentsPage() {
                     </p>
                   )}
 
-                  {req.status === "rejected" && req.rejection_reason && (
+                  {operationalStatus === "rejected" && req.rejection_reason && (
                     <p className="text-red-600 dark:text-red-400 text-xs mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
                       <strong>Motivo:</strong> {req.rejection_reason}
                     </p>
@@ -373,7 +546,7 @@ export default function ResidentsPage() {
                     })}
                   </p>
 
-                  {req.status === "pending" && (
+                  {operationalStatus === "pending" && (
                     <div className="mt-3 space-y-2">
                       {rejectingId === req.id ? (
                         /* ── Painel de motivo de rejeição ── */
@@ -411,7 +584,7 @@ export default function ResidentsPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => approve(req)}
                             disabled={isBusy}
@@ -430,6 +603,152 @@ export default function ResidentsPage() {
                             <XCircle className="w-3.5 h-3.5" />
                             Rejeitar
                           </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {(operationalStatus === "approved" ||
+                    operationalStatus === "suspended") && (
+                    <div className="mt-3 space-y-2">
+                      {editingId === req.id && editForm ? (
+                        <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-3">
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Editar dados do morador
+                          </p>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              value={editForm.full_name}
+                              onChange={e =>
+                                setEditForm(prev =>
+                                  prev
+                                    ? { ...prev, full_name: e.target.value }
+                                    : prev
+                                )
+                              }
+                              placeholder="Nome completo"
+                              className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-[#1DAFD9]"
+                            />
+                            <input
+                              value={editForm.email}
+                              onChange={e =>
+                                setEditForm(prev =>
+                                  prev
+                                    ? { ...prev, email: e.target.value }
+                                    : prev
+                                )
+                              }
+                              placeholder="E-mail"
+                              className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-[#1DAFD9]"
+                            />
+                            <input
+                              value={editForm.whatsapp}
+                              onChange={e =>
+                                setEditForm(prev =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        whatsapp: sanitizeWhatsAppInput(
+                                          e.target.value
+                                        )
+                                      }
+                                    : prev
+                                )
+                              }
+                              placeholder="WhatsApp"
+                              className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-[#1DAFD9]"
+                            />
+                            <input
+                              value={editForm.block}
+                              onChange={e =>
+                                setEditForm(prev =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        block: e.target.value
+                                          .toUpperCase()
+                                          .slice(0, 2)
+                                      }
+                                    : prev
+                                )
+                              }
+                              placeholder="Bloco"
+                              className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-[#1DAFD9]"
+                            />
+                            <input
+                              value={editForm.apartment}
+                              onChange={e =>
+                                setEditForm(prev =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        apartment: e.target.value
+                                          .replace(/\D/g, "")
+                                          .slice(0, 4)
+                                      }
+                                    : prev
+                                )
+                              }
+                              placeholder="Apartamento"
+                              className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-[#1DAFD9]"
+                            />
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => saveEdit(req)}
+                              disabled={isBusy}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#0C5A86] text-white hover:bg-[#09476B] disabled:opacity-50 transition-colors">
+                              {isBusy ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Save className="w-3.5 h-3.5" />
+                              )}
+                              Salvar
+                            </button>
+                            <button
+                              onClick={cancelEdit}
+                              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => openEdit(req)}
+                            disabled={isBusy}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors">
+                            <Pencil className="w-3.5 h-3.5" />
+                            Editar
+                          </button>
+
+                          {operationalStatus === "approved" ? (
+                            <button
+                              onClick={() => handleSuspend(req)}
+                              disabled={isBusy}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/50 disabled:opacity-50 transition-colors">
+                              {isBusy ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <PauseCircle className="w-3.5 h-3.5" />
+                              )}
+                              Suspender
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleReactivate(req)}
+                              disabled={isBusy}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 disabled:opacity-50 transition-colors">
+                              {isBusy ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <PlayCircle className="w-3.5 h-3.5" />
+                              )}
+                              Reativar
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

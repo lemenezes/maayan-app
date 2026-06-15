@@ -140,6 +140,27 @@ Deno.serve(async (req: Request) => {
     auth: { persistSession: false }
   });
 
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id, status")
+    .eq("email", email)
+    .limit(1)
+    .maybeSingle();
+
+  // Bloquear recadastro de perfis suspensos sem depender de status da access_request.
+  if (existingProfile?.status === "suspended") {
+    return new Response(
+      JSON.stringify({
+        error:
+          "Este cadastro esta suspenso. Fale com a administracao para reativacao."
+      }),
+      {
+        status: 409,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
+  }
+
   // Verificar access_request existente (pending, approved ou rejected)
   const { data: existingRequest } = await adminClient
     .from("access_requests")
@@ -149,7 +170,7 @@ Deno.serve(async (req: Request) => {
     .limit(1)
     .maybeSingle();
 
-  // Bloquear se solicitação está em análise ou já aprovada
+  // Bloquear se solicitação está em análise ou já aprovada.
   if (
     existingRequest &&
     ["pending", "approved"].includes(existingRequest.status)

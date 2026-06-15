@@ -359,10 +359,11 @@ export async function fetchUserRole(userId: string): Promise<"admin" | "user"> {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, status")
     .eq("id", userId)
     .single();
 
   if (error || !data) return "user";
-  return data.role as "admin" | "user";
+  if (data.role === "admin" && data.status === "approved") return "admin";
+  return "user";
 }

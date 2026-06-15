@@ -1,6 +1,20 @@
 import { supabase } from "../lib/supabase";
 import type { AccessRequest } from "../types";
 
+type ProfileOperationalStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "suspended";
+
+export interface ResidentEditableFields {
+  full_name: string;
+  email: string;
+  whatsapp: string;
+  block: string;
+  apartment: string;
+}
+
 // ─── Submeter solicitação (cadastro com senha) ───────────────────────────────
 
 export async function submitAccessRequest(data: {
@@ -43,7 +57,41 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []) as AccessRequest[];
+
+  const requests = (data ?? []) as AccessRequest[];
+  const authUserIds = Array.from(
+    new Set(
+      requests
+        .map(request => request.auth_user_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
+  const profileStatusById = new Map<string, ProfileOperationalStatus>();
+
+  if (authUserIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, status")
+      .in("id", authUserIds);
+
+    if (profilesError) throw new Error(profilesError.message);
+
+    for (const profile of profiles ?? []) {
+      profileStatusById.set(
+        profile.id,
+        profile.status as ProfileOperationalStatus
+      );
+    }
+  }
+
+  return requests.map(request => ({
+    ...request,
+    operational_status:
+      (request.auth_user_id
+        ? profileStatusById.get(request.auth_user_id)
+        : undefined) ?? request.status
+  }));
 }
 
 // ─── Admin: rejeitar solicitação (via Edge Function) ────────────────────────
@@ -95,4 +143,59 @@ export async function approveAccessRequest(
       body.error ?? `Erro ao aprovar solicitação (${res.status})`
     );
   }
+}
+
+type ResidentModerationAction = "suspend" | "reactivate" | "update-profile";
+
+async function moderateResident(
+  payload: {
+    requestId: string;
+    action: ResidentModerationAction;
+    fields?: ResidentEditableFields;
+  },
+  accessToken: string
+): Promise<void> {
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
+  const res = await fetch(`${supabaseUrl}/functions/v1/moderate-resident`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const body: { error?: string } = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Erro na moderação (${res.status})`);
+  }
+}
+
+export async function suspendResident(
+  requestId: string,
+  accessToken: string
+): Promise<void> {
+  await moderateResident({ requestId, action: "suspend" }, accessToken);
+}
+
+export async function reactivateResident(
+  requestId: string,
+  accessToken: string
+): Promise<void> {
+  await moderateResident({ requestId, action: "reactivate" }, accessToken);
+}
+
+export async function updateResidentProfile(
+  requestId: string,
+  fields: ResidentEditableFields,
+  accessToken: string
+): Promise<void> {
+  await moderateResident(
+    {
+      requestId,
+      action: "update-profile",
+      fields
+    },
+    accessToken
+  );
 }

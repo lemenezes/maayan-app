@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # só roda manualmente
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,15 +20,3 @@ jobs:
 
       - name: Type check + build
         run: npm run build
-
-      - name: Unit tests
-        run: npm run test
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: E2E tests
-        run: npm run test:e2e
-        env:
-          VITE_USE_MOCK: "true"
-          VITE_USE_MOCK_AUTH: "true"

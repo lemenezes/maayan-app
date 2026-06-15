@@ -20,7 +20,8 @@ export type ListingStatus = "active" | "sold" | "archived";
 
 export type ProfileRole = "resident" | "admin" | "user";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";
-export type RequestStatus = "pending" | "approved" | "rejected";
+export type AccessRequestStatus = "pending" | "approved" | "rejected";
+export type RequestStatus = AccessRequestStatus | "suspended";
 
 export interface Profile {
   id: string;
@@ -43,7 +44,8 @@ export interface AccessRequest {
   block: string;
   apartment: string;
   message: string | null;
-  status: RequestStatus;
+  status: AccessRequestStatus;
+  operational_status?: RequestStatus;
   rejection_reason: string | null;
   created_at: string;
   reviewed_at: string | null;

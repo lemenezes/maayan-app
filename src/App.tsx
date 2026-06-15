@@ -24,6 +24,7 @@ import RequestAccessPage from "./pages/RequestAccessPage";
 import PendingApprovalPage from "./pages/PendingApprovalPage";
 import MyAccountPage from "./pages/MyAccountPage.tsx";
 import AccessNotApprovedPage from "./pages/AccessNotApprovedPage";
+import AccessSuspendedPage from "./pages/AccessSuspendedPage";
 
 const router = createBrowserRouter([
   {
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
       { path: "solicitar-acesso", element: <RequestAccessPage /> },
       { path: "aguardando-aprovacao", element: <PendingApprovalPage /> },
       { path: "acesso-nao-aprovado", element: <AccessNotApprovedPage /> },
+      { path: "acesso-suspenso", element: <AccessSuspendedPage /> },
       {
         path: "admin/anuncios",
         element: (
