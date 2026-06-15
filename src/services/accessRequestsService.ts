@@ -45,6 +45,10 @@ export async function submitAccessRequest(data: {
   apartment: string;
   message?: string;
   password: string;
+  termsAcceptedAt: string;
+  privacyAcceptedAt: string;
+  termsVersion: string;
+  privacyVersion: string;
 }): Promise<void> {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
   const res = await fetch(`${supabaseUrl}/functions/v1/register-resident`, {
@@ -59,7 +63,11 @@ export async function submitAccessRequest(data: {
       block: data.block,
       apartment: data.apartment,
       message: data.message ?? null,
-      password: data.password
+      password: data.password,
+      termsAcceptedAt: data.termsAcceptedAt,
+      privacyAcceptedAt: data.privacyAcceptedAt,
+      termsVersion: data.termsVersion,
+      privacyVersion: data.privacyVersion
     })
   });
 

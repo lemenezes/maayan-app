@@ -25,6 +25,10 @@ interface RegisterResidentPayload {
   apartment?: string;
   message?: string;
   password?: string;
+  termsAcceptedAt?: string;
+  privacyAcceptedAt?: string;
+  termsVersion?: string;
+  privacyVersion?: string;
 }
 
 function resolveAllowedOrigin(req: Request): string | null {
@@ -108,10 +112,45 @@ Deno.serve(async (req: Request) => {
   const apartment = (body.apartment ?? "").trim();
   const message = (body.message ?? "").trim() || null;
   const password = body.password ?? "";
+  const termsAcceptedAt = (body.termsAcceptedAt ?? "").trim();
+  const privacyAcceptedAt = (body.privacyAcceptedAt ?? "").trim();
+  const termsVersion = (body.termsVersion ?? "").trim();
+  const privacyVersion = (body.privacyVersion ?? "").trim();
 
   if (!fullName || !email || !whatsapp || !block || !apartment || !password) {
     return new Response(
       JSON.stringify({ error: "Dados obrigatorios ausentes." }),
+      {
+        status: 400,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
+  }
+
+  if (
+    !termsAcceptedAt ||
+    !privacyAcceptedAt ||
+    !termsVersion ||
+    !privacyVersion
+  ) {
+    return new Response(
+      JSON.stringify({ error: "Aceite legal obrigatorio nao informado." }),
+      {
+        status: 400,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
+  }
+
+  const parsedTermsAcceptedAt = new Date(termsAcceptedAt);
+  const parsedPrivacyAcceptedAt = new Date(privacyAcceptedAt);
+
+  if (
+    Number.isNaN(parsedTermsAcceptedAt.getTime()) ||
+    Number.isNaN(parsedPrivacyAcceptedAt.getTime())
+  ) {
+    return new Response(
+      JSON.stringify({ error: "Data de aceite legal invalida." }),
       {
         status: 400,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -255,6 +294,10 @@ Deno.serve(async (req: Request) => {
         block,
         apartment,
         message,
+        terms_accepted_at: termsAcceptedAt,
+        privacy_accepted_at: privacyAcceptedAt,
+        terms_version: termsVersion,
+        privacy_version: privacyVersion,
         status: "pending"
       })
       .eq("id", existingRequest.id);
@@ -280,6 +323,10 @@ Deno.serve(async (req: Request) => {
         block,
         apartment,
         message,
+        terms_accepted_at: termsAcceptedAt,
+        privacy_accepted_at: privacyAcceptedAt,
+        terms_version: termsVersion,
+        privacy_version: privacyVersion,
         status: "pending"
       });
 

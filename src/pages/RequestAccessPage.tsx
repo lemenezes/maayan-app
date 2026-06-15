@@ -14,9 +14,11 @@ import { useAuth } from "../context/AuthContext";
 import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 import { submitAccessRequest } from "../services/accessRequestsService";
 import PrivacyPolicyModal from "../components/PrivacyPolicyModal";
+import TermsOfUseModal from "../components/TermsOfUseModal";
 
 const inputBase =
   "w-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-[#38B6D9]/40 transition-all duration-150 shadow-sm";
+const LEGAL_VERSION = "2026-06-15";
 
 function normalizePhoneDigits(value: string): string {
   const digitsOnly = value.replace(/\D/g, "");
@@ -117,6 +119,7 @@ export default function RequestAccessPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const { user, session, loading } = useAuth();
   const { withLoading } = useLoadingOverlay();
 
@@ -302,6 +305,7 @@ export default function RequestAccessPage() {
 
     const whatsappDigits = normalizePhoneDigits(form.whatsapp);
     const apartmentDigits = form.apartment.replace(/\D/g, "");
+    const acceptedAt = new Date().toISOString();
 
     setSubmitting(true);
     try {
@@ -313,7 +317,11 @@ export default function RequestAccessPage() {
           block: form.block.trim(),
           apartment: apartmentDigits,
           password: form.password,
-          message: form.message.trim() || undefined
+          message: form.message.trim() || undefined,
+          termsAcceptedAt: acceptedAt,
+          privacyAcceptedAt: acceptedAt,
+          termsVersion: LEGAL_VERSION,
+          privacyVersion: LEGAL_VERSION
         });
       });
       setSuccess(true);
@@ -650,12 +658,16 @@ export default function RequestAccessPage() {
               />
               <span className="text-white text-sm leading-relaxed">
                 Li e concordo com os{" "}
-                <Link
-                  to="/termos-de-uso"
-                  onClick={e => e.stopPropagation()}
+                <button
+                  type="button"
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsTermsModalOpen(true);
+                  }}
                   className="underline underline-offset-2 hover:text-white/80 transition-colors text-white font-inherit">
                   Termos de Uso
-                </Link>{" "}
+                </button>{" "}
                 e a{" "}
                 <button
                   type="button"
@@ -664,7 +676,7 @@ export default function RequestAccessPage() {
                     e.stopPropagation();
                     setIsPrivacyModalOpen(true);
                   }}
-                  className="underline underline-offset-2 hover:text-white/80 transition-colors bg-none border-none p-0 cursor-pointer text-white font-inherit">
+                  className="underline underline-offset-2 hover:text-white/80 transition-colors text-white font-inherit">
                   Política de Privacidade
                 </button>
                 .*
@@ -689,6 +701,10 @@ export default function RequestAccessPage() {
             para validação do seu cadastro de morador.
           </p>
         </form>
+        <TermsOfUseModal
+          isOpen={isTermsModalOpen}
+          onClose={() => setIsTermsModalOpen(false)}
+        />
         <PrivacyPolicyModal
           isOpen={isPrivacyModalOpen}
           onClose={() => setIsPrivacyModalOpen(false)}
