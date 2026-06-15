@@ -295,9 +295,23 @@ export default function ResidentsPage() {
     setBusy(s => new Set(s).add(req.id));
 
     try {
-      await deleteTestResident(req.id, deleteConfirmText, session.access_token);
+      const result = await deleteTestResident(
+        req.id,
+        deleteConfirmText,
+        session.access_token
+      );
       setRequests(prev => prev.filter(r => r.id !== req.id));
-      showToast("Cadastro removido com sucesso", "success");
+
+      if (result.emailSent) {
+        showToast("Cadastro removido e e-mail enviado", "success");
+      } else {
+        showToast(
+          result.warning ??
+            "Cadastro removido, mas e-mail ao morador/admin não foi enviado.",
+          "error"
+        );
+      }
+
       cancelDelete();
     } catch (err) {
       showToast(

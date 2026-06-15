@@ -223,7 +223,7 @@ export async function deleteTestResident(
   requestId: string,
   confirmationText: string,
   accessToken: string
-): Promise<void> {
+): Promise<{ emailSent: boolean; warning?: string }> {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
 
   const postDelete = async (phrase: string) => {
@@ -239,7 +239,8 @@ export async function deleteTestResident(
       }
     );
 
-    const body: { error?: string } = await res.json().catch(() => ({}));
+    const body: { error?: string; emailSent?: boolean; warning?: string } =
+      await res.json().catch(() => ({}));
     return { res, body };
   };
 
@@ -268,4 +269,9 @@ export async function deleteTestResident(
   if (!res.ok) {
     throw new Error(body.error ?? `Erro ao excluir registro (${res.status})`);
   }
+
+  return {
+    emailSent: body.emailSent ?? true,
+    warning: body.warning
+  };
 }
