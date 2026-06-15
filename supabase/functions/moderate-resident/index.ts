@@ -4,6 +4,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "lemenezes@gmail.com";
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://maayan.leandrom.com.br";
 const PROD_ORIGIN = "https://maayan.leandrom.com.br";
 const DEV_ORIGINS = new Set([
   "http://localhost:5173",
@@ -77,6 +81,85 @@ function normalizeWhatsapp(value: string): string {
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@([^\s@.]+\.)+[^\s@.]{2,}$/.test(value);
+}
+
+async function sendModerationStatusEmail(
+  action: ModerateAction,
+  request: AccessRequestRow
+): Promise<void> {
+  if (action !== "suspend" && action !== "reactivate") return;
+
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not set — skipping moderation email");
+    return;
+  }
+
+  const isSuspended = action === "suspend";
+  const subject = isSuspended
+    ? "Seu acesso ao Portal Maayan foi suspenso"
+    : "Seu acesso ao Portal Maayan foi reativado";
+
+  const title = isSuspended
+    ? "Seu acesso foi suspenso"
+    : "Seu acesso foi reativado";
+
+  const lead = isSuspended
+    ? `Olá, <strong>${request.full_name}</strong>. O acesso da sua conta no Portal Maayan foi suspenso pelo administrador do portal.`
+    : `Olá, <strong>${request.full_name}</strong>. O acesso da sua conta no Portal Maayan foi reativado pelo administrador do portal.`;
+
+  const guidance = isSuspended
+    ? "Se você acredita que isso ocorreu por engano ou precisa de suporte, entre em contato com o administrador do portal."
+    : "Você já pode voltar a acessar o portal normalmente com seu e-mail e senha cadastrados.";
+
+  const html = `
+    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
+      <div style="background:#0A3D62;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center">
+        <h1 style="margin:0;font-size:20px;font-weight:700;color:#fff">Portal Maayan · Condomínio Cidade Jardim</h1>
+      </div>
+
+      <h2 style="margin:0 0 12px;font-size:18px;font-weight:700">${title}</h2>
+
+      <p style="margin:0 0 16px;color:#64748b">
+        ${lead}
+      </p>
+
+      <p style="margin:0 0 24px;color:#64748b;font-size:13px">
+        ${guidance}
+      </p>
+
+      <a href="${SITE_URL}"
+         style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:10px;font-size:13px;margin-bottom:24px">
+        Entrar no Portal
+      </a>
+
+      <div style="margin-top:4px;padding-top:18px;border-top:1px solid #e2e8f0">
+        <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8">
+          Este é um e-mail automático do Portal Maayan. Por favor, não responda esta mensagem.
+          Para dúvidas ou informações, utilize os canais de contato disponíveis no portal.
+        </p>
+      </div>
+    </div>
+  `;
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`
+    },
+    body: JSON.stringify({
+      from: `Portal Maayan <${FROM_EMAIL}>`,
+      to: request.email,
+      bcc: ADMIN_EMAIL,
+      subject,
+      html
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Resend moderation email error:", errorBody);
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -371,6 +454,8 @@ Deno.serve(async (req: Request) => {
       }
     );
   }
+
+  await sendModerationStatusEmail(action, request);
 
   return new Response(JSON.stringify({ success: true, status: nextStatus }), {
     status: 200,

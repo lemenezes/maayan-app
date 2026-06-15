@@ -10,10 +10,10 @@ const AUTO_EMAIL_FOOTER = `
   <div style="margin-top:24px;padding-top:18px;border-top:1px solid #e2e8f0">
     <a href="${SITE_URL}"
        style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px;font-size:13px;margin-bottom:12px">
-      Acessar Maayan Desapego
+      Acessar Portal Maayan
     </a>
     <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8">
-      Este é um e-mail automático do Maayan Desapego. Por favor, não responda esta mensagem.
+      Este é um e-mail automático do Portal Maayan. Por favor, não responda esta mensagem.
       Para dúvidas ou informações, acesse o portal e utilize os canais de contato disponíveis no site.
     </p>
   </div>
@@ -105,13 +105,13 @@ Deno.serve(async (req: Request) => {
     html = `
       <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
         <h2 style="margin:0 0 8px;font-size:22px;font-weight:700">Anúncio enviado com sucesso!</h2>
-        <p style="margin:0 0 16px;color:#64748b">Seu anúncio <strong>"${title}"</strong> foi recebido e está aguardando aprovação do administrador do condomínio.</p>
+        <p style="margin:0 0 16px;color:#64748b">Seu anúncio <strong>"${title}"</strong> foi recebido e está aguardando aprovação do administrador do portal.</p>
         <p style="margin:0 0 24px;color:#64748b">Você receberá um novo e-mail assim que ele for revisado.</p>
         <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0;margin-bottom:24px">
           <p style="margin:0;font-size:13px;color:#94a3b8">🕐 Status atual: <strong style="color:#d97706">Aguardando aprovação</strong></p>
         </div>
         ${AUTO_EMAIL_FOOTER}
-        <p style="margin:0;font-size:12px;color:#94a3b8">Desapega Maayan — Classificados do Condomínio</p>
+        <p style="margin:0;font-size:12px;color:#94a3b8">Portal Maayan — Classificados do Condomínio</p>
       </div>
     `;
   } else if (justApproved) {
@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
           Ver meu anúncio
         </a>
         ${AUTO_EMAIL_FOOTER}
-        <p style="margin:0;font-size:12px;color:#94a3b8">Desapega Maayan — Classificados do Condomínio</p>
+        <p style="margin:0;font-size:12px;color:#94a3b8">Portal Maayan — Classificados do Condomínio</p>
       </div>
     `;
   } else {
@@ -133,9 +133,9 @@ Deno.serve(async (req: Request) => {
       <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
         <h2 style="margin:0 0 8px;font-size:22px;font-weight:700">Anúncio não aprovado</h2>
         <p style="margin:0 0 16px;color:#64748b">O anúncio <strong>"${title}"</strong> não foi aprovado pelo administrador.</p>
-        <p style="margin:0 0 24px;color:#64748b">Se tiver dúvidas, entre em contato com a administração do condomínio.</p>
+        <p style="margin:0 0 24px;color:#64748b">Se tiver dúvidas, entre em contato com o administrador do portal.</p>
         ${AUTO_EMAIL_FOOTER}
-        <p style="margin:0;font-size:12px;color:#94a3b8">Desapega Maayan — Classificados do Condomínio</p>
+        <p style="margin:0;font-size:12px;color:#94a3b8">Portal Maayan — Classificados do Condomínio</p>
       </div>
     `;
   }
@@ -148,7 +148,7 @@ Deno.serve(async (req: Request) => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: `Maayan Desapego <${FROM_EMAIL}>`,
+      from: `Portal Maayan <${FROM_EMAIL}>`,
       to: [email],
       bcc: ADMIN_EMAIL,
       subject,

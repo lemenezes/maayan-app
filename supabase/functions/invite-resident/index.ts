@@ -125,26 +125,22 @@ async function sendApprovalReleasedEmail(email: string): Promise<void> {
     <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1e293b">
       <h1 style="font-size:20px;margin:0 0 12px;color:#0C5A86">Seu acesso foi liberado</h1>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
-        Sua solicitacao de acesso ao Maayan foi aprovada pela administracao.
+        Sua solicitacao de acesso ao Portal Maayan foi aprovada pelo administrador do portal.
       </p>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
         Voce ja pode acessar o portal utilizando o e-mail e a senha cadastrados durante a solicitacao.
       </p>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
-        Se tiver qualquer dificuldade para acessar, entre em contato com a administracao.
+        Se tiver qualquer dificuldade para acessar, entre em contato com o administrador do portal.
       </p>
       <a href="${APPROVED_LOGIN_URL}"
          style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;font-size:14px">
-        Entrar no Maayan
+        Entrar no Portal
       </a>
 
       <div style="margin-top:24px;padding-top:18px;border-top:1px solid #e2e8f0">
-        <a href="${SITE_URL}"
-           style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px;font-size:13px;margin-bottom:12px">
-          Acessar Maayan Desapego
-        </a>
         <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8">
-          Este é um e-mail automático do Maayan Desapego. Por favor, não responda esta mensagem.
+          Este é um e-mail automático do Portal Maayan. Por favor, não responda esta mensagem.
           Para dúvidas ou informações, acesse o portal e utilize os canais de contato disponíveis no site.
         </p>
       </div>
@@ -158,7 +154,7 @@ async function sendApprovalReleasedEmail(email: string): Promise<void> {
       Authorization: `Bearer ${RESEND_API_KEY}`
     },
     body: JSON.stringify({
-      from: `Maayan Desapego <${FROM_EMAIL}>`,
+      from: `Portal Maayan <${FROM_EMAIL}>`,
       to: email,
       bcc: ADMIN_EMAIL,
       subject,

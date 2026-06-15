@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
       ${reasonBlock}
 
       <p style="margin:0 0 24px;color:#64748b;font-size:13px">
-        Se acredita que houve um engano ou tem dúvidas, entre em contato diretamente com a administração do condomínio.
+        Se acredita que houve um engano ou tem dúvidas, entre em contato diretamente com o administrador do portal.
       </p>
 
       <a href="${SITE_URL}/solicitar-acesso"
@@ -190,10 +190,10 @@ Deno.serve(async (req: Request) => {
       <div style="margin-top:4px;padding-top:18px;border-top:1px solid #e2e8f0">
         <a href="${SITE_URL}"
            style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px;font-size:13px;margin-bottom:12px">
-          Acessar Maayan Desapego
+          Acessar Portal Maayan
         </a>
         <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8">
-          Este é um e-mail automático do Maayan Desapego. Por favor, não responda esta mensagem.
+          Este é um e-mail automático do Portal Maayan. Por favor, não responda esta mensagem.
           Para dúvidas ou informações, acesse o portal e utilize os canais de contato disponíveis no site.
         </p>
       </div>
@@ -209,7 +209,7 @@ Deno.serve(async (req: Request) => {
       Authorization: `Bearer ${RESEND_API_KEY}`
     },
     body: JSON.stringify({
-      from: `Maayan Desapego <${FROM_EMAIL}>`,
+      from: `Portal Maayan <${FROM_EMAIL}>`,
       to: request.email,
       bcc: ADMIN_EMAIL,
       subject: "Sua solicitação de acesso ao Maayan",
