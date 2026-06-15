@@ -189,7 +189,19 @@ Deno.serve(async (req: Request) => {
         .maybeSingle<ProfileRow>()
     : { data: null };
 
-  const operationalStatus = linkedProfile?.status ?? request.status;
+  let hasAuthUser = false;
+  if (request.auth_user_id) {
+    const { data: authData, error: authLookupError } =
+      await adminClient.auth.admin.getUserById(request.auth_user_id);
+    hasAuthUser = !authLookupError && Boolean(authData?.user?.id);
+  }
+
+  const isInconsistentOperationalState =
+    request.status === "approved" && !linkedProfile && !hasAuthUser;
+
+  const operationalStatus =
+    linkedProfile?.status ??
+    (isInconsistentOperationalState ? "inconsistent" : request.status);
 
   if (operationalStatus === "approved") {
     return new Response(
