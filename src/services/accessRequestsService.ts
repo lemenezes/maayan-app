@@ -116,7 +116,7 @@ export async function rejectAccessRequest(
   id: string,
   accessToken: string,
   reason?: string
-): Promise<void> {
+): Promise<{ emailSent: boolean; warning?: string }> {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
   const res = await fetch(`${supabaseUrl}/functions/v1/reject-resident`, {
     method: "POST",
@@ -133,6 +133,15 @@ export async function rejectAccessRequest(
       body.error ?? `Erro ao rejeitar solicitação (${res.status})`
     );
   }
+
+  const body: { emailSent?: boolean; warning?: string } = await res
+    .json()
+    .catch(() => ({}));
+
+  return {
+    emailSent: body.emailSent ?? true,
+    warning: body.warning
+  };
 }
 
 // ─── Admin: aprovar solicitação (via Edge Function) ───────────────────────────

@@ -21,6 +21,12 @@ interface AccessRequest {
   status: string;
 }
 
+interface RejectResidentResponse {
+  success: boolean;
+  emailSent: boolean;
+  warning?: string;
+}
+
 Deno.serve(async (req: Request) => {
   console.log("reject-resident called", req.method);
 
@@ -52,7 +58,8 @@ Deno.serve(async (req: Request) => {
     error: userError
   } = await userClient.auth.getUser();
   console.log("User found:", !!user, "error:", userError?.message);
-  if (userError || !user) return new Response("Unauthorized", { status: 401 });
+  if (userError || !user)
+    return new Response("Unauthorized", { status: 401, headers: CORS_HEADERS });
 
   // ── Verificar que é admin ────────────────────────────────────────────────
   const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -67,7 +74,7 @@ Deno.serve(async (req: Request) => {
 
   console.log("Caller role:", callerProfile?.role);
   if (callerProfile?.role !== "admin") {
-    return new Response("Forbidden", { status: 403 });
+    return new Response("Forbidden", { status: 403, headers: CORS_HEADERS });
   }
 
   // ── Ler body ─────────────────────────────────────────────────────────────
@@ -78,10 +85,17 @@ Deno.serve(async (req: Request) => {
     requestId = body.requestId;
     reason = body.reason?.trim() || undefined;
   } catch {
-    return new Response("Invalid JSON body", { status: 400 });
+    return new Response("Invalid JSON body", {
+      status: 400,
+      headers: CORS_HEADERS
+    });
   }
 
-  if (!requestId) return new Response("Missing requestId", { status: 400 });
+  if (!requestId)
+    return new Response("Missing requestId", {
+      status: 400,
+      headers: CORS_HEADERS
+    });
 
   // ── Buscar solicitação ────────────────────────────────────────────────────
   const { data: request, error: reqError } = await adminClient
@@ -91,9 +105,15 @@ Deno.serve(async (req: Request) => {
     .single<AccessRequest>();
 
   if (reqError || !request)
-    return new Response("Solicitação não encontrada", { status: 404 });
+    return new Response("Solicitação não encontrada", {
+      status: 404,
+      headers: CORS_HEADERS
+    });
   if (request.status !== "pending")
-    return new Response("Solicitação já processada", { status: 400 });
+    return new Response("Solicitação já processada", {
+      status: 400,
+      headers: CORS_HEADERS
+    });
 
   // ── Atualizar status no DB ────────────────────────────────────────────────
   const { error: updateError } = await adminClient
@@ -108,15 +128,31 @@ Deno.serve(async (req: Request) => {
 
   if (updateError) {
     console.error("DB update error:", updateError);
-    return new Response("Erro ao atualizar solicitação", { status: 500 });
+    return new Response("Erro ao atualizar solicitação", {
+      status: 500,
+      headers: CORS_HEADERS
+    });
   }
+
+  const jsonHeaders = {
+    "Content-Type": "application/json",
+    ...CORS_HEADERS
+  };
+
+  const ok = (payload: RejectResidentResponse) =>
+    new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: jsonHeaders
+    });
 
   // ── Enviar email ao solicitante ───────────────────────────────────────────
   if (!RESEND_API_KEY) {
     console.warn("RESEND_API_KEY not set — skipping rejection email");
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
+    return ok({
+      success: true,
+      emailSent: false,
+      warning:
+        "Solicitação rejeitada, mas o e-mail não foi enviado (RESEND_API_KEY ausente)."
     });
   }
 
@@ -182,11 +218,13 @@ Deno.serve(async (req: Request) => {
   if (!resendRes.ok) {
     const body = await resendRes.text();
     console.error("Resend error:", body);
-    // Não falha — o DB já foi atualizado
+    return ok({
+      success: true,
+      emailSent: false,
+      warning:
+        "Solicitação rejeitada, mas houve falha no envio do e-mail ao solicitante."
+    });
   }
 
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: { "Content-Type": "application/json", ...CORS_HEADERS }
-  });
+  return ok({ success: true, emailSent: true });
 });

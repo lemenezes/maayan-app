@@ -435,7 +435,7 @@ export default function ResidentsPage() {
     setBusy(s => new Set(s).add(req.id));
     setRejectingId(null);
     try {
-      await rejectAccessRequest(
+      const result = await rejectAccessRequest(
         req.id,
         session.access_token,
         rejectReason || undefined
@@ -452,10 +452,18 @@ export default function ResidentsPage() {
             : r
         )
       );
-      showToast(
-        "Solicitação rejeitada — e-mail enviado ao solicitante",
-        "success"
-      );
+      if (result.emailSent) {
+        showToast(
+          "Solicitação rejeitada — e-mail enviado ao solicitante",
+          "success"
+        );
+      } else {
+        showToast(
+          result.warning ??
+            "Solicitação rejeitada, mas o e-mail ao solicitante não foi enviado.",
+          "error"
+        );
+      }
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "Erro ao rejeitar",

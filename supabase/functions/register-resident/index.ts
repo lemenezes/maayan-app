@@ -31,6 +31,24 @@ interface RegisterResidentPayload {
   privacyVersion?: string;
 }
 
+function isMissingLegalColumnError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const maybeError = error as { code?: string; message?: string };
+  const message = (maybeError.message ?? "").toLowerCase();
+  const code = (maybeError.code ?? "").toUpperCase();
+
+  const mentionsLegalColumn =
+    message.includes("terms_accepted_at") ||
+    message.includes("privacy_accepted_at") ||
+    message.includes("terms_version") ||
+    message.includes("privacy_version");
+
+  return (
+    mentionsLegalColumn || code === "42703" || message.includes("schema cache")
+  );
+}
+
 function resolveAllowedOrigin(req: Request): string | null {
   const origin = req.headers.get("origin");
 
@@ -116,6 +134,16 @@ Deno.serve(async (req: Request) => {
   const privacyAcceptedAt = (body.privacyAcceptedAt ?? "").trim();
   const termsVersion = (body.termsVersion ?? "").trim();
   const privacyVersion = (body.privacyVersion ?? "").trim();
+  const hasAnyLegalField =
+    Boolean(termsAcceptedAt) ||
+    Boolean(privacyAcceptedAt) ||
+    Boolean(termsVersion) ||
+    Boolean(privacyVersion);
+  const hasCompleteLegalFields =
+    Boolean(termsAcceptedAt) &&
+    Boolean(privacyAcceptedAt) &&
+    Boolean(termsVersion) &&
+    Boolean(privacyVersion);
 
   if (!fullName || !email || !whatsapp || !block || !apartment || !password) {
     return new Response(
@@ -127,12 +155,8 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  if (
-    !termsAcceptedAt ||
-    !privacyAcceptedAt ||
-    !termsVersion ||
-    !privacyVersion
-  ) {
+  // Compatibilidade: aceitar payload antigo sem campos legais em rollout.
+  if (hasAnyLegalField && !hasCompleteLegalFields) {
     return new Response(
       JSON.stringify({ error: "Aceite legal obrigatorio nao informado." }),
       {
@@ -142,20 +166,22 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const parsedTermsAcceptedAt = new Date(termsAcceptedAt);
-  const parsedPrivacyAcceptedAt = new Date(privacyAcceptedAt);
+  if (hasCompleteLegalFields) {
+    const parsedTermsAcceptedAt = new Date(termsAcceptedAt);
+    const parsedPrivacyAcceptedAt = new Date(privacyAcceptedAt);
 
-  if (
-    Number.isNaN(parsedTermsAcceptedAt.getTime()) ||
-    Number.isNaN(parsedPrivacyAcceptedAt.getTime())
-  ) {
-    return new Response(
-      JSON.stringify({ error: "Data de aceite legal invalida." }),
-      {
-        status: 400,
-        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
-      }
-    );
+    if (
+      Number.isNaN(parsedTermsAcceptedAt.getTime()) ||
+      Number.isNaN(parsedPrivacyAcceptedAt.getTime())
+    ) {
+      return new Response(
+        JSON.stringify({ error: "Data de aceite legal invalida." }),
+        {
+          status: 400,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
   }
 
   if (!isValidEmail(email)) {
@@ -286,21 +312,42 @@ Deno.serve(async (req: Request) => {
 
   // Atualizar access_request rejected ou criar novo
   if (existingRequest?.status === "rejected") {
-    const { error: updateError } = await adminClient
+    const baseUpdate = {
+      full_name: fullName,
+      whatsapp,
+      block,
+      apartment,
+      message,
+      status: "pending"
+    };
+
+    const updateWithLegal = {
+      ...baseUpdate,
+      terms_accepted_at: termsAcceptedAt,
+      privacy_accepted_at: privacyAcceptedAt,
+      terms_version: termsVersion,
+      privacy_version: privacyVersion
+    };
+
+    let { error: updateError } = await adminClient
       .from("access_requests")
-      .update({
-        full_name: fullName,
-        whatsapp,
-        block,
-        apartment,
-        message,
-        terms_accepted_at: termsAcceptedAt,
-        privacy_accepted_at: privacyAcceptedAt,
-        terms_version: termsVersion,
-        privacy_version: privacyVersion,
-        status: "pending"
-      })
+      .update(hasCompleteLegalFields ? updateWithLegal : baseUpdate)
       .eq("id", existingRequest.id);
+
+    if (
+      updateError &&
+      hasCompleteLegalFields &&
+      isMissingLegalColumnError(updateError)
+    ) {
+      console.warn(
+        "Legal columns missing in access_requests; retrying update without legal fields."
+      );
+
+      ({ error: updateError } = await adminClient
+        .from("access_requests")
+        .update(baseUpdate)
+        .eq("id", existingRequest.id));
+    }
 
     if (updateError) {
       console.error("Access request update error:", updateError);
@@ -313,22 +360,42 @@ Deno.serve(async (req: Request) => {
       );
     }
   } else {
-    const { error: requestError } = await adminClient
+    const baseInsert = {
+      auth_user_id: authUserId,
+      full_name: fullName,
+      email,
+      whatsapp,
+      block,
+      apartment,
+      message,
+      status: "pending"
+    };
+
+    const insertWithLegal = {
+      ...baseInsert,
+      terms_accepted_at: termsAcceptedAt,
+      privacy_accepted_at: privacyAcceptedAt,
+      terms_version: termsVersion,
+      privacy_version: privacyVersion
+    };
+
+    let { error: requestError } = await adminClient
       .from("access_requests")
-      .insert({
-        auth_user_id: authUserId,
-        full_name: fullName,
-        email,
-        whatsapp,
-        block,
-        apartment,
-        message,
-        terms_accepted_at: termsAcceptedAt,
-        privacy_accepted_at: privacyAcceptedAt,
-        terms_version: termsVersion,
-        privacy_version: privacyVersion,
-        status: "pending"
-      });
+      .insert(hasCompleteLegalFields ? insertWithLegal : baseInsert);
+
+    if (
+      requestError &&
+      hasCompleteLegalFields &&
+      isMissingLegalColumnError(requestError)
+    ) {
+      console.warn(
+        "Legal columns missing in access_requests; retrying insert without legal fields."
+      );
+
+      ({ error: requestError } = await adminClient
+        .from("access_requests")
+        .insert(baseInsert));
+    }
 
     if (requestError) {
       console.error("Access request insert error:", requestError);
