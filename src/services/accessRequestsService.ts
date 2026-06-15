@@ -1,12 +1,6 @@
 import { supabase } from "../lib/supabase";
 import type { AccessRequest } from "../types";
 
-type ProfileOperationalStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "suspended";
-
 export interface ResidentEditableFields {
   full_name: string;
   email: string;
@@ -49,95 +43,33 @@ export async function submitAccessRequest(data: {
   }
 }
 
-// ─── Admin: listar todas as solicitações ─────────────────────────────────────
+// ─── Admin: listar todas as solicitações (via Edge Function com service role) ─
 
 export async function fetchAccessRequests(): Promise<AccessRequest[]> {
-  const { data, error } = await supabase
-    .from("access_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
 
-  const requests = (data ?? []) as AccessRequest[];
-  const authUserIds = Array.from(
-    new Set(
-      requests
-        .map(request => request.auth_user_id)
-        .filter((id): id is string => Boolean(id))
-    )
-  );
-
-  const profileStatusById = new Map<string, ProfileOperationalStatus>();
-  const profileStatusByEmail = new Map<string, ProfileOperationalStatus>();
-
-  if (authUserIds.length > 0) {
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("id, status")
-      .in("id", authUserIds);
-
-    if (profilesError) throw new Error(profilesError.message);
-
-    for (const profile of profiles ?? []) {
-      profileStatusById.set(
-        profile.id,
-        profile.status as ProfileOperationalStatus
-      );
-    }
+  if (!token) {
+    throw new Error("Not authenticated");
   }
 
-  const emails = Array.from(
-    new Set(
-      requests
-        .map(request => request.email?.trim().toLowerCase())
-        .filter((email): email is string => Boolean(email))
-    )
-  );
-
-  if (emails.length > 0) {
-    const { data: profilesByEmail, error: profilesByEmailError } =
-      await supabase
-        .from("profiles")
-        .select("email, status")
-        .in("email", emails);
-
-    if (profilesByEmailError) throw new Error(profilesByEmailError.message);
-
-    for (const profile of profilesByEmail ?? []) {
-      if (!profile.email) continue;
-      profileStatusByEmail.set(
-        profile.email.trim().toLowerCase(),
-        profile.status as ProfileOperationalStatus
-      );
+  const res = await fetch(`${supabaseUrl}/functions/v1/get-residents`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
     }
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(
+      error.error ?? `Failed to fetch residents (${res.status})`
+    );
   }
 
-  return requests.map(request => ({
-    ...request,
-    operational_status: (() => {
-      const statusFromId = request.auth_user_id
-        ? profileStatusById.get(request.auth_user_id)
-        : undefined;
-      const statusFromEmail = profileStatusByEmail.get(
-        request.email.trim().toLowerCase()
-      );
-      const resolvedProfileStatus = statusFromId ?? statusFromEmail;
-
-      if (resolvedProfileStatus) {
-        return resolvedProfileStatus;
-      }
-
-      if (request.status === "approved") {
-        return "inconsistent";
-      }
-
-      return request.status;
-    })(),
-    has_profile:
-      Boolean(
-        request.auth_user_id && profileStatusById.has(request.auth_user_id)
-      ) || profileStatusByEmail.has(request.email.trim().toLowerCase())
-  }));
+  return (await res.json()) as AccessRequest[];
 }
 
 // ─── Admin: rejeitar solicitação (via Edge Function) ────────────────────────
