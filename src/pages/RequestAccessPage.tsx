@@ -345,7 +345,7 @@ export default function RequestAccessPage() {
 
   if (!loading && hasActiveSession) {
     return (
-      <div className="flex-1 flex items-center justify-center px-4 py-16 sm:py-24 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
+      <div className="min-h-[calc(100vh-80px-260px)] flex items-center justify-center px-4 py-16 sm:py-24 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
         <div className="w-full max-w-xl text-center flex flex-col items-center mx-auto">
           <div className="w-16 h-16 bg-sky-50 dark:bg-sky-950/40 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-sky-200 dark:border-sky-800">
             <CheckCircle
