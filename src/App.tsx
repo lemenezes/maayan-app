@@ -18,6 +18,7 @@ import EditListingPage from "./pages/EditListingPage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import AdminListingsPage from "./pages/AdminListingsPage";
 import ResidentsPage from "./pages/admin/ResidentsPage";
+import HelpPage from "./pages/HelpPage.tsx";
 import AuthPage from "./pages/AuthPage";
 import SetPasswordPage from "./pages/SetPasswordPage";
 import RequestAccessPage from "./pages/RequestAccessPage";
@@ -45,6 +46,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ListingDetailPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "ajuda",
+        element: (
+          <ProtectedRoute>
+            <HelpPage />
           </ProtectedRoute>
         )
       },

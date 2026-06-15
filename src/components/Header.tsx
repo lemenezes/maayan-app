@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { Home, Megaphone, UserCog } from "lucide-react";
+import { CircleHelp, Home, Megaphone, UserCog } from "lucide-react";
 
 interface NavItem {
   to: string;
@@ -14,6 +14,12 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Início", icon: <Home size={16} />, end: true },
   { to: "/anuncios", label: "Anúncios", icon: <Megaphone size={16} /> },
+  {
+    to: "/ajuda",
+    label: "Ajuda",
+    icon: <CircleHelp size={15} />,
+    requiresAuth: true
+  },
   {
     to: "/meus-anuncios",
     label: "Meus anúncios",
