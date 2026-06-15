@@ -249,20 +249,24 @@ Deno.serve(async (req: Request) => {
   let deletedProfile = false;
   let deletedAuthUser = false;
 
-  if (request.auth_user_id && linkedProfile && linkedProfile.status !== "suspended") {
-    const { data: removedProfiles, error: removeProfileError } = await adminClient
-      .from("profiles")
-      .delete()
-      .eq("id", request.auth_user_id)
-      .select("id");
+  if (
+    request.auth_user_id &&
+    linkedProfile &&
+    linkedProfile.status !== "suspended"
+  ) {
+    const { data: removedProfiles, error: removeProfileError } =
+      await adminClient
+        .from("profiles")
+        .delete()
+        .eq("id", request.auth_user_id)
+        .select("id");
 
     if (!removeProfileError) {
       deletedProfile = Boolean(removedProfiles?.length);
 
       if (deletedProfile) {
-        const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(
-          request.auth_user_id
-        );
+        const { error: authDeleteError } =
+          await adminClient.auth.admin.deleteUser(request.auth_user_id);
         deletedAuthUser = !authDeleteError;
       }
     }
