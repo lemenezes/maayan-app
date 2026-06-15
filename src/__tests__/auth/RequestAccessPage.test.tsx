@@ -46,10 +46,10 @@ describe("RequestAccessPage", () => {
     renderPage();
 
     expect(
-      screen.getByText("Você já possui acesso ao portal.")
+      screen.getByText("Você já está conectado ao Maayan Desapego.")
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /voltar ao início/i })
+      screen.getByRole("link", { name: /voltar para página inicial/i })
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /enviar solicitação/i })
@@ -70,7 +70,7 @@ describe("RequestAccessPage", () => {
       screen.getByRole("button", { name: /enviar solicitação/i })
     ).toBeInTheDocument();
     expect(
-      screen.queryByText("Você já possui acesso ao portal.")
+      screen.queryByText("Você já está conectado ao Maayan Desapego.")
     ).not.toBeInTheDocument();
   });
 });

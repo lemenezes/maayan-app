@@ -345,8 +345,8 @@ export default function RequestAccessPage() {
 
   if (!loading && hasActiveSession) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-20 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
-        <div className="w-full max-w-xl min-h-[320px] text-center flex flex-col justify-center mx-auto">
+      <div className="py-16 sm:py-24 flex items-center justify-center px-4 bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9]">
+        <div className="w-full max-w-xl text-center flex flex-col items-center mx-auto">
           <div className="w-16 h-16 bg-sky-50 dark:bg-sky-950/40 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-sky-200 dark:border-sky-800">
             <CheckCircle
               className="w-8 h-8 text-sky-600 dark:text-sky-400"
@@ -354,17 +354,17 @@ export default function RequestAccessPage() {
             />
           </div>
           <h2 className="font-['Cormorant_Garamond'] text-3xl font-semibold text-white mb-3">
-            Você já possui acesso ao portal.
+            Você já está conectado ao Maayan Desapego.
           </h2>
           <p className="text-white text-sm leading-relaxed mb-8">
-            Sua conta já está autenticada. Para continuar navegando, volte para
-            a página inicial.
+            Caso queira continuar navegando, utilize o menu superior ou retorne
+            para a página inicial.
           </p>
-          <div className="flex justify-center">
-            <Link to="/" className="text-white underline underline-offset-4">
-              ← Voltar ao início
-            </Link>
-          </div>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-white text-[#0C5A86] px-6 py-3 rounded-xl font-semibold text-sm shadow-lg hover:bg-sky-50 hover:shadow-xl hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 outline-none focus:ring-2 focus:ring-white/40">
+            Voltar para página inicial
+          </Link>
         </div>
       </div>
     );
