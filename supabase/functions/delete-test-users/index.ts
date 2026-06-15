@@ -3,11 +3,11 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
-Deno.serve(async (req) => {
+Deno.serve(async req => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }
     });
   }
 
@@ -17,20 +17,16 @@ Deno.serve(async (req) => {
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }
       });
     }
 
     const token = authHeader.slice(7);
 
-    // Cliente anon para verificar se é admin
-    const anonClient = createClient(supabaseUrl, authHeader.slice(7), {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Cliente com service role para verificar e executar
+    const client = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    const { data: user, error: userError } = await anonClient.auth.getUser(
-      token
-    );
+    const { data: user, error: userError } = await client.auth.getUser(token);
 
     if (userError || !user?.user) {
       return new Response(
@@ -40,73 +36,54 @@ Deno.serve(async (req) => {
     }
 
     // Verificar se é admin
-    const { data: profiles, error: profileError } = await anonClient
+    const { data: profiles } = await client
       .from("profiles")
       .select("role")
       .eq("id", user.user.id)
       .single();
 
-    if (profileError || !profiles || profiles.role !== "admin") {
+    if (!profiles || profiles.role !== "admin") {
       return new Response(
         JSON.stringify({ error: "Forbidden: Must be admin" }),
         { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Cliente com service role para deletar usuários
-    const serviceClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+    // Parse request body
+    const { email } = await req.json();
 
-    // Parse request body para pegar user IDs
-    const { userIds } = await req.json();
-
-    if (!Array.isArray(userIds) || userIds.length === 0) {
+    if (!email || typeof email !== "string") {
       return new Response(
-        JSON.stringify({ error: "userIds must be a non-empty array" }),
+        JSON.stringify({ error: "email must be provided" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Deletar cada usuário
-    const results = [];
-    for (const userId of userIds) {
-      try {
-        const { error } = await serviceClient.auth.admin.deleteUser(userId);
+    // Chamar função SQL via RPC
+    const { data, error } = await client.rpc("delete_test_user_and_auth", {
+      email_to_delete: email
+    });
 
-        if (error) {
-          results.push({
-            userId,
-            success: false,
-            error: error.message,
-          });
-        } else {
-          results.push({
-            userId,
-            success: true,
-            message: "User deleted",
-          });
-        }
-      } catch (e) {
-        results.push({
-          userId,
-          success: false,
-          error: String(e),
-        });
-      }
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
-    return new Response(JSON.stringify({ results }), {
+    return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
     return new Response(
       JSON.stringify({
         error: "Internal server error",
-        details: String(error),
+        details: String(error)
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }
       }
     );
   }
