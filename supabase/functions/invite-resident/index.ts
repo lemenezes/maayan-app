@@ -125,10 +125,10 @@ async function sendApprovalReleasedEmail(email: string): Promise<void> {
     <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1e293b">
       <h1 style="font-size:20px;margin:0 0 12px;color:#0C5A86">Seu acesso foi liberado</h1>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
-        Sua solicitacao de acesso ao Portal Maayan foi aprovada pelo administrador do portal.
+        Sua solicitação de acesso ao Portal Maayan foi aprovada pelo administrador do portal.
       </p>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
-        Voce ja pode acessar o portal utilizando o e-mail e a senha cadastrados durante a solicitacao.
+        Você já pode acessar o portal utilizando o e-mail e a senha cadastrados durante a solicitação.
       </p>
       <p style="font-size:14px;line-height:1.5;margin:0 0 18px">
         Se tiver qualquer dificuldade para acessar, entre em contato com o administrador do portal.

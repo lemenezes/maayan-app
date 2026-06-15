@@ -147,7 +147,7 @@ Deno.serve(async (req: Request) => {
 
   if (!fullName || !email || !whatsapp || !block || !apartment || !password) {
     return new Response(
-      JSON.stringify({ error: "Dados obrigatorios ausentes." }),
+      JSON.stringify({ error: "Dados obrigatórios ausentes." }),
       {
         status: 400,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -158,7 +158,7 @@ Deno.serve(async (req: Request) => {
   // Compatibilidade: aceitar payload antigo sem campos legais em rollout.
   if (hasAnyLegalField && !hasCompleteLegalFields) {
     return new Response(
-      JSON.stringify({ error: "Aceite legal obrigatorio nao informado." }),
+      JSON.stringify({ error: "Aceite legal obrigatório não informado." }),
       {
         status: 400,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -175,7 +175,7 @@ Deno.serve(async (req: Request) => {
       Number.isNaN(parsedPrivacyAcceptedAt.getTime())
     ) {
       return new Response(
-        JSON.stringify({ error: "Data de aceite legal invalida." }),
+        JSON.stringify({ error: "Data de aceite legal inválida." }),
         {
           status: 400,
           headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -185,7 +185,7 @@ Deno.serve(async (req: Request) => {
   }
 
   if (!isValidEmail(email)) {
-    return new Response(JSON.stringify({ error: "E-mail invalido." }), {
+    return new Response(JSON.stringify({ error: "E-mail inválido." }), {
       status: 400,
       headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
     });
@@ -217,7 +217,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         error:
-          "Este cadastro esta suspenso. Fale com a administracao para reativacao."
+          "Este cadastro está suspenso. Fale com a administração para reativação."
       }),
       {
         status: 409,
@@ -242,7 +242,7 @@ Deno.serve(async (req: Request) => {
   ) {
     const errorMessage =
       existingRequest.status === "pending"
-        ? "Ja existe uma solicitacao pendente para este e-mail."
+        ? "Já existe uma solicitação pendente para este e-mail."
         : "Este e-mail já possui acesso ao portal. Faça login para continuar.";
 
     return new Response(JSON.stringify({ error: errorMessage }), {
@@ -273,7 +273,7 @@ Deno.serve(async (req: Request) => {
       const normalizedMessage = (createUserError?.message ?? "").toLowerCase();
       const userFacingMessage = normalizedMessage.includes("already")
         ? "Este e-mail já possui acesso ao portal. Faça login para continuar."
-        : (createUserError?.message ?? "Nao foi possivel criar o usuario.");
+        : (createUserError?.message ?? "Não foi possível criar o usuário.");
 
       return new Response(JSON.stringify({ error: userFacingMessage }), {
         status: normalizedMessage.includes("already") ? 409 : 500,
@@ -352,7 +352,7 @@ Deno.serve(async (req: Request) => {
     if (updateError) {
       console.error("Access request update error:", updateError);
       return new Response(
-        JSON.stringify({ error: "Falha ao atualizar solicitacao de acesso." }),
+        JSON.stringify({ error: "Falha ao atualizar solicitação de acesso." }),
         {
           status: 500,
           headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -401,7 +401,7 @@ Deno.serve(async (req: Request) => {
       console.error("Access request insert error:", requestError);
       await adminClient.auth.admin.deleteUser(authUserId);
       return new Response(
-        JSON.stringify({ error: "Falha ao registrar solicitacao de acesso." }),
+        JSON.stringify({ error: "Falha ao registrar solicitação de acesso." }),
         {
           status: 500,
           headers: buildCorsHeaders(req, { "Content-Type": "application/json" })

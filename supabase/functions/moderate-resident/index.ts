@@ -235,7 +235,7 @@ Deno.serve(async (req: Request) => {
 
   if (!requestId || !action) {
     return new Response(
-      JSON.stringify({ error: "requestId e action sao obrigatorios." }),
+      JSON.stringify({ error: "requestId e action são obrigatórios." }),
       {
         status: 400,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -252,7 +252,7 @@ Deno.serve(async (req: Request) => {
     .single<AccessRequestRow>();
 
   if (requestError || !request) {
-    return new Response(JSON.stringify({ error: "Morador nao encontrado." }), {
+    return new Response(JSON.stringify({ error: "Morador não encontrado." }), {
       status: 404,
       headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
     });
@@ -339,7 +339,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!isValidEmail(email)) {
-      return new Response(JSON.stringify({ error: "E-mail invalido." }), {
+      return new Response(JSON.stringify({ error: "E-mail inválido." }), {
         status: 400,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
       });
@@ -401,7 +401,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         error:
-          "Perfil do morador nao encontrado. Aprove novamente ou atualize o vínculo deste cadastro antes de suspender/reativar."
+          "Perfil do morador não encontrado. Aprove novamente ou atualize o vínculo deste cadastro antes de suspender/reativar."
       }),
       {
         status: 404,

@@ -18,12 +18,12 @@ export default function AccessNotApprovedPage() {
       </h1>
 
       <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-2">
-        Seu cadastro nao foi aprovado pela administracao do condominio.
+        Seu cadastro não foi aprovado pela administração do condomínio.
       </p>
 
       {user?.email && (
         <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-          Caso precise de mais informacoes, entre em contato usando o e-mail{" "}
+          Caso precise de mais informações, entre em contato usando o e-mail{" "}
           <strong className="text-slate-700 dark:text-slate-300">
             {user.email}
           </strong>
@@ -35,8 +35,8 @@ export default function AccessNotApprovedPage() {
         <div className="flex items-start gap-3">
           <Mail className="w-4 h-4 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
           <p className="text-red-700 dark:text-red-300 text-xs leading-relaxed">
-            Se houve algum erro no cadastro, solicite uma nova analise com a
-            administracao.
+            Se houve algum erro no cadastro, solicite uma nova análise com a
+            administração.
           </p>
         </div>
       </div>

@@ -54,7 +54,7 @@ export default function ProtectedRoute({
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="max-w-md text-center">
           <p className="text-slate-700 dark:text-slate-200 font-semibold mb-2">
-            Nao foi possivel verificar seu cadastro agora.
+            Não foi possível verificar seu cadastro agora.
           </p>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
             Tente novamente em instantes.
@@ -102,10 +102,10 @@ export default function ProtectedRoute({
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="max-w-md text-center">
           <p className="text-slate-700 dark:text-slate-200 font-semibold mb-2">
-            Seu acesso ainda nao foi liberado.
+            Seu acesso ainda não foi liberado.
           </p>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Se o problema persistir, fale com a administracao.
+            Se o problema persistir, fale com a administração.
           </p>
         </div>
       </div>

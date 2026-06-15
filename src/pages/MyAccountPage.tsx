@@ -55,8 +55,8 @@ export default function MyAccountPage() {
   }, [profile, user?.email]);
 
   const email = emailInput;
-  const block = profile?.block ?? "Nao informado";
-  const apartment = profile?.apartment ?? "Nao informado";
+  const block = profile?.block ?? "Não informado";
+  const apartment = profile?.apartment ?? "Não informado";
   const normalizedName = fullName.trim();
   const normalizedEmail = emailInput.trim().toLowerCase();
   const currentName = (profile?.full_name ?? "").trim();
@@ -81,12 +81,12 @@ export default function MyAccountPage() {
   const emailHint = !normalizedEmail
     ? "Preencha o campo E-mail para salvar."
     : !isEmailValid
-      ? "Informe um e-mail valido."
+    ? "Informe um e-mail válido."
       : null;
   const phoneHint = !isPhoneFilled
     ? "Preencha o campo WhatsApp para salvar."
     : !isPhoneValid
-      ? "WhatsApp deve ter pelo menos 10 digitos com DDD."
+      ? "WhatsApp deve ter pelo menos 10 dígitos com DDD."
       : null;
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -107,7 +107,7 @@ export default function MyAccountPage() {
     }
 
     if (!isEmailValid) {
-      setProfileError("Informe um e-mail valido.");
+      setProfileError("Informe um e-mail válido.");
       return;
     }
 
@@ -117,7 +117,7 @@ export default function MyAccountPage() {
     }
 
     if (phoneDigits.length < 10) {
-      setProfileError("Informe um telefone valido com DDD.");
+      setProfileError("Informe um telefone válido com DDD.");
       return;
     }
 
@@ -145,7 +145,7 @@ export default function MyAccountPage() {
       if (error) throw error;
       if (!updatedProfile) {
         throw new Error(
-          "Nao foi possivel salvar seu perfil. Verifique suas permissoes de acesso."
+          "Não foi possível salvar seu perfil. Verifique suas permissões de acesso."
         );
       }
 
@@ -155,7 +155,7 @@ export default function MyAccountPage() {
       const message =
         error instanceof Error
           ? error.message
-          : "Nao foi possivel atualizar seu perfil.";
+          : "Não foi possível atualizar seu perfil.";
       setProfileError(message);
       showToast("Erro ao atualizar perfil. Tente novamente.", "error");
     } finally {
@@ -214,7 +214,7 @@ export default function MyAccountPage() {
       const message =
         error instanceof Error
           ? error.message
-          : "Nao foi possivel alterar a senha.";
+          : "Não foi possível alterar a senha.";
       setPasswordError(message);
       showToast(message, "error");
     } finally {

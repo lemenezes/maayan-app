@@ -18,13 +18,13 @@ export default function AccessSuspendedPage() {
       </h1>
 
       <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-2">
-        Seu cadastro foi suspenso temporariamente pela administracao do
-        condominio.
+        Seu cadastro foi suspenso temporariamente pela administração do
+        condomínio.
       </p>
 
       {user?.email && (
         <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-          Em caso de duvidas, entre em contato usando o e-mail{" "}
+          Em caso de dúvidas, entre em contato usando o e-mail{" "}
           <strong className="text-slate-700 dark:text-slate-300">
             {user.email}
           </strong>
@@ -36,8 +36,8 @@ export default function AccessSuspendedPage() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
           <p className="text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
-            Seus anuncios e acesso interno ficam indisponiveis ate reativacao
-            pela administracao.
+            Seus anúncios e acesso interno ficam indisponíveis até reativação
+            pela administração.
           </p>
         </div>
       </div>

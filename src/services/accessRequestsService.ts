@@ -67,7 +67,7 @@ export async function submitAccessRequest(data: {
   });
 
   if (error) {
-    throw new Error(error.message || "Erro ao enviar solicitacao");
+    throw new Error(error.message || "Erro ao enviar solicitação");
   }
 }
 

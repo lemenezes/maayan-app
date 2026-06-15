@@ -18,7 +18,7 @@ function getUploadSecret(): string {
   const secret =
     (import.meta.env.VITE_R2_UPLOAD_SECRET as string | undefined) ?? "";
   if (!secret) {
-    throw new Error("VITE_R2_UPLOAD_SECRET nao configurado.");
+    throw new Error("VITE_R2_UPLOAD_SECRET não configurado.");
   }
   return secret;
 }
