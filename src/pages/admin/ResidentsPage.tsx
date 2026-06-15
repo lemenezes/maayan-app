@@ -112,7 +112,7 @@ export default function ResidentsPage() {
   const { showToast } = useToast();
   const [requests, setRequests] = useState<AccessRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<RequestStatus | "all">("pending");
+  const [filter, setFilter] = useState<RequestStatus | "all">("all");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [pulsingId, setPulsingId] = useState<string | null>(null);
   const [busy, setBusy] = useState<Set<string>>(new Set());

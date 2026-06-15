@@ -95,10 +95,11 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
   );
 
   if (emails.length > 0) {
-    const { data: profilesByEmail, error: profilesByEmailError } = await supabase
-      .from("profiles")
-      .select("email, status")
-      .in("email", emails);
+    const { data: profilesByEmail, error: profilesByEmailError } =
+      await supabase
+        .from("profiles")
+        .select("email, status")
+        .in("email", emails);
 
     if (profilesByEmailError) throw new Error(profilesByEmailError.message);
 
