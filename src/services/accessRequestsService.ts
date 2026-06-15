@@ -199,3 +199,24 @@ export async function updateResidentProfile(
     accessToken
   );
 }
+
+export async function deleteTestResident(
+  requestId: string,
+  confirmationText: string,
+  accessToken: string
+): Promise<void> {
+  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
+  const res = await fetch(`${supabaseUrl}/functions/v1/delete-test-resident`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({ requestId, confirmationText })
+  });
+
+  if (!res.ok) {
+    const body: { error?: string } = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Erro ao excluir registro (${res.status})`);
+  }
+}
