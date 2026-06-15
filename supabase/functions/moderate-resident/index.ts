@@ -316,7 +316,10 @@ Deno.serve(async (req: Request) => {
 
   if (!targetProfile) {
     return new Response(
-      JSON.stringify({ error: "Perfil do morador nao encontrado." }),
+      JSON.stringify({
+        error:
+          "Perfil do morador nao encontrado. Aprove novamente ou atualize o vínculo deste cadastro antes de suspender/reativar."
+      }),
       {
         status: 404,
         headers: buildCorsHeaders(req, { "Content-Type": "application/json" })

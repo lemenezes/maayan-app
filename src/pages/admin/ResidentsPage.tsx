@@ -532,6 +532,7 @@ export default function ResidentsPage() {
           filtered.map(req => {
             const isBusy = busy.has(req.id);
             const operationalStatus = getOperationalStatus(req);
+            const hasProfile = req.has_profile === true;
             const { label, className } = STATUS_LABELS[operationalStatus];
             return (
               <div
@@ -652,6 +653,12 @@ export default function ResidentsPage() {
                   {(operationalStatus === "approved" ||
                     operationalStatus === "suspended") && (
                     <div className="mt-3 space-y-2">
+                      {!hasProfile && (
+                        <p className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
+                          Perfil do morador não encontrado. Para moderar status,
+                          aprove novamente ou atualize o vínculo deste cadastro.
+                        </p>
+                      )}
                       {editingId === req.id && editForm ? (
                         <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-3">
                           <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -765,7 +772,7 @@ export default function ResidentsPage() {
                             Editar
                           </button>
 
-                          {operationalStatus === "approved" ? (
+                          {hasProfile && operationalStatus === "approved" ? (
                             <button
                               onClick={() => handleSuspend(req)}
                               disabled={isBusy}
@@ -777,7 +784,7 @@ export default function ResidentsPage() {
                               )}
                               Suspender
                             </button>
-                          ) : (
+                          ) : hasProfile ? (
                             <button
                               onClick={() => handleReactivate(req)}
                               disabled={isBusy}
@@ -789,7 +796,7 @@ export default function ResidentsPage() {
                               )}
                               Reativar
                             </button>
-                          )}
+                          ) : null}
                         </div>
                       )}
                     </div>
@@ -803,8 +810,9 @@ export default function ResidentsPage() {
                             Excluir apenas dado de teste
                           </p>
                           <p className="text-[11px] text-rose-700/90 dark:text-rose-300/90 leading-relaxed">
-                            Para confirmar, digite <strong>EXCLUIR TESTE</strong>.
-                            Moradores aprovados devem ser suspensos, não excluídos.
+                            Para confirmar, digite{" "}
+                            <strong>EXCLUIR TESTE</strong>. Moradores aprovados
+                            devem ser suspensos, não excluídos.
                           </p>
                           <input
                             value={deleteConfirmText}

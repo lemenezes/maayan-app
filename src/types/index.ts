@@ -46,6 +46,7 @@ export interface AccessRequest {
   message: string | null;
   status: AccessRequestStatus;
   operational_status?: RequestStatus;
+  has_profile?: boolean;
   rejection_reason: string | null;
   created_at: string;
   reviewed_at: string | null;

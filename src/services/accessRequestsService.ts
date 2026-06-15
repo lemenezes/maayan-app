@@ -68,6 +68,7 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
   );
 
   const profileStatusById = new Map<string, ProfileOperationalStatus>();
+  const profileStatusByEmail = new Map<string, ProfileOperationalStatus>();
 
   if (authUserIds.length > 0) {
     const { data: profiles, error: profilesError } = await supabase
@@ -85,12 +86,43 @@ export async function fetchAccessRequests(): Promise<AccessRequest[]> {
     }
   }
 
+  const emails = Array.from(
+    new Set(
+      requests
+        .map(request => request.email?.trim().toLowerCase())
+        .filter((email): email is string => Boolean(email))
+    )
+  );
+
+  if (emails.length > 0) {
+    const { data: profilesByEmail, error: profilesByEmailError } = await supabase
+      .from("profiles")
+      .select("email, status")
+      .in("email", emails);
+
+    if (profilesByEmailError) throw new Error(profilesByEmailError.message);
+
+    for (const profile of profilesByEmail ?? []) {
+      if (!profile.email) continue;
+      profileStatusByEmail.set(
+        profile.email.trim().toLowerCase(),
+        profile.status as ProfileOperationalStatus
+      );
+    }
+  }
+
   return requests.map(request => ({
     ...request,
     operational_status:
       (request.auth_user_id
         ? profileStatusById.get(request.auth_user_id)
-        : undefined) ?? request.status
+        : undefined) ??
+      profileStatusByEmail.get(request.email.trim().toLowerCase()) ??
+      request.status,
+    has_profile:
+      Boolean(
+        request.auth_user_id && profileStatusById.has(request.auth_user_id)
+      ) || profileStatusByEmail.has(request.email.trim().toLowerCase())
   }));
 }
 
