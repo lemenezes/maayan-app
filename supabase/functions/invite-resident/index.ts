@@ -285,7 +285,10 @@ Deno.serve(async (req: Request) => {
     if (profileApproveError) {
       console.error("Profile approve error:", profileApproveError);
       return new Response(
-        JSON.stringify({ error: "Falha ao aprovar perfil do morador" }),
+        JSON.stringify({
+          error:
+            "Não foi possível vincular o perfil do morador. A solicitação não foi aprovada."
+        }),
         {
           status: 500,
           headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
@@ -293,10 +296,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // ── Validar que profile foi criado de verdade ────────────────────────────
+    const { data: verifyProfile, error: verifyError } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("id", request.auth_user_id)
+      .single();
+
+    if (verifyError || !verifyProfile) {
+      console.error("Profile verification failed:", verifyError);
+      return new Response(
+        JSON.stringify({
+          error:
+            "Não foi possível vincular o perfil do morador. A solicitação não foi aprovada."
+        }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
+
+    // ── Agora sim, marcar como aprovada ──────────────────────────────────────
     await adminClient
       .from("access_requests")
       .update({
         status: "approved",
+        auth_user_id: request.auth_user_id,
         reviewed_at: new Date().toISOString(),
         reviewed_by: user.id
       })
@@ -354,23 +380,37 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── Criar/atualizar perfil aprovado ───────────────────────────────────────
-  let profileCreateError: unknown = null;
-
   if (targetUserId) {
-    const result = await adminClient.from("profiles").upsert({
-      id: targetUserId,
-      full_name: request.full_name,
-      email: request.email,
-      whatsapp: request.whatsapp,
-      block: request.block,
-      apartment: request.apartment,
-      role: "resident",
-      status: "approved"
-    });
+    // ── Temos userId: fazer upsert ───────────────────────────────────────────
+    const { error: profileCreateError } = await adminClient
+      .from("profiles")
+      .upsert({
+        id: targetUserId,
+        full_name: request.full_name,
+        email: request.email,
+        whatsapp: request.whatsapp,
+        block: request.block,
+        apartment: request.apartment,
+        role: "resident",
+        status: "approved"
+      });
 
-    profileCreateError = result.error;
+    if (profileCreateError) {
+      console.error("Profile upsert error:", profileCreateError);
+      return new Response(
+        JSON.stringify({
+          error:
+            "Não foi possível vincular o perfil do morador. A solicitação não foi aprovada."
+        }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
   } else {
-    const result = await adminClient
+    // ── Sem userId: tentar update por email ──────────────────────────────────
+    const { error: profileUpdateError, count } = await adminClient
       .from("profiles")
       .update({
         full_name: request.full_name,
@@ -382,25 +422,85 @@ Deno.serve(async (req: Request) => {
       })
       .eq("email", request.email);
 
-    profileCreateError = result.error;
+    if (profileUpdateError) {
+      console.error("Profile update error:", profileUpdateError);
+      return new Response(
+        JSON.stringify({
+          error:
+            "Não foi possível vincular o perfil do morador. A solicitação não foi aprovada."
+        }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
+
+    // ── Validar que update afetou pelo menos 1 linha ──────────────────────────
+    if (!count || count === 0) {
+      console.error("Profile update affected 0 rows for email:", request.email);
+      return new Response(
+        JSON.stringify({
+          error:
+            "Não foi possível vincular o perfil do morador. A solicitação não foi aprovada."
+        }),
+        {
+          status: 500,
+          headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+        }
+      );
+    }
+
     console.warn(
-      "Usuário já registrado sem userId localizado; profile atualizado por email"
+      "Usuário já registrado sem userId localizado; profile atualizado por email:",
+      request.email
     );
   }
 
-  if (profileCreateError) {
-    // Não falha — o convite já foi enviado. Registra para correção manual.
-    console.error("Profile upsert error:", profileCreateError);
+  // ── Validação final: garantir que profile existe ──────────────────────────
+  const { data: finalProfile, error: finalVerifyError } = await adminClient
+    .from("profiles")
+    .select("id")
+    .or(`id.eq.${targetUserId ?? ""},email.eq.${request.email}`)
+    .limit(1)
+    .single();
+
+  if (finalVerifyError || !finalProfile) {
+    console.error(
+      "Final profile verification failed:",
+      finalVerifyError,
+      "userId:",
+      targetUserId,
+      "email:",
+      request.email
+    );
+    return new Response(
+      JSON.stringify({
+        error:
+          "Não foi possível vincular o perfil do morador. A solicitação não foi aprovada."
+      }),
+      {
+        status: 500,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
   }
 
-  // ── Marcar solicitação como aprovada ─────────────────────────────────────
+  // ── Agora sim: marcar solicitação como aprovada ──────────────────────────
+  const updateData: Record<string, unknown> = {
+    status: "approved",
+    reviewed_at: new Date().toISOString(),
+    reviewed_by: user.id
+  };
+
+  // Garantir que auth_user_id seja preenchido se temos targetUserId
+  if (targetUserId) {
+    updateData.auth_user_id = targetUserId;
+  }
+
   await adminClient
     .from("access_requests")
-    .update({
-      status: "approved",
-      reviewed_at: new Date().toISOString(),
-      reviewed_by: user.id
-    })
+    .update(updateData)
     .eq("id", requestId);
 
   if (isExistingUser) {
