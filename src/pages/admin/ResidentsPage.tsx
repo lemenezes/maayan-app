@@ -819,9 +819,9 @@ export default function ResidentsPage() {
                   {operationalStatus === "inconsistent" && (
                     <div className="mt-3">
                       <p className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2 leading-relaxed">
-                        Solicitação aprovada sem perfil vinculado. Refaça a
-                        aprovação para recriar/vincular o perfil antes de
-                        moderar este morador.
+                        Este cadastro está incompleto (aprovado sem perfil
+                        vinculado). Deve ser removido como limpeza de dados
+                        órfãos.
                       </p>
                     </div>
                   )}
@@ -831,12 +831,11 @@ export default function ResidentsPage() {
                       {deletingId === req.id ? (
                         <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-3 space-y-2">
                           <p className="text-xs font-semibold text-rose-700 dark:text-rose-400">
-                            Excluir apenas dado de teste
+                            Excluir
                           </p>
                           <p className="text-[11px] text-rose-700/90 dark:text-rose-300/90 leading-relaxed">
                             Para confirmar, digite{" "}
-                            <strong>EXCLUIR TESTE</strong>. Moradores aprovados
-                            devem ser suspensos, não excluídos.
+                            <strong>EXCLUIR TESTE</strong>.
                           </p>
                           <input
                             value={deleteConfirmText}
