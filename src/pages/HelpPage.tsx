@@ -12,6 +12,7 @@ import {
 type HelpArticle = {
   title: string;
   body: string;
+  items?: string[];
 };
 
 type HelpCategory = {
@@ -106,20 +107,56 @@ const HELP_CATEGORIES: HelpCategory[] = [
   {
     id: "regras",
     title: "Regras",
-    description: "Mantenha os anúncios claros e as negociações seguras.",
+    description: "Diretrizes para manter o portal organizado e respeitoso para todos.",
     icon: ClipboardList,
     articles: [
       {
-        title: "Quem pode anunciar",
-        body: "Somente usuários autenticados e aprovados no portal podem publicar anúncios para a comunidade."
+        title: "O que é o Maayan Desapego",
+        body: "O Maayan Desapego foi criado para facilitar a compra, venda e troca de itens entre moradores, além de divulgar serviços e informações úteis para a comunidade. Diferente dos grupos de WhatsApp, os anúncios ficam organizados e podem ser consultados a qualquer momento, evitando que informações importantes se percam com o tempo."
+      },
+      {
+        title: "Ao publicar um anúncio",
+        body: "",
+        items: [
+          "Adicione fotos de boa qualidade do item anunciado.",
+          "É permitido cadastrar até 6 fotos por anúncio.",
+          "Informe sempre o valor do produto ou serviço.",
+          "Utilize um título e uma descrição claros.",
+          "Mantenha as informações atualizadas."
+        ]
       },
       {
         title: "Boas práticas",
-        body: "Use fotos reais, descrição objetiva, preço atualizado e responda as mensagens com educação e agilidade."
+        body: "",
+        items: [
+          "Evite criar anúncios repetidos para o mesmo item.",
+          "Marque o anúncio como vendido quando a negociação for concluída.",
+          "Utilize o WhatsApp apenas para finalizar o contato entre comprador e vendedor.",
+          "Respeite os demais moradores durante as negociações."
+        ]
       },
       {
-        title: "Segurança nas negociações",
-        body: "Prefira combinar entrega em locais seguros do condomínio e confirme detalhes antes de fechar qualquer negociação."
+        title: "Conteúdo não permitido",
+        body: "Não são permitidos anúncios ou publicações relacionados a:",
+        items: [
+          "Conteúdo político.",
+          "Conteúdo religioso.",
+          "Violência.",
+          "Discurso de ódio ou discriminação.",
+          "Qualquer conteúdo que desrespeite outros moradores."
+        ]
+      },
+      {
+        title: "Por que usar o portal",
+        body: "O portal foi criado para complementar o grupo de WhatsApp e tornar os anúncios mais organizados. Com ele você pode:",
+        items: [
+          "Encontrar anúncios mais facilmente.",
+          "Manter fotos e informações organizadas.",
+          "Evitar republicações constantes.",
+          "Consultar anúncios antigos quando necessário.",
+          "Economizar espaço e mensagens no WhatsApp.",
+          "Dar mais visibilidade aos anúncios por mais tempo."
+        ]
       }
     ]
   }
@@ -244,10 +281,24 @@ export default function HelpPage() {
                       </button>
 
                       {isOpen && (
-                        <div className="px-4 pb-4 sm:px-5 sm:pb-5">
-                          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-200/70 dark:border-slate-700/70 pt-3">
-                            {article.body}
-                          </p>
+                        <div className="px-4 pb-4 sm:px-5 sm:pb-5 border-t border-slate-200/70 dark:border-slate-700/70 pt-3">
+                          {article.body && (
+                            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-2">
+                              {article.body}
+                            </p>
+                          )}
+                          {article.items && (
+                            <ul className="space-y-1.5">
+                              {article.items.map(item => (
+                                <li
+                                  key={item}
+                                  className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#0C5A86] dark:bg-sky-400" />
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       )}
                     </div>
