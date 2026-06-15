@@ -6,6 +6,7 @@ const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "lemenezes@gmail.com";
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://maayan.leandrom.com.br";
 
 const CORS_HEADERS = {
@@ -210,6 +211,7 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify({
       from: `Maayan Desapego <${FROM_EMAIL}>`,
       to: request.email,
+      bcc: ADMIN_EMAIL,
       subject: "Sua solicitação de acesso ao Maayan",
       html
     })

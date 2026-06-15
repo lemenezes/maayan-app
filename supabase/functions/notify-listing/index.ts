@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "lemenezes@gmail.com";
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://maayan.app";
 const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
 
@@ -149,6 +150,7 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify({
       from: `Maayan Desapego <${FROM_EMAIL}>`,
       to: [email],
+      bcc: ADMIN_EMAIL,
       subject,
       html
     })

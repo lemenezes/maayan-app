@@ -4,6 +4,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "lemenezes@gmail.com";
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://maayan.leandrom.com.br";
 const PROD_ORIGIN = "https://maayan.leandrom.com.br";
 const DEV_ORIGINS = new Set([
   "http://localhost:5173",
@@ -31,6 +35,15 @@ interface AccessRequestRow {
 interface ProfileRow {
   id: string;
   status: string;
+}
+
+interface DeleteResidentResponse {
+  success: boolean;
+  removedAccessRequestId: string;
+  deletedProfile: boolean;
+  deletedAuthUser: boolean;
+  emailSent: boolean;
+  warning?: string;
 }
 
 function resolveAllowedOrigin(req: Request): string {
@@ -254,16 +267,97 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  return new Response(
-    JSON.stringify({
+  const jsonHeaders = buildCorsHeaders(req, {
+    "Content-Type": "application/json"
+  });
+  const ok = (payload: DeleteResidentResponse) =>
+    new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: jsonHeaders
+    });
+
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not set — skipping deletion email");
+    return ok({
       success: true,
       removedAccessRequestId: requestId,
       deletedProfile,
-      deletedAuthUser
-    }),
-    {
-      status: 200,
-      headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
-    }
-  );
+      deletedAuthUser,
+      emailSent: false,
+      warning:
+        "Cadastro excluído, mas o e-mail de confirmação não foi enviado (RESEND_API_KEY ausente)."
+    });
+  }
+
+  const html = `
+    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1e293b">
+      <div style="background:#0A3D62;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center">
+        <h1 style="margin:0;font-size:20px;font-weight:700;color:#fff">Maayan · Condomínio Cidade Jardim</h1>
+      </div>
+
+      <h2 style="margin:0 0 12px;font-size:18px;font-weight:700">Cadastro removido</h2>
+
+      <p style="margin:0 0 16px;color:#64748b">
+        Olá, <strong>${request.full_name}</strong>. Seu cadastro/solicitação foi removido do portal Maayan.
+      </p>
+
+      <p style="margin:0 0 24px;color:#64748b;font-size:13px">
+        Se isso ocorreu por engano ou você quiser solicitar acesso novamente, use o link abaixo.
+      </p>
+
+      <a href="${SITE_URL}/solicitar-acesso"
+         style="display:inline-block;background:#f1f5f9;color:#0C5A86;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:10px;font-size:13px;margin-bottom:24px">
+        Solicitar acesso novamente
+      </a>
+
+      <div style="margin-top:4px;padding-top:18px;border-top:1px solid #e2e8f0">
+        <a href="${SITE_URL}"
+           style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px;font-size:13px;margin-bottom:12px">
+          Acessar Maayan Desapego
+        </a>
+        <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8">
+          Este é um e-mail automático do Maayan Desapego. Por favor, não responda esta mensagem.
+        </p>
+      </div>
+
+      <p style="margin:0;font-size:11px;color:#94a3b8">Maayan · Condomínio Cidade Jardim</p>
+    </div>
+  `;
+
+  const resendRes = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`
+    },
+    body: JSON.stringify({
+      from: `Maayan Desapego <${FROM_EMAIL}>`,
+      to: request.email,
+      bcc: ADMIN_EMAIL,
+      subject: "Confirmação de exclusão de cadastro no Maayan",
+      html
+    })
+  });
+
+  if (!resendRes.ok) {
+    const body = await resendRes.text();
+    console.error("Resend delete email error:", body);
+    return ok({
+      success: true,
+      removedAccessRequestId: requestId,
+      deletedProfile,
+      deletedAuthUser,
+      emailSent: false,
+      warning:
+        "Cadastro excluído, mas houve falha ao enviar e-mail para o morador e CCO para o admin."
+    });
+  }
+
+  return ok({
+    success: true,
+    removedAccessRequestId: requestId,
+    deletedProfile,
+    deletedAuthUser,
+    emailSent: true
+  });
 });

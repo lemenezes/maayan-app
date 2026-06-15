@@ -6,6 +6,7 @@ const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "lemenezes@gmail.com";
 const APP_ENV = (Deno.env.get("APP_ENV") ?? "production").toLowerCase();
 const DEFAULT_PROD_SITE_URL = "https://maayan.leandrom.com.br";
 const DEFAULT_DEV_SITE_URL = "http://localhost:5175";
@@ -159,6 +160,7 @@ async function sendApprovalReleasedEmail(email: string): Promise<void> {
     body: JSON.stringify({
       from: `Maayan Desapego <${FROM_EMAIL}>`,
       to: email,
+      bcc: ADMIN_EMAIL,
       subject,
       html
     })
