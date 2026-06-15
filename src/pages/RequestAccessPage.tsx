@@ -104,10 +104,12 @@ export default function RequestAccessPage() {
     confirm_password: "",
     message: ""
   });
+  const [agreedToPrivacyPolicy, setAgreedToPrivacyPolicy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [k: string]: string }>({});
+  const [privacyError, setPrivacyError] = useState<string | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [isComposingFullName, setIsComposingFullName] = useState(false);
@@ -267,6 +269,13 @@ export default function RequestAccessPage() {
     e.preventDefault();
     setError(null);
     setSubmitAttempted(true);
+
+    // Validar aceite da política
+    if (!agreedToPrivacyPolicy) {
+      setPrivacyError("Você deve concordar com a Política de Privacidade.");
+      return;
+    }
+    setPrivacyError(null);
 
     const errors: { [k: string]: string } = {};
     const fieldsToValidate: FieldKey[] = [
@@ -620,6 +629,37 @@ export default function RequestAccessPage() {
               {error}
             </p>
           )}
+
+          {/* Checkbox - Política de Privacidade */}
+          <div className="pt-2">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={agreedToPrivacyPolicy}
+                onChange={e => {
+                  setAgreedToPrivacyPolicy(e.target.checked);
+                  if (e.target.checked) {
+                    setPrivacyError(null);
+                  }
+                }}
+                className="w-5 h-5 mt-0.5 rounded border-2 border-white/50 bg-white/10 checked:bg-white checked:border-white text-[#0C5A86] cursor-pointer accent-[#0C5A86] focus:ring-2 focus:ring-white/40 transition-colors flex-shrink-0"
+              />
+              <span className="text-white text-sm leading-relaxed">
+                Li e concordo com a{" "}
+                <Link
+                  to="/politica-de-privacidade"
+                  className="underline underline-offset-2 hover:text-white/80 transition-colors">
+                  Política de Privacidade
+                </Link>
+                .*
+              </span>
+            </label>
+            {privacyError && (
+              <div className="mt-2 bg-white dark:bg-slate-900/80 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-xl animate-fade-in">
+                {privacyError}
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"

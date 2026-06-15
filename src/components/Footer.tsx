@@ -60,6 +60,16 @@ export default function Footer() {
                 <Flag size={13} />
                 Reportar
               </a>
+              <Link
+                to="/politica-de-privacidade"
+                className="text-sm text-white/80 hover:text-white transition-colors">
+                Privacidade
+              </Link>
+              <Link
+                to="/termos-de-uso"
+                className="text-sm text-white/80 hover:text-white transition-colors">
+                Termos
+              </Link>
             </div>
           </nav>
         </div>

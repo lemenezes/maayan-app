@@ -26,6 +26,8 @@ import PendingApprovalPage from "./pages/PendingApprovalPage";
 import MyAccountPage from "./pages/MyAccountPage.tsx";
 import AccessNotApprovedPage from "./pages/AccessNotApprovedPage";
 import AccessSuspendedPage from "./pages/AccessSuspendedPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfUsePage from "./pages/TermsOfUsePage";
 
 const router = createBrowserRouter([
   {
@@ -104,6 +106,8 @@ const router = createBrowserRouter([
       { path: "aguardando-aprovacao", element: <PendingApprovalPage /> },
       { path: "acesso-nao-aprovado", element: <AccessNotApprovedPage /> },
       { path: "acesso-suspenso", element: <AccessSuspendedPage /> },
+      { path: "politica-de-privacidade", element: <PrivacyPolicyPage /> },
+      { path: "termos-de-uso", element: <TermsOfUsePage /> },
       {
         path: "admin/anuncios",
         element: (
