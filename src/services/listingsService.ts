@@ -114,7 +114,7 @@ export interface CreateListingInput {
   userId: string;
 }
 
-const MAX_IMAGES = 4;
+const MAX_IMAGES = 10;
 
 export async function createListing(
   input: CreateListingInput

@@ -119,7 +119,7 @@ const HELP_CATEGORIES: HelpCategory[] = [
         body: "",
         items: [
           "Adicione fotos de boa qualidade do item anunciado.",
-          "É permitido cadastrar até 6 fotos por anúncio.",
+          "É permitido cadastrar até 10 fotos por anúncio.",
           "Informe sempre o valor do produto ou serviço.",
           "Utilize um título e uma descrição claros.",
           "Mantenha as informações atualizadas."

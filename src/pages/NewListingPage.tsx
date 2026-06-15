@@ -46,7 +46,7 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/gif"
 ];
 const MAX_FILE_SIZE_MB = 5;
-const MAX_IMAGES = 4;
+const MAX_IMAGES = 10;
 
 interface ImageEntry {
   file: File;
