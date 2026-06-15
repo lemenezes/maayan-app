@@ -150,6 +150,17 @@ Deno.serve(async (req: Request) => {
         Enviar nova solicitação
       </a>
 
+      <div style="margin-top:4px;padding-top:18px;border-top:1px solid #e2e8f0">
+        <a href="${SITE_URL}"
+           style="display:inline-block;background:#0C5A86;color:#fff;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px;font-size:13px;margin-bottom:12px">
+          Acessar Maayan Desapego
+        </a>
+        <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8">
+          Este é um e-mail automático do Maayan Desapego. Por favor, não responda esta mensagem.
+          Para dúvidas ou informações, acesse o portal e utilize os canais de contato disponíveis no site.
+        </p>
+      </div>
+
       <p style="margin:0;font-size:11px;color:#94a3b8">Maayan · Condomínio Cidade Jardim</p>
     </div>
   `;
