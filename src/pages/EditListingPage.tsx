@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Upload, X, Loader2, ChevronDown, Star } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 import { useToast } from "../context/ToastContext";
 import { fetchUserListings, updateListing } from "../services/listingsService";
 import { CATEGORIES } from "../types";
@@ -50,6 +51,7 @@ type ListingImageEntry =
 export default function EditListingPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { withLoading } = useLoadingOverlay();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -242,30 +244,32 @@ export default function EditListingPage() {
         : undefined;
 
     try {
-      await updateListing(id, {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        price: priceValue,
-        priceMode: form.priceMode,
-        keptImageUrls: images
-          .filter(
-            (img): img is Extract<ListingImageEntry, { kind: "existing" }> =>
-              img.kind === "existing"
-          )
-          .map(img => img.url),
-        newImages: images
-          .filter(
-            (img): img is Extract<ListingImageEntry, { kind: "new" }> =>
-              img.kind === "new"
-          )
-          .map(img => ({ id: img.id, file: img.file })),
-        imageOrder: images.map(img =>
-          img.kind === "existing"
-            ? { kind: "kept" as const, url: img.url }
-            : { kind: "new" as const, id: img.id }
-        ),
-        userId: user.id
+      await withLoading("Salvando alterações...", async () => {
+        await updateListing(id, {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          category: form.category,
+          price: priceValue,
+          priceMode: form.priceMode,
+          keptImageUrls: images
+            .filter(
+              (img): img is Extract<ListingImageEntry, { kind: "existing" }> =>
+                img.kind === "existing"
+            )
+            .map(img => img.url),
+          newImages: images
+            .filter(
+              (img): img is Extract<ListingImageEntry, { kind: "new" }> =>
+                img.kind === "new"
+            )
+            .map(img => ({ id: img.id, file: img.file })),
+          imageOrder: images.map(img =>
+            img.kind === "existing"
+              ? { kind: "kept" as const, url: img.url }
+              : { kind: "new" as const, id: img.id }
+          ),
+          userId: user.id
+        });
       });
       showToast("Anúncio atualizado com sucesso!");
       navigate("/meus-anuncios");

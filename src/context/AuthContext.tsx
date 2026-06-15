@@ -10,10 +10,14 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import type { Profile } from "../types";
 
+export type AuthOperation = "sign-in" | "sign-out" | null;
+
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  authOperation: AuthOperation;
+  isAuthOperationPending: boolean;
   profile: Profile | null;
   profileLoading: boolean;
   profileError: string | null;
@@ -33,6 +37,8 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   session: null,
   loading: true,
+  authOperation: null,
+  isAuthOperationPending: false,
   profile: null,
   profileLoading: false,
   profileError: null,
@@ -50,6 +56,13 @@ const LOCAL_TEST_EMAIL = import.meta.env.LOCAL_TEST_EMAIL as string | undefined;
 const LOCAL_TEST_PASSWORD = import.meta.env.LOCAL_TEST_PASSWORD as
   | string
   | undefined;
+const AUTH_OVERLAY_MIN_DURATION_MS = 3000;
+
+function wait(ms: number) {
+  return new Promise(resolve => {
+    window.setTimeout(resolve, ms);
+  });
+}
 
 const MOCK_USER = {
   id: "mock-user-id",
@@ -95,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(USE_MOCK ? MOCK_USER : null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(!USE_MOCK);
+  const [authOperation, setAuthOperation] = useState<AuthOperation>(null);
   const [profile, setProfile] = useState<Profile | null>(
     USE_MOCK ? MOCK_PROFILE : null
   );
@@ -232,48 +246,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string
   ): Promise<{ error: string | null }> => {
-    if (
-      USE_LOCAL_TEST_LOGIN &&
-      LOCAL_TEST_EMAIL &&
-      LOCAL_TEST_PASSWORD &&
-      email === LOCAL_TEST_EMAIL &&
-      password === LOCAL_TEST_PASSWORD
-    ) {
-      setUser({ ...MOCK_USER, email } as User);
-      setProfile({ ...MOCK_PROFILE, email });
-      setSession(null);
-      setLoading(false);
-      return { error: null };
-    }
+    setAuthOperation("sign-in");
+    const startedAt = Date.now();
 
-    if (USE_MOCK) {
-      setUser({ ...MOCK_USER, email } as User);
-      setProfile({ ...MOCK_PROFILE, email });
-      setSession(null);
-      setLoading(false);
-      return { error: null };
-    }
+    try {
+      if (
+        USE_LOCAL_TEST_LOGIN &&
+        LOCAL_TEST_EMAIL &&
+        LOCAL_TEST_PASSWORD &&
+        email === LOCAL_TEST_EMAIL &&
+        password === LOCAL_TEST_PASSWORD
+      ) {
+        setUser({ ...MOCK_USER, email } as User);
+        setProfile({ ...MOCK_PROFILE, email });
+        setSession(null);
+        setLoading(false);
+        return { error: null };
+      }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    if (error) return { error: error.message };
-    return { error: null };
+      if (USE_MOCK) {
+        setUser({ ...MOCK_USER, email } as User);
+        setProfile({ ...MOCK_PROFILE, email });
+        setSession(null);
+        setLoading(false);
+        return { error: null };
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    } finally {
+      const elapsed = Date.now() - startedAt;
+      const remaining = AUTH_OVERLAY_MIN_DURATION_MS - elapsed;
+      if (remaining > 0) {
+        await wait(remaining);
+      }
+      setAuthOperation(null);
+    }
   };
 
   const signOut = async () => {
-    if (USE_MOCK) {
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setProfileError(null);
-      setProfileLoading(false);
-      setLoading(false);
-      return;
-    }
+    setAuthOperation("sign-out");
+    const startedAt = Date.now();
 
-    await supabase.auth.signOut();
+    try {
+      if (USE_MOCK) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setProfileError(null);
+        setProfileLoading(false);
+        setLoading(false);
+        return;
+      }
+
+      await supabase.auth.signOut();
+    } finally {
+      const elapsed = Date.now() - startedAt;
+      const remaining = AUTH_OVERLAY_MIN_DURATION_MS - elapsed;
+      if (remaining > 0) {
+        await wait(remaining);
+      }
+      setAuthOperation(null);
+    }
   };
 
   return (
@@ -282,6 +320,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         loading,
+        authOperation,
+        isAuthOperationPending: authOperation !== null,
         profile,
         profileLoading,
         profileError,

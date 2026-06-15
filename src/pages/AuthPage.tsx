@@ -200,7 +200,11 @@ export default function AuthPage({ mode }: { mode: Mode }) {
               disabled={submitting}
               className="w-full bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white font-semibold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1">
               {submitting && <Loader2 size={16} className="animate-spin" />}
-              {mode === "login" ? "Entrar" : "Criar conta"}
+              {submitting && mode === "login"
+                ? "Entrando..."
+                : mode === "login"
+                  ? "Entrar"
+                  : "Criar conta"}
             </button>
           </form>
 

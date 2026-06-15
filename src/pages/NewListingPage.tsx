@@ -19,6 +19,7 @@ import {
   shouldRequirePriceValue,
   shouldShowPriceInput
 } from "../utils/pricing";
+import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 
 interface FormData {
   title: string;
@@ -59,6 +60,7 @@ export default function NewListingPage() {
   }, []);
 
   const { user, profile } = useAuth();
+  const { withLoading } = useLoadingOverlay();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -190,7 +192,9 @@ export default function NewListingPage() {
     if (!validate()) return;
     if (!user) return;
 
-    if (!profile?.full_name?.trim()) {
+    const authorName = profile?.full_name?.trim();
+
+    if (!authorName) {
       setSubmitError("Complete seu nome em Minha Conta antes de publicar.");
       return;
     }
@@ -216,16 +220,18 @@ export default function NewListingPage() {
         : undefined;
 
     try {
-      await createListing({
-        title: form.title.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        price: priceValue,
-        priceMode: form.priceMode,
-        whatsapp: phoneDigits,
-        imageFiles: images.map(img => img.file),
-        authorName: profile.full_name.trim(),
-        userId: user.id
+      await withLoading("Publicando anúncio...", async () => {
+        await createListing({
+          title: form.title.trim(),
+          description: form.description.trim(),
+          category: form.category,
+          price: priceValue,
+          priceMode: form.priceMode,
+          whatsapp: phoneDigits,
+          imageFiles: images.map(img => img.file),
+          authorName,
+          userId: user.id
+        });
       });
       setSubmitted(true);
     } catch (err) {

@@ -57,12 +57,12 @@ import {
   LogOut,
   LogIn,
   User,
+  Loader2,
   LayoutList,
   ShieldCheck
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 
 export default function Header() {
@@ -70,10 +70,10 @@ export default function Header() {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
   const { theme, toggle } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, signOut, authOperation } = useAuth();
   const isAdmin = useIsAdmin();
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  const isSigningOut = authOperation === "sign-out";
 
   const close = () => setIsOpen(false);
   const handleLogoClick = () => {
@@ -95,13 +95,16 @@ export default function Header() {
   }, []);
 
   const handleSignOut = async () => {
+    if (isSigningOut) return;
+
     close();
+    setIsAccountOpen(false);
+
     try {
       await signOut();
       navigate("/");
     } catch (error) {
       console.error("Erro ao sair:", error);
-      showToast("Erro ao sair. Tente novamente.", "error");
     }
   };
 
@@ -196,13 +199,18 @@ export default function Header() {
                         Minha conta
                       </Link>
                       <button
+                        disabled={isSigningOut}
                         onClick={() => {
                           setIsAccountOpen(false);
                           handleSignOut();
                         }}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
-                        <LogOut size={14} />
-                        Sair da conta
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                        {isSigningOut ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <LogOut size={14} />
+                        )}
+                        {isSigningOut ? "Saindo..." : "Sair da conta"}
                       </button>
                     </div>
                   )}
@@ -294,10 +302,15 @@ export default function Header() {
                 Minha conta
               </Link>
               <button
+                disabled={isSigningOut}
                 onClick={handleSignOut}
-                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
-                <LogOut size={16} />
-                Sair da conta
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                {isSigningOut ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <LogOut size={16} />
+                )}
+                {isSigningOut ? "Saindo..." : "Sair da conta"}
               </button>
             </>
           ) : (

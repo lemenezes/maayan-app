@@ -11,6 +11,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 import { submitAccessRequest } from "../services/accessRequestsService";
 
 const inputBase =
@@ -113,6 +114,7 @@ export default function RequestAccessPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { user, session, loading } = useAuth();
+  const { withLoading } = useLoadingOverlay();
 
   const hasActiveSession = Boolean(session ?? user);
 
@@ -290,14 +292,16 @@ export default function RequestAccessPage() {
 
     setSubmitting(true);
     try {
-      await submitAccessRequest({
-        full_name: form.full_name.trim(),
-        email: form.email.trim().toLowerCase(),
-        whatsapp: whatsappDigits,
-        block: form.block.trim(),
-        apartment: apartmentDigits,
-        password: form.password,
-        message: form.message.trim() || undefined
+      await withLoading("Enviando solicitação...", async () => {
+        await submitAccessRequest({
+          full_name: form.full_name.trim(),
+          email: form.email.trim().toLowerCase(),
+          whatsapp: whatsappDigits,
+          block: form.block.trim(),
+          apartment: apartmentDigits,
+          password: form.password,
+          message: form.message.trim() || undefined
+        });
       });
       setSuccess(true);
     } catch (err) {

@@ -1,12 +1,64 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { ChevronUp } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 import Header from "./Header";
 import Footer from "./Footer";
+import LoadingOverlay from "./LoadingOverlay";
 
 export default function Layout() {
   const { pathname, search } = useLocation();
+  const { authOperation, isAuthOperationPending } = useAuth();
+  const { visible: isGlobalOverlayVisible, message: globalOverlayMessage } =
+    useLoadingOverlay();
   const [showBackToTop, setShowBackToTop] = useState(false);
+
+  const overlayVisible = isAuthOperationPending || isGlobalOverlayVisible;
+
+  const overlayCopy = (() => {
+    if (isAuthOperationPending) {
+      if (authOperation === "sign-out") {
+        return {
+          title: "Até logo!",
+          subtitle: "Encerrando sua sessão com segurança..."
+        };
+      }
+
+      return {
+        title: "Bem-vindo ao Maayan",
+        subtitle: "Preparando seu acesso..."
+      };
+    }
+
+    const message = (globalOverlayMessage ?? "").toLowerCase();
+
+    if (message.includes("publicando")) {
+      return {
+        title: "Publicando anúncio",
+        subtitle: "Estamos preparando tudo para você..."
+      };
+    }
+
+    if (message.includes("salvando")) {
+      return {
+        title: "Salvando alterações",
+        subtitle: "Seu anúncio está sendo atualizado..."
+      };
+    }
+
+    if (message.includes("solicitação") || message.includes("enviando")) {
+      return {
+        title: "Enviando solicitação",
+        subtitle: "Estamos preparando tudo para você..."
+      };
+    }
+
+    return {
+      title: "Maayan em ação",
+      subtitle: globalOverlayMessage ?? "Aguarde só mais um instante..."
+    };
+  })();
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -36,6 +88,11 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <LoadingOverlay
+        visible={overlayVisible}
+        title={overlayCopy.title}
+        subtitle={overlayCopy.subtitle}
+      />
 
       {showBackToTop && (
         <button
