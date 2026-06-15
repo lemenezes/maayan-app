@@ -1,13 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
+// @ts-ignore - Deno global is available at runtime
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+// @ts-ignore - Deno global is available at runtime
 const SUPABASE_SERVICE_ROLE_KEY =
+  // @ts-ignore - Deno global is available at runtime
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const APP_ENV = (Deno.env.get("APP_ENV") ?? "production").toLowerCase();
 const PROD_ORIGIN = "https://maayan.leandrom.com.br";
-const DEV_ORIGINS = new Set([
+const ALLOWED_ORIGINS = new Set([
+  PROD_ORIGIN,
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
   "http://localhost:5175",
   "http://127.0.0.1:5175"
 ]);
@@ -22,28 +27,28 @@ interface RegisterResidentPayload {
   password?: string;
 }
 
-function resolveAllowedOrigin(req: Request): string {
+function resolveAllowedOrigin(req: Request): string | null {
   const origin = req.headers.get("origin");
 
-  if (origin === PROD_ORIGIN) {
-    return origin;
-  }
+  if (!origin) return null;
+  if (ALLOWED_ORIGINS.has(origin)) return origin;
 
-  if (APP_ENV === "development" && origin && DEV_ORIGINS.has(origin)) {
-    return origin;
-  }
-
-  return PROD_ORIGIN;
+  return null;
 }
 
 function buildCorsHeaders(req: Request, extraHeaders?: HeadersInit): Headers {
   const headers = new Headers(extraHeaders);
-  headers.set("Access-Control-Allow-Origin", resolveAllowedOrigin(req));
-  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set(
-    "Access-Control-Allow-Headers",
-    "authorization, x-client-info, apikey, content-type"
-  );
+  const allowedOrigin = resolveAllowedOrigin(req);
+
+  if (allowedOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowedOrigin);
+    headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    headers.set(
+      "Access-Control-Allow-Headers",
+      "authorization, x-client-info, apikey, content-type"
+    );
+  }
+
   headers.set("Vary", "Origin");
   return headers;
 }
@@ -64,8 +69,18 @@ function normalizeWhatsapp(value: string): string {
   return withoutCountryCode.slice(0, 11);
 }
 
+// @ts-ignore - Deno global is available at runtime
 Deno.serve(async (req: Request) => {
+  const allowedOrigin = resolveAllowedOrigin(req);
+
   if (req.method === "OPTIONS") {
+    if (!allowedOrigin) {
+      return new Response("Origin not allowed", {
+        status: 403,
+        headers: buildCorsHeaders(req)
+      });
+    }
+
     return new Response(null, { status: 204, headers: buildCorsHeaders(req) });
   }
 
@@ -160,7 +175,7 @@ Deno.serve(async (req: Request) => {
   if (createUserError || !createUserData.user?.id) {
     const normalizedMessage = (createUserError?.message ?? "").toLowerCase();
     const userFacingMessage = normalizedMessage.includes("already")
-      ? "Este e-mail ja esta cadastrado. Tente entrar no portal."
+      ? "Este e-mail já possui acesso ao portal. Faça login para continuar."
       : (createUserError?.message ?? "Nao foi possivel criar o usuario.");
 
     return new Response(JSON.stringify({ error: userFacingMessage }), {
