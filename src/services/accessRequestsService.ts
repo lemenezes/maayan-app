@@ -50,13 +50,8 @@ export async function submitAccessRequest(data: {
   termsVersion: string;
   privacyVersion: string;
 }): Promise<void> {
-  const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) ?? "";
-  const res = await fetch(`${supabaseUrl}/functions/v1/register-resident`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
+  const { error } = await supabase.functions.invoke("register-resident", {
+    body: {
       full_name: data.full_name,
       email: data.email,
       whatsapp: data.whatsapp,
@@ -68,12 +63,11 @@ export async function submitAccessRequest(data: {
       privacyAcceptedAt: data.privacyAcceptedAt,
       termsVersion: data.termsVersion,
       privacyVersion: data.privacyVersion
-    })
+    }
   });
 
-  if (!res.ok) {
-    const body: { error?: string } = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? `Erro ao enviar solicitacao (${res.status})`);
+  if (error) {
+    throw new Error(error.message || "Erro ao enviar solicitacao");
   }
 }
 
