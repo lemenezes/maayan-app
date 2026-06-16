@@ -15,7 +15,9 @@ import { CATEGORIES } from "../types";
 import type { Category, ListingPriceMode } from "../types";
 import {
   defaultPriceModeForCategory,
+  formatPriceMask,
   getPriceModeOptions,
+  parsePriceValue,
   shouldRequirePriceValue,
   shouldShowPriceInput
 } from "../utils/pricing";
@@ -158,8 +160,8 @@ export default function NewListingPage() {
     ) {
       e.price = "Campo obrigatório";
     } else if (form.price) {
-      const numStr = form.price.replace(",", ".");
-      if (isNaN(parseFloat(numStr)) || parseFloat(numStr) < 0) {
+      const numStr = parsePriceValue(form.price);
+      if (isNaN(numStr) || numStr < 0) {
         e.price = "Valor inválido";
       }
     }
@@ -172,8 +174,14 @@ export default function NewListingPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    const nextValue =
-      name === "referral_whatsapp" ? formatWhatsappMask(value) : value;
+    let nextValue: string;
+    if (name === "referral_whatsapp") {
+      nextValue = formatWhatsappMask(value);
+    } else if (name === "price") {
+      nextValue = formatPriceMask(value);
+    } else {
+      nextValue = value;
+    }
 
     setForm(prev => ({ ...prev, [name]: nextValue }));
     if (errors[name as keyof FormData]) {
@@ -262,10 +270,9 @@ export default function NewListingPage() {
     setSubmitting(true);
     setSubmitError(null);
 
-    const numStr = form.price.replace(",", ".");
     const priceValue =
-      form.price.trim() && !isNaN(parseFloat(numStr))
-        ? parseFloat(numStr)
+      form.price.trim() && !isNaN(parsePriceValue(form.price))
+        ? parsePriceValue(form.price)
         : undefined;
 
     try {

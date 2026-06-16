@@ -16,7 +16,7 @@ export type ListingPriceMode =
   | "season"
   | "free";
 
-export type ListingStatus = "active" | "sold" | "archived";
+export type ListingStatus = "active" | "sold" | "archived" | "deleted";
 
 export type ProfileRole = "resident" | "admin" | "user";
 export type ProfileStatus = "pending" | "approved" | "rejected" | "suspended";

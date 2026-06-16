@@ -242,7 +242,7 @@ export default function MyListingsPage() {
   const handleDelete = async (id: string) => {
     setConfirmDeleteId(null);
     try {
-      await deleteListing(id);
+      await deleteListing(id, user?.id);
       setListings(prev => prev.filter(l => l.id !== id));
       showToast("Anúncio excluído com sucesso");
     } catch (err) {
@@ -256,7 +256,7 @@ export default function MyListingsPage() {
   const handleToggleSold = async (id: string, currentlySold: boolean) => {
     try {
       if (currentlySold) {
-        await reactivateListing(id);
+        await reactivateListing(id, user?.id);
         setListings(prev =>
           prev.map(l =>
             l.id === id ? { ...l, status: "active", soldAt: null } : l
@@ -267,7 +267,7 @@ export default function MyListingsPage() {
       }
 
       const soldAt = new Date().toISOString();
-      await markListingAsSold(id);
+      await markListingAsSold(id, user?.id);
       setListings(prev =>
         prev.map(l => (l.id === id ? { ...l, status: "sold", soldAt } : l))
       );

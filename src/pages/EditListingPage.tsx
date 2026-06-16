@@ -9,7 +9,9 @@ import { CATEGORIES } from "../types";
 import type { Category, ListingPriceMode } from "../types";
 import {
   defaultPriceModeForCategory,
+  formatPriceMask,
   getPriceModeOptions,
+  parsePriceValue,
   shouldRequirePriceValue,
   shouldShowPriceInput
 } from "../utils/pricing";
@@ -157,7 +159,7 @@ export default function EditListingPage() {
           listing.priceMode ?? defaultPriceModeForCategory(listing.category),
         price:
           listing.price !== undefined
-            ? String(listing.price).replace(".", ",")
+            ? formatPriceMask(String(listing.price).replace(".", ","))
             : "",
         referral_name: listing.referralName ?? "",
         referral_whatsapp: formatWhatsappMask(listing.referralWhatsapp ?? ""),
@@ -206,7 +208,7 @@ export default function EditListingPage() {
     ) {
       e.price = "Campo obrigatório";
     } else if (form.price) {
-      const n = parseFloat(form.price.replace(",", "."));
+      const n = parsePriceValue(form.price);
       if (isNaN(n) || n < 0) e.price = "Valor inválido";
     }
     setErrors(e);
@@ -217,8 +219,14 @@ export default function EditListingPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    const nextValue =
-      name === "referral_whatsapp" ? formatWhatsappMask(value) : value;
+    let nextValue: string;
+    if (name === "referral_whatsapp") {
+      nextValue = formatWhatsappMask(value);
+    } else if (name === "price") {
+      nextValue = formatPriceMask(value);
+    } else {
+      nextValue = value;
+    }
     setForm(prev => ({ ...prev, [name]: nextValue }));
     if (errors[name as keyof FormData])
       setErrors(prev => ({ ...prev, [name]: undefined }));
@@ -289,10 +297,9 @@ export default function EditListingPage() {
     if (!validate() || !user || !id) return;
 
     setSubmitting(true);
-    const numStr = form.price.replace(",", ".");
     const priceValue =
-      form.price.trim() && !isNaN(parseFloat(numStr))
-        ? parseFloat(numStr)
+      form.price.trim() && !isNaN(parsePriceValue(form.price))
+        ? parsePriceValue(form.price)
         : undefined;
 
     try {

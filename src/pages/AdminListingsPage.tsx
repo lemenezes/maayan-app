@@ -17,6 +17,7 @@ import type { ListingWithStatus } from "../types";
 import type { ListingStatus } from "../lib/database.types.ts";
 import { CATEGORIES } from "../types";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 
 type AdminListing = ListingWithStatus & { userId: string };
 
@@ -35,6 +36,11 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     label: "Arquivado",
     className:
       "bg-slate-100  text-slate-500  dark:bg-slate-800     dark:text-slate-400"
+  },
+  deleted: {
+    label: "Excluído",
+    className:
+      "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
   }
 };
 
@@ -42,7 +48,8 @@ const FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: "all", label: "Todos" },
   { value: "active", label: "Ativos" },
   { value: "sold", label: "Vendidos" },
-  { value: "archived", label: "Arquivados" }
+  { value: "archived", label: "Arquivados" },
+  { value: "deleted", label: "Excluídos" }
 ];
 
 function SkeletonRow() {
@@ -60,6 +67,7 @@ function SkeletonRow() {
 
 export default function AdminListingsPage() {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [listings, setListings] = useState<AdminListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("active");
@@ -107,8 +115,8 @@ export default function AdminListingsPage() {
   const handleDelete = async (id: string) => {
     setBusy(s => new Set(s).add(id));
     try {
-      await deleteListing(id);
-      setListings(prev => prev.filter(l => l.id !== id));
+      await deleteListing(id, user?.id);
+      setListings(prev => prev.map(l => l.id === id ? { ...l, status: "deleted" } : l));
       showToast("Anúncio excluído", "success");
     } catch {
       showToast("Erro ao excluir anúncio", "error");

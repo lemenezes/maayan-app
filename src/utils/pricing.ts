@@ -5,6 +5,37 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL"
 });
 
+/**
+ * Formata o valor digitado como número pt-BR enquanto o usuário digita.
+ * Mantém pontos de milhar e vírgula decimal.
+ * Ex: "1234567" → "1.234.567" | "1234,56" → "1.234,56"
+ */
+export function formatPriceMask(raw: string): string {
+  // Remove tudo exceto dígitos e vírgula
+  let cleaned = raw.replace(/[^\d,]/g, "");
+
+  // Permite no máximo uma vírgula
+  const parts = cleaned.split(",");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "," + parts.slice(1).join("");
+  }
+
+  const [intPart, decPart] = cleaned.split(",");
+
+  // Aplica pontos de milhar na parte inteira
+  const intFormatted = (intPart ?? "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  return decPart !== undefined ? `${intFormatted},${decPart}` : intFormatted;
+}
+
+/**
+ * Converte o valor formatado (pt-BR) para número JS.
+ * Ex: "1.234,56" → 1234.56
+ */
+export function parsePriceValue(formatted: string): number {
+  return parseFloat(formatted.replace(/\./g, "").replace(",", "."));
+}
+
 export interface PriceModeOption {
   value: ListingPriceMode;
   label: string;

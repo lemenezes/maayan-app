@@ -171,62 +171,72 @@ export async function createListing(
   return rowToListing(data);
 }
 
-export async function deleteListing(id: string): Promise<void> {
-  const { data: current, error: fetchErr } = await supabase
-    .from("listings")
-    .select("image_urls, image_url")
-    .eq("id", id)
-    .single();
-
-  if (fetchErr) throw new Error(fetchErr.message);
-
-  const urlsToDelete: string[] =
-    current.image_urls && current.image_urls.length > 0
-      ? current.image_urls
-      : current.image_url
-        ? [current.image_url]
-        : [];
-
-  for (const url of urlsToDelete) {
-    if (isR2CdnUrl(url)) {
-      try {
-        await deleteListingImageFromR2({ url });
-      } catch {
-        // Best effort para nao bloquear exclusao do anuncio.
-      }
-      continue;
-    }
-
-    const path = storagePathFromUrl(url);
-    if (path) {
-      await supabase.storage.from("listings").remove([path]);
-    }
-  }
-
-  const { error } = await supabase.from("listings").delete().eq("id", id);
-  if (error) throw new Error(error.message);
-}
-
-export async function deactivateListing(id: string): Promise<void> {
+// Soft delete: marca o anúncio como 'deleted' sem remover o registro do banco.
+// Imagens são preservadas para fins de auditoria.
+export async function deleteListing(
+  id: string,
+  userId?: string
+): Promise<void> {
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from("listings")
-    .update({ status: "archived", sold_at: null })
+    .update({
+      status: "deleted",
+      sold_at: null,
+      deleted_at: now,
+      deleted_by: userId ?? null,
+      updated_at: now,
+      updated_by: userId ?? null
+    })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
 
-export async function reactivateListing(id: string): Promise<void> {
+export async function deactivateListing(
+  id: string,
+  userId?: string
+): Promise<void> {
   const { error } = await supabase
     .from("listings")
-    .update({ status: "active", sold_at: null })
+    .update({
+      status: "archived",
+      sold_at: null,
+      updated_at: new Date().toISOString(),
+      updated_by: userId ?? null
+    })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
 
-export async function markListingAsSold(id: string): Promise<void> {
+export async function reactivateListing(
+  id: string,
+  userId?: string
+): Promise<void> {
   const { error } = await supabase
     .from("listings")
-    .update({ status: "sold", sold_at: new Date().toISOString() })
+    .update({
+      status: "active",
+      sold_at: null,
+      updated_at: new Date().toISOString(),
+      updated_by: userId ?? null
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function markListingAsSold(
+  id: string,
+  userId?: string
+): Promise<void> {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("listings")
+    .update({
+      status: "sold",
+      sold_at: now,
+      updated_at: now,
+      updated_by: userId ?? null
+    })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -336,7 +346,9 @@ export async function updateListing(
       referral_notes:
         input.category === "indicacoes" ? (input.referralNotes ?? null) : null,
       image_url: finalUrls[0] ?? null,
-      image_urls: finalUrls.length > 0 ? finalUrls : null
+      image_urls: finalUrls.length > 0 ? finalUrls : null,
+      updated_at: new Date().toISOString(),
+      updated_by: input.userId
     })
     .eq("id", id)
     .select()
