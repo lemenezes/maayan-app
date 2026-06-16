@@ -32,7 +32,7 @@ const HELP_CATEGORIES: HelpCategory[] = [
     articles: [
       {
         title: "Como acessar o portal",
-        body: "Use o mesmo e-mail aprovado no condomínio. Se ainda não tem acesso, clique em Solicitar acesso na tela inicial e aguarde a liberação."
+        body: 'Utilize o mesmo e-mail cadastrado quando solicitou acesso ao portal. Caso ainda não tenha acesso, clique em "Solicitar acesso" na tela inicial e aguarde a aprovação do cadastro.'
       },
       {
         title: "Como editar meu perfil",
