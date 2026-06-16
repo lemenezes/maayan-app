@@ -86,6 +86,8 @@ export default function ListingDetailPage() {
   const category = CATEGORIES.find(c => c.value === listing.category)!;
   const whatsappLink = buildWhatsAppUrl(listing);
   const price = formatListingPrice(listing);
+  const isReferral = listing.category === "indicacoes";
+  const hasReferralNotes = Boolean(listing.referralNotes?.trim());
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
@@ -128,6 +130,22 @@ export default function ListingDetailPage() {
           {listing.description}
         </p>
 
+        {isReferral && (
+          <div className="rounded-2xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/70 dark:bg-amber-950/20 p-4 mb-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300 mb-2">
+              Contato indicado
+            </p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              {listing.referralName || "Contato informado pelo anunciante"}
+            </p>
+            {hasReferralNotes && (
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                {listing.referralNotes}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="border-t border-slate-100 dark:border-slate-700 mb-6" />
 
         {/* Publication date */}
@@ -145,7 +163,9 @@ export default function ListingDetailPage() {
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-3 w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-4 rounded-2xl text-base transition-all shadow-sm">
           <MessageCircle size={20} />
-          Entrar em contato via WhatsApp
+          {isReferral
+            ? "Falar com contato indicado no WhatsApp"
+            : "Entrar em contato via WhatsApp"}
         </a>
       </div>
     </div>

@@ -56,7 +56,7 @@ const HELP_CATEGORIES: HelpCategory[] = [
       },
       {
         title: "Como criar um anúncio",
-        body: "Clique em Publicar, preencha título, preço, categoria e descrição. Depois, adicione fotos e conclua a publicação para aparecer para os moradores."
+        body: "Clique em Publicar, preencha título, preço, categoria e descrição. Em Indicações, informe também o nome e o WhatsApp da pessoa/serviço indicado. Depois, adicione fotos e conclua a publicação."
       },
       {
         title: "Como editar um anúncio",
@@ -80,11 +80,11 @@ const HELP_CATEGORIES: HelpCategory[] = [
     articles: [
       {
         title: "Como falar com um anunciante",
-        body: "Nos detalhes do anúncio, use o botão de contato para abrir uma conversa direta com quem publicou."
+        body: "Nos detalhes do anúncio, use o botão de contato para abrir a conversa no WhatsApp. Em Indicações, o contato pode ser da pessoa/serviço indicado, e não do morador que publicou."
       },
       {
         title: "Como funciona o WhatsApp",
-        body: "O portal usa o número informado pelo anunciante para iniciar a conversa. Verifique se seu WhatsApp está atualizado na Minha conta."
+        body: "O portal usa o número de contato configurado no anúncio. Em categorias comuns, é o WhatsApp do morador que publicou; em Indicações, pode ser o WhatsApp da pessoa/serviço indicado."
       }
     ]
   },
@@ -107,7 +107,8 @@ const HELP_CATEGORIES: HelpCategory[] = [
   {
     id: "regras",
     title: "Regras",
-    description: "Diretrizes para manter o portal organizado e respeitoso para todos.",
+    description:
+      "Diretrizes para manter o portal organizado e respeitoso para todos.",
     icon: ClipboardList,
     articles: [
       {
@@ -120,7 +121,7 @@ const HELP_CATEGORIES: HelpCategory[] = [
         items: [
           "Adicione fotos de boa qualidade do item anunciado.",
           "É permitido cadastrar até 10 fotos por anúncio.",
-          "Informe sempre o valor do produto ou serviço.",
+          "Informe o valor quando fizer sentido. Em Indicações, o valor é opcional.",
           "Utilize um título e uma descrição claros.",
           "Mantenha as informações atualizadas."
         ]

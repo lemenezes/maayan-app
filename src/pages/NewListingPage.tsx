@@ -27,6 +27,9 @@ interface FormData {
   category: Category;
   price: string;
   priceMode: ListingPriceMode;
+  referral_name: string;
+  referral_whatsapp: string;
+  referral_notes: string;
 }
 
 const initialForm: FormData = {
@@ -34,7 +37,10 @@ const initialForm: FormData = {
   description: "",
   category: "venda",
   price: "",
-  priceMode: defaultPriceModeForCategory("venda")
+  priceMode: defaultPriceModeForCategory("venda"),
+  referral_name: "",
+  referral_whatsapp: "",
+  referral_notes: ""
 };
 
 type FormErrors = Partial<Record<keyof FormData | "images", string>>;
@@ -51,6 +57,33 @@ const MAX_IMAGES = 10;
 interface ImageEntry {
   file: File;
   preview: string;
+}
+
+function normalizePhoneDigits(value: string): string {
+  const digitsOnly = value.replace(/\D/g, "");
+  const withoutCountryCode =
+    digitsOnly.length > 11 && digitsOnly.startsWith("55")
+      ? digitsOnly.slice(2)
+      : digitsOnly;
+  return withoutCountryCode.slice(0, 11);
+}
+
+function formatWhatsappMask(value: string): string {
+  const digits = normalizePhoneDigits(value);
+
+  if (!digits) return "";
+  if (digits.length <= 2) return `(${digits}`;
+
+  const ddd = digits.slice(0, 2);
+  const rest = digits.slice(2);
+
+  if (rest.length <= 4) return `(${ddd}) ${rest}`;
+
+  if (digits.length <= 10) {
+    return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4, 8)}`;
+  }
+
+  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5, 9)}`;
 }
 
 export default function NewListingPage() {
@@ -106,6 +139,19 @@ export default function NewListingPage() {
     if (!form.title.trim()) e.title = "Campo obrigatório";
     if (!form.description.trim()) e.description = "Campo obrigatório";
 
+    if (form.category === "indicacoes") {
+      if (!form.referral_name.trim()) {
+        e.referral_name = "Informe o nome da pessoa ou serviço indicado.";
+      }
+
+      const referralPhoneDigits = normalizePhoneDigits(form.referral_whatsapp);
+      if (!referralPhoneDigits) {
+        e.referral_whatsapp = "Informe o WhatsApp de contato indicado.";
+      } else if (referralPhoneDigits.length < 10) {
+        e.referral_whatsapp = "Informe um WhatsApp válido com DDD.";
+      }
+    }
+
     if (
       shouldRequirePriceValue(form.category, form.priceMode) &&
       !form.price.trim()
@@ -126,7 +172,10 @@ export default function NewListingPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    const nextValue =
+      name === "referral_whatsapp" ? formatWhatsappMask(value) : value;
+
+    setForm(prev => ({ ...prev, [name]: nextValue }));
     if (errors[name as keyof FormData]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -228,6 +277,18 @@ export default function NewListingPage() {
           price: priceValue,
           priceMode: form.priceMode,
           whatsapp: phoneDigits,
+          referralName:
+            form.category === "indicacoes"
+              ? form.referral_name.trim()
+              : undefined,
+          referralWhatsapp:
+            form.category === "indicacoes"
+              ? normalizePhoneDigits(form.referral_whatsapp)
+              : undefined,
+          referralNotes:
+            form.category === "indicacoes"
+              ? form.referral_notes.trim() || undefined
+              : undefined,
           imageFiles: images.map(img => img.file),
           authorName,
           userId: user.id
@@ -364,7 +425,15 @@ export default function NewListingPage() {
                           ...p,
                           category: cat.value,
                           price: "",
-                          priceMode: defaultPriceModeForCategory(cat.value)
+                          priceMode: defaultPriceModeForCategory(cat.value),
+                          referral_name:
+                            cat.value === "indicacoes" ? p.referral_name : "",
+                          referral_whatsapp:
+                            cat.value === "indicacoes"
+                              ? p.referral_whatsapp
+                              : "",
+                          referral_notes:
+                            cat.value === "indicacoes" ? p.referral_notes : ""
                         }));
                         setCategoryDropdownOpen(false);
                       }}
@@ -616,7 +685,11 @@ export default function NewListingPage() {
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                placeholder="Descreva o que está anunciando com detalhes..."
+                placeholder={
+                  form.category === "indicacoes"
+                    ? "Explique por que você recomenda essa pessoa ou serviço."
+                    : "Descreva o que está anunciando com detalhes..."
+                }
                 rows={5}
                 className={`${inputClass("description")} resize-none pb-6`}
                 maxLength={1000}
@@ -629,6 +702,80 @@ export default function NewListingPage() {
               <p className="text-red-500 text-xs mt-1">{errors.description}</p>
             )}
           </div>
+
+          {form.category === "indicacoes" && (
+            <div className="rounded-2xl border border-amber-200/80 dark:border-amber-800/50 bg-amber-50/70 dark:bg-amber-950/20 p-4 space-y-4">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                Contato da indicação
+              </p>
+
+              <div>
+                <label
+                  htmlFor="referral_name"
+                  className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Nome da pessoa/serviço indicado{" "}
+                  <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="referral_name"
+                  name="referral_name"
+                  type="text"
+                  value={form.referral_name}
+                  onChange={handleChange}
+                  placeholder="Ex: Maria - Diarista"
+                  className={inputClass("referral_name")}
+                  maxLength={120}
+                />
+                {errors.referral_name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.referral_name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="referral_whatsapp"
+                  className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  WhatsApp de contato indicado{" "}
+                  <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="referral_whatsapp"
+                  name="referral_whatsapp"
+                  type="tel"
+                  inputMode="numeric"
+                  value={form.referral_whatsapp}
+                  onChange={handleChange}
+                  placeholder="(21) 99999-9999"
+                  className={inputClass("referral_whatsapp")}
+                />
+                {errors.referral_whatsapp && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.referral_whatsapp}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="referral_notes"
+                  className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Observações sobre a indicação
+                </label>
+                <textarea
+                  id="referral_notes"
+                  name="referral_notes"
+                  value={form.referral_notes}
+                  onChange={handleChange}
+                  placeholder="Ex: Atende no condomínio às terças e quintas."
+                  rows={3}
+                  className={`${inputClass("referral_notes")} resize-none`}
+                  maxLength={500}
+                />
+              </div>
+            </div>
+          )}
 
           {submitError && (
             <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm px-4 py-3 rounded-xl animate-fade-in">

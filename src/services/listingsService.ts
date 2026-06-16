@@ -26,6 +26,9 @@ function rowToListing(row: {
   price: number | null;
   price_mode: string | null;
   whatsapp: string;
+  referral_name: string | null;
+  referral_whatsapp: string | null;
+  referral_notes: string | null;
   image_url: string | null;
   image_urls: string[] | null;
   user_id: string;
@@ -50,6 +53,9 @@ function rowToListing(row: {
       ? (row.price_mode as ListingPriceMode)
       : undefined,
     whatsapp: row.whatsapp,
+    referralName: row.referral_name ?? undefined,
+    referralWhatsapp: row.referral_whatsapp ?? undefined,
+    referralNotes: row.referral_notes ?? undefined,
     images,
     authorName: row.author_name,
     createdAt: row.created_at,
@@ -109,6 +115,9 @@ export interface CreateListingInput {
   price?: number;
   priceMode: ListingPriceMode;
   whatsapp: string;
+  referralName?: string;
+  referralWhatsapp?: string;
+  referralNotes?: string;
   imageFiles?: File[];
   authorName: string;
   userId: string;
@@ -138,6 +147,12 @@ export async function createListing(
     price: input.price ?? null,
     price_mode: input.priceMode,
     whatsapp: input.whatsapp,
+    referral_name:
+      input.category === "indicacoes" ? (input.referralName ?? null) : null,
+    referral_whatsapp:
+      input.category === "indicacoes" ? (input.referralWhatsapp ?? null) : null,
+    referral_notes:
+      input.category === "indicacoes" ? (input.referralNotes ?? null) : null,
     image_url: imageUrls[0] ?? null,
     image_urls: imageUrls.length > 0 ? imageUrls : null,
     user_id: input.userId,
@@ -222,6 +237,9 @@ export interface UpdateListingInput {
   category: Category;
   price?: number;
   priceMode: ListingPriceMode;
+  referralName?: string;
+  referralWhatsapp?: string;
+  referralNotes?: string;
   /** URLs that were already saved and should be kept */
   keptImageUrls: string[];
   /** New files to upload, keyed so the final order can be reconstructed */
@@ -309,6 +327,14 @@ export async function updateListing(
       category: input.category,
       price: input.price ?? null,
       price_mode: input.priceMode,
+      referral_name:
+        input.category === "indicacoes" ? (input.referralName ?? null) : null,
+      referral_whatsapp:
+        input.category === "indicacoes"
+          ? (input.referralWhatsapp ?? null)
+          : null,
+      referral_notes:
+        input.category === "indicacoes" ? (input.referralNotes ?? null) : null,
       image_url: finalUrls[0] ?? null,
       image_urls: finalUrls.length > 0 ? finalUrls : null
     })

@@ -36,6 +36,9 @@ export type Database = {
           price: number | null;
           price_mode: ListingPriceMode | null;
           whatsapp: string;
+          referral_name: string | null;
+          referral_whatsapp: string | null;
+          referral_notes: string | null;
           image_url: string | null;
           image_urls: string[] | null;
           user_id: string;
@@ -52,6 +55,9 @@ export type Database = {
           price?: number | null;
           price_mode?: ListingPriceMode | null;
           whatsapp: string;
+          referral_name?: string | null;
+          referral_whatsapp?: string | null;
+          referral_notes?: string | null;
           image_url?: string | null;
           image_urls?: string[] | null;
           user_id: string;
@@ -68,6 +74,9 @@ export type Database = {
           price?: number | null;
           price_mode?: ListingPriceMode | null;
           whatsapp?: string;
+          referral_name?: string | null;
+          referral_whatsapp?: string | null;
+          referral_notes?: string | null;
           image_url?: string | null;
           image_urls?: string[] | null;
           user_id?: string;

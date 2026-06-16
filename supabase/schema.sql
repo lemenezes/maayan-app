@@ -34,6 +34,9 @@ create table if not exists public.listings (
             )
         ),
     whatsapp text not null,
+        referral_name text,
+        referral_whatsapp text,
+        referral_notes text,
     image_url text,
     author_name text not null,
     status text not null default 'active' check (status in ('active', 'sold', 'archived')),

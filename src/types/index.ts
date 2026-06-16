@@ -60,6 +60,9 @@ export interface Listing {
   price?: number;
   priceMode?: ListingPriceMode;
   whatsapp: string;
+  referralName?: string;
+  referralWhatsapp?: string;
+  referralNotes?: string;
   images: string[];
   authorName: string;
   createdAt: string;
