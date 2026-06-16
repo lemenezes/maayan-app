@@ -83,7 +83,13 @@ function hasAtLeastTwoNameParts(value: string): boolean {
 
 function isStrictEmail(value: string): boolean {
   const email = value.trim().toLowerCase();
-  return /^[^\s@]+@([^\s@.]+\.)+[^\s@.]{2,}$/.test(email);
+  return /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/.test(
+    email
+  );
+}
+
+function hasNonAsciiCharacters(value: string): boolean {
+  return /[^\x00-\x7F]/.test(value);
 }
 
 export default function RequestAccessPage() {
@@ -140,6 +146,10 @@ export default function RequestAccessPage() {
     if (field === "email") {
       const email = value.trim();
       if (!email) return "Informe seu e-mail.";
+
+      if (hasNonAsciiCharacters(email)) {
+        return "Use um e-mail sem acentos ou caracteres especiais. Exemplo: nome@email.com";
+      }
 
       const nativeEmailValid = emailInputRef.current?.validity.valid ?? true;
       if (!nativeEmailValid || !isStrictEmail(email)) {

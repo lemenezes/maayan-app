@@ -76,7 +76,13 @@ function buildCorsHeaders(req: Request, extraHeaders?: HeadersInit): Headers {
 }
 
 function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@([^\s@.]+\.)+[^\s@.]{2,}$/.test(value);
+  return /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/.test(
+    value
+  );
+}
+
+function hasNonAsciiCharacters(value: string): boolean {
+  return /[^\x00-\x7F]/.test(value);
 }
 
 function normalizeWhatsapp(value: string): string {
@@ -182,6 +188,19 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
+  }
+
+  if (hasNonAsciiCharacters(email)) {
+    return new Response(
+      JSON.stringify({
+        error:
+          "Use um e-mail sem acentos ou caracteres especiais. Exemplo: nome@email.com"
+      }),
+      {
+        status: 400,
+        headers: buildCorsHeaders(req, { "Content-Type": "application/json" })
+      }
+    );
   }
 
   if (!isValidEmail(email)) {
