@@ -15,8 +15,10 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   const navigate = useNavigate();
   const location = useLocation();
   // Suporta parâmetro de query string "from" ou state.from
-  const from = new URLSearchParams(location.search).get("from") ?? 
-    (location.state as { from?: string })?.from ?? "/";
+  const from =
+    new URLSearchParams(location.search).get("from") ??
+    (location.state as { from?: string })?.from ??
+    "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
