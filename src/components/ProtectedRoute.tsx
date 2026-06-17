@@ -32,7 +32,7 @@ export default function ProtectedRoute({
 
   if (!user) {
     return (
-      <Navigate to="/entrar" state={{ from: location.pathname }} replace />
+      <Navigate to="/acesso-restrito" state={{ from: location.pathname }} replace />
     );
   }
 

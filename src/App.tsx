@@ -26,6 +26,7 @@ import PendingApprovalPage from "./pages/PendingApprovalPage";
 import MyAccountPage from "./pages/MyAccountPage.tsx";
 import AccessNotApprovedPage from "./pages/AccessNotApprovedPage";
 import AccessSuspendedPage from "./pages/AccessSuspendedPage";
+import RestrictedAccessPage from "./pages/RestrictedAccessPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfUsePage from "./pages/TermsOfUsePage";
 
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
       },
       { path: "entrar", element: <AuthPage mode="login" /> },
       { path: "definir-senha", element: <SetPasswordPage /> },
+      { path: "acesso-restrito", element: <RestrictedAccessPage /> },
       // Cadastro público desabilitado — redireciona para solicitação de acesso
       {
         path: "cadastro",

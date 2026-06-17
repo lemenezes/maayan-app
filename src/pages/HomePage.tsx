@@ -58,67 +58,45 @@ export default function HomePage() {
             Classificados simples e confiáveis para quem mora aqui.
           </p>
 
-          {user ? (
-            <>
-              {/* Search bar */}
-              <form onSubmit={handleSearch} className="max-w-xl mx-auto mb-10">
-                <div className="relative flex items-center bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl shadow-sky-900/20 p-2">
-                  <Search className="absolute left-5 text-slate-400 w-5 h-5 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                    placeholder="O que você está procurando?"
-                    className="flex-1 pl-12 pr-4 py-2.5 text-slate-800 placeholder-slate-400 bg-transparent outline-none text-base"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex-shrink-0">
-                    Buscar
-                  </button>
-                </div>
-              </form>
-
-              {/* Stats */}
-              <div className="flex items-center justify-center gap-8 sm:gap-12">
-                {[
-                  {
-                    value: `${listings.length}+`,
-                    label: "Anúncios ativos"
-                  },
-                  { value: `${CATEGORIES.length}`, label: "Categorias" },
-                  { value: "100%", label: "Gratuito" }
-                ].map(({ value, label }, i) => (
-                  <div key={i} className="text-center">
-                    <p className="text-2xl font-bold text-white tabular-nums">
-                      {value}
-                    </p>
-                    <p className="text-white/50 text-xs mt-0.5 tracking-wider uppercase">
-                      {label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="mb-2">
-              <p className="text-white/65 text-sm sm:text-base mb-6 max-w-2xl mx-auto tracking-wide">
-                Portal exclusivo para moradores aprovados do Maayan Cidade Jardim.
-              </p>
-              <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
-                <Link
-                  to="/solicitar-acesso"
-                  className="inline-flex items-center justify-center bg-white/80 backdrop-blur-md text-[#0C5A86] font-semibold px-6 py-2.5 rounded-xl hover:bg-white/90 transition-colors text-sm sm:text-base">
-                  Solicitar acesso
-                </Link>
-                <Link
-                  to="/entrar"
-                  className="inline-flex items-center justify-center border border-white/35 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-sm sm:text-base">
-                  Entrar
-                </Link>
-              </div>
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="max-w-xl mx-auto mb-10">
+            <div className="relative flex items-center bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl shadow-sky-900/20 p-2">
+              <Search className="absolute left-5 text-slate-400 w-5 h-5 pointer-events-none" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                placeholder="O que você está procurando?"
+                className="flex-1 pl-12 pr-4 py-2.5 text-slate-800 placeholder-slate-400 bg-transparent outline-none text-base"
+              />
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-[#0C5A86] to-[#1DAFD9] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex-shrink-0">
+                Buscar
+              </button>
             </div>
-          )}
+          </form>
+
+          {/* Stats */}
+          <div className="flex items-center justify-center gap-8 sm:gap-12">
+            {[
+              {
+                value: user ? `${listings.length}+` : "—",
+                label: "Anúncios ativos"
+              },
+              { value: `${CATEGORIES.length}`, label: "Categorias" },
+              { value: "100%", label: "Gratuito" }
+            ].map(({ value, label }, i) => (
+              <div key={i} className="text-center">
+                <p className="text-2xl font-bold text-white tabular-nums">
+                  {value}
+                </p>
+                <p className="text-white/50 text-xs mt-0.5 tracking-wider uppercase">
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Wave divider */}
