@@ -81,6 +81,14 @@ export interface CategoryConfig {
   pillActiveClass: string;
 }
 
+export function getSortedCategories(
+  categories: CategoryConfig[] = CATEGORIES
+): CategoryConfig[] {
+  return [...categories].sort((a, b) =>
+    a.label.localeCompare(b.label, "pt-BR", { sensitivity: "base" })
+  );
+}
+
 export const CATEGORIES: CategoryConfig[] = [
   {
     value: "venda",

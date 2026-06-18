@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../types";
+import { getSortedCategories } from "../types";
 import type { Category } from "../types";
 
 interface CategoryFilterProps {
@@ -10,6 +10,8 @@ export default function CategoryFilter({
   active,
   onChange
 }: CategoryFilterProps) {
+  const sortedCategories = getSortedCategories();
+
   return (
     <div className="flex flex-wrap justify-center lg:flex-nowrap lg:items-center lg:justify-start gap-2 pb-0.5 lg:pb-0 lg:overflow-x-auto">
       <button
@@ -22,7 +24,7 @@ export default function CategoryFilter({
         }`}>
         Todos
       </button>
-      {CATEGORIES.map(cat => (
+      {sortedCategories.map(cat => (
         <button
           key={cat.value}
           type="button"

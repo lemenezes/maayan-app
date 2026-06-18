@@ -61,16 +61,16 @@ export function getPriceModeOptions(category: Category): PriceModeOption[] {
     return [
       { value: "hour", label: "Por hora" },
       { value: "day", label: "Por diária" },
-      { value: "project", label: "Por projeto" },
-      { value: "quote", label: "Sob consulta" }
+      { value: "project", label: "Por serviço" },
+      { value: "quote", label: "A combinar" }
     ];
   }
 
   if (category === "imoveis") {
     return [
       { value: "sale", label: "Venda" },
-      { value: "monthly", label: "Aluguel mensal" },
-      { value: "season", label: "Temporada" }
+      { value: "monthly", label: "Locação" },
+      { value: "season", label: "Locação por temporada" }
     ];
   }
 
@@ -109,7 +109,7 @@ export function formatListingPrice(
     case "day":
       return `${amount}/dia`;
     case "project":
-      return `${amount}/projeto`;
+      return `${amount}/serviço`;
     case "monthly":
       return `${amount}/mês`;
     case "season":

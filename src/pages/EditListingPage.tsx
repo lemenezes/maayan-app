@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useLoadingOverlay } from "../context/LoadingOverlayContext";
 import { useToast } from "../context/ToastContext";
 import { fetchUserListings, updateListing } from "../services/listingsService";
-import { CATEGORIES } from "../types";
+import { CATEGORIES, getSortedCategories } from "../types";
 import type { Category, ListingPriceMode } from "../types";
 import {
   defaultPriceModeForCategory,
@@ -15,6 +15,10 @@ import {
   shouldRequirePriceValue,
   shouldShowPriceInput
 } from "../utils/pricing";
+import {
+  getCategoryOptionDescription,
+  getListingFormCopy
+} from "../utils/listingFormCopy";
 
 interface FormData {
   title: string;
@@ -386,16 +390,8 @@ export default function EditListingPage() {
 
   const showPrice = shouldShowPriceInput(form.category);
   const priceModeOptions = getPriceModeOptions(form.category);
-  const valueMicrocopy =
-    form.category === "servicos"
-      ? "Defina como deseja cobrar pelo serviço."
-      : form.category === "imoveis"
-        ? "Informe o valor de venda ou locação."
-        : form.category === "doacao"
-          ? "Este anúncio será exibido como gratuito."
-          : form.category === "indicacoes"
-            ? "Valor opcional."
-            : "Informe o valor do anúncio.";
+  const formCopy = getListingFormCopy(form.category);
+  const sortedCategories = getSortedCategories();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
@@ -452,7 +448,7 @@ export default function EditListingPage() {
                 <div
                   className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md shadow-slate-900/5 z-10 overflow-hidden"
                   role="listbox">
-                  {CATEGORIES.map((cat, idx) => (
+                  {sortedCategories.map((cat, idx) => (
                     <button
                       key={cat.value}
                       type="button"
@@ -473,8 +469,8 @@ export default function EditListingPage() {
                         }));
                         setCategoryDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-all ${
-                        idx !== CATEGORIES.length - 1
+                      className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-all ${
+                        idx !== sortedCategories.length - 1
                           ? "border-b border-slate-100 dark:border-slate-800"
                           : ""
                       } ${
@@ -484,16 +480,26 @@ export default function EditListingPage() {
                       }`}
                       role="option"
                       aria-selected={form.category === cat.value}>
-                      <span className="text-lg">{cat.icon}</span>
-                      <span>{cat.label}</span>
+                      <span className="text-lg mt-0.5">{cat.icon}</span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium leading-tight">
+                          {cat.label}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400 leading-snug">
+                          {getCategoryOptionDescription(cat.value)}
+                        </span>
+                      </span>
                       {form.category === cat.value && (
-                        <span className="ml-auto text-[#1DAFD9]">✓</span>
+                        <span className="ml-auto mt-0.5 text-[#1DAFD9]">✓</span>
                       )}
                     </button>
                   ))}
                 </div>
               )}
             </div>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              {formCopy.categoryHelpText}
+            </p>
           </div>
 
           {/* Photos */}
@@ -626,7 +632,7 @@ export default function EditListingPage() {
               type="text"
               value={form.title}
               onChange={handleChange}
-              placeholder="Ex: Sofá 3 lugares em ótimo estado"
+              placeholder={formCopy.titlePlaceholder}
               className={inputClass("title")}
               maxLength={100}
             />
@@ -653,7 +659,7 @@ export default function EditListingPage() {
                 )}
               </label>
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
-                {valueMicrocopy}
+                {formCopy.valueHelpText}
               </p>
               {showPrice &&
                 (form.category !== "servicos" ||
@@ -696,9 +702,15 @@ export default function EditListingPage() {
                 <label
                   htmlFor="priceMode"
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  {form.category === "servicos" ? "Cobrança" : "Tipo"}
+                  {formCopy.priceModeLabel ??
+                    (form.category === "servicos" ? "Cobrança" : "Tipo")}
                   <span className="text-red-400"> *</span>
                 </label>
+                {formCopy.priceModeHelpText && (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
+                    {formCopy.priceModeHelpText}
+                  </p>
+                )}
                 <select
                   id="priceMode"
                   name="priceMode"
@@ -735,11 +747,7 @@ export default function EditListingPage() {
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                placeholder={
-                  form.category === "indicacoes"
-                    ? "Explique por que você recomenda essa pessoa ou serviço."
-                    : "Descreva o que está anunciando com detalhes..."
-                }
+                placeholder={formCopy.descriptionPlaceholder}
                 rows={5}
                 className={`${inputClass("description")} resize-none pb-6`}
                 maxLength={1000}
@@ -757,6 +765,10 @@ export default function EditListingPage() {
             <div className="rounded-2xl border border-amber-200/80 dark:border-amber-800/50 bg-amber-50/70 dark:bg-amber-950/20 p-4 space-y-4">
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
                 Contato da indicação
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-200 leading-relaxed">
+                Quando alguém clicar em WhatsApp neste anúncio, a conversa será
+                aberta com a pessoa ou serviço indicado, não com você.
               </p>
 
               <div>
@@ -800,6 +812,10 @@ export default function EditListingPage() {
                   placeholder="(21) 99999-9999"
                   className={inputClass("referral_whatsapp")}
                 />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Informe o número que os moradores devem usar para falar
+                  diretamente com a pessoa ou serviço indicado.
+                </p>
                 {errors.referral_whatsapp && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.referral_whatsapp}
