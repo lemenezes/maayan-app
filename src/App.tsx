@@ -54,11 +54,7 @@ const router = createBrowserRouter([
       },
       {
         path: "ajuda",
-        element: (
-          <ProtectedRoute>
-            <HelpPage />
-          </ProtectedRoute>
-        )
+        element: <HelpPage />
       },
       {
         path: "publicar",

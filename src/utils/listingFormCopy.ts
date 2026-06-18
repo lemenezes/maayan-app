@@ -39,8 +39,7 @@ export function getListingFormCopy(category: Category): ListingFormCopy {
         descriptionPlaceholder:
           "Descreva o item, estado de conservação e como combinar a retirada.",
         valueHelpText: "Este anúncio será exibido como gratuito.",
-        categoryHelpText:
-          "Disponibilize itens gratuitamente para a comunidade."
+        categoryHelpText: "Disponibilize itens gratuitamente para a comunidade."
       };
 
     case "servicos":
@@ -81,9 +80,11 @@ export function getListingFormCopy(category: Category): ListingFormCopy {
     default:
       return {
         titlePlaceholder: "Ex: Anuncio",
-        descriptionPlaceholder: "Descreva o que está anunciando com detalhes...",
+        descriptionPlaceholder:
+          "Descreva o que está anunciando com detalhes...",
         valueHelpText: "Informe o valor do anúncio.",
-        categoryHelpText: "Selecione a categoria que melhor descreve seu anúncio."
+        categoryHelpText:
+          "Selecione a categoria que melhor descreve seu anúncio."
       };
   }
 }

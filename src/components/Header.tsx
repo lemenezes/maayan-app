@@ -13,12 +13,16 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Início", icon: <Home size={16} />, end: true },
-  { to: "/anuncios", label: "Anúncios", icon: <Megaphone size={16} /> },
+  {
+    to: "/anuncios",
+    label: "Anúncios",
+    icon: <Megaphone size={16} />,
+    requiresAuth: true
+  },
   {
     to: "/ajuda",
     label: "Ajuda",
-    icon: <CircleHelp size={15} />,
-    requiresAuth: true
+    icon: <CircleHelp size={15} />
   },
   {
     to: "/meus-anuncios",
@@ -236,12 +240,6 @@ export default function Header() {
                   className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                   {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
-                {/* Solicitar acesso (desktop) */}
-                <Link
-                  to="/solicitar-acesso"
-                  className="hidden md:flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 text-sm font-medium px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                  Solicitar acesso
-                </Link>
                 {/* Login (desktop) */}
                 <div className="hidden md:block">
                   <Link
@@ -251,6 +249,12 @@ export default function Header() {
                     Entrar
                   </Link>
                 </div>
+                {/* Solicitar acesso (desktop) */}
+                <Link
+                  to="/solicitar-acesso"
+                  className="hidden md:flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 text-sm font-medium px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  Solicitar acesso
+                </Link>
               </>
             )}
 
