@@ -113,6 +113,23 @@ function ListingListItem({ listing, onSelect }: ListingListItemProps) {
   );
 }
 
+type SortOption =
+  | "recent"
+  | "oldest"
+  | "price-low"
+  | "price-high"
+  | "name-asc"
+  | "name-desc";
+
+const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
+  { value: "recent", label: "Mais recentes" },
+  { value: "oldest", label: "Mais antigos" },
+  { value: "price-low", label: "Menor preço" },
+  { value: "price-high", label: "Maior preço" },
+  { value: "name-asc", label: "Título A-Z" },
+  { value: "name-desc", label: "Título Z-A" }
+];
+
 export default function ListingsPage() {
   const { listings, loading } = useListings();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -123,6 +140,7 @@ export default function ListingsPage() {
       ? "list"
       : "grid";
   });
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
 
   const searchText = searchParams.get("busca") ?? "";
   const activeCategory = (searchParams.get("categoria") as Category) || null;
@@ -171,17 +189,61 @@ export default function ListingsPage() {
             l.referralNotes ?? ""
           ].join(" ")
         );
-        const matchSearch =
-          !q || searchableText.includes(q);
+        const matchSearch = !q || searchableText.includes(q);
         return matchCat && matchSearch;
       }),
     [listings, activeCategory, searchText]
   );
 
+  const sorted = useMemo(() => {
+    const copy = [...filtered];
+    copy.sort((a, b) => {
+      switch (sortBy) {
+        case "recent":
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        case "price-low": {
+          const aHasPrice = a.price !== undefined && a.priceMode !== "quote";
+          const bHasPrice = b.price !== undefined && b.priceMode !== "quote";
+          if (!aHasPrice && !bHasPrice) return 0;
+          if (!aHasPrice) return 1;
+          if (!bHasPrice) return -1;
+          return (a.price ?? 0) - (b.price ?? 0);
+        }
+        case "price-high": {
+          const aHasPrice = a.price !== undefined && a.priceMode !== "quote";
+          const bHasPrice = b.price !== undefined && b.priceMode !== "quote";
+          if (!aHasPrice && !bHasPrice) return 0;
+          if (!aHasPrice) return 1;
+          if (!bHasPrice) return -1;
+          return (b.price ?? 0) - (a.price ?? 0);
+        }
+        case "name-asc": {
+          const aNorm = normalizeSearchText(a.title);
+          const bNorm = normalizeSearchText(b.title);
+          return aNorm.localeCompare(bNorm, "pt-BR");
+        }
+        case "name-desc": {
+          const aNorm = normalizeSearchText(a.title);
+          const bNorm = normalizeSearchText(b.title);
+          return bNorm.localeCompare(aNorm, "pt-BR");
+        }
+        default:
+          return 0;
+      }
+    });
+    return copy;
+  }, [filtered, sortBy]);
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="min-w-0">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-1">
             Anúncios
           </h1>
@@ -196,39 +258,10 @@ export default function ListingsPage() {
             )}
           </p>
         </div>
-
-        <div className="inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md lg:hidden">
-          <button
-            type="button"
-            aria-label="Visualização em grade"
-            aria-pressed={viewMode === "grid"}
-            onClick={() => setViewMode("grid")}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-              viewMode === "grid"
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-            }`}>
-            <LayoutGrid size={13} />
-            Grid
-          </button>
-          <button
-            type="button"
-            aria-label="Visualização em lista"
-            aria-pressed={viewMode === "list"}
-            onClick={() => setViewMode("list")}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-              viewMode === "list"
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-            }`}>
-            <List size={13} />
-            Lista
-          </button>
-        </div>
       </div>
 
-      <div className="sticky top-16 z-40 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 border-b border-slate-100 dark:border-slate-800">
-        <div className="relative mb-3">
+      <div className="sticky top-16 z-40 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 mb-6 sm:mb-8 border-b border-slate-100 dark:border-slate-800">
+        <div className="relative mb-2">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
           <input
             type="text"
@@ -247,41 +280,91 @@ export default function ListingsPage() {
           )}
         </div>
 
-        <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 flex-1">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex-1 mb-2 lg:mb-0">
             <CategoryFilter
               active={activeCategory}
               onChange={cat => updateParam("categoria", cat)}
             />
           </div>
 
-          <div className="hidden lg:inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md">
-            <button
-              type="button"
-              aria-label="Visualização em grade"
-              aria-pressed={viewMode === "grid"}
-              onClick={() => setViewMode("grid")}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                viewMode === "grid"
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-              }`}>
-              <LayoutGrid size={13} />
-              Grid
-            </button>
-            <button
-              type="button"
-              aria-label="Visualização em lista"
-              aria-pressed={viewMode === "list"}
-              onClick={() => setViewMode("list")}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                viewMode === "list"
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-              }`}>
-              <List size={13} />
-              Lista
-            </button>
+          <div className="flex flex-row items-center gap-2 lg:gap-0">
+            <label
+              htmlFor="sort-select"
+              className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+              Ordenar por:
+            </label>
+            <select
+              id="sort-select"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as SortOption)}
+              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm font-medium outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:focus:ring-sky-900/50 transition-all shadow-sm">
+              {SORT_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex sm:hidden">
+              <div className="inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md">
+                <button
+                  type="button"
+                  aria-label="Visualização em grade"
+                  aria-pressed={viewMode === "grid"}
+                  onClick={() => setViewMode("grid")}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                    viewMode === "grid"
+                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                  }`}>
+                  <LayoutGrid size={13} />
+                  Grid
+                </button>
+                <button
+                  type="button"
+                  aria-label="Visualização em lista"
+                  aria-pressed={viewMode === "list"}
+                  onClick={() => setViewMode("list")}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                    viewMode === "list"
+                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                  }`}>
+                  <List size={13} />
+                  Lista
+                </button>
+              </div>
+            </div>
+
+            <div className="hidden lg:inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md">
+              <button
+                type="button"
+                aria-label="Visualização em grade"
+                aria-pressed={viewMode === "grid"}
+                onClick={() => setViewMode("grid")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                  viewMode === "grid"
+                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                }`}>
+                <LayoutGrid size={13} />
+                Grid
+              </button>
+              <button
+                type="button"
+                aria-label="Visualização em lista"
+                aria-pressed={viewMode === "list"}
+                onClick={() => setViewMode("list")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                  viewMode === "list"
+                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                }`}>
+                <List size={13} />
+                Lista
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -291,7 +374,7 @@ export default function ListingsPage() {
       ) : filtered.length > 0 ? (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {filtered.map(listing => (
+            {sorted.map(listing => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
@@ -301,7 +384,7 @@ export default function ListingsPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3 sm:gap-4 max-w-[1200px] mx-auto w-full">
-            {filtered.map(listing => (
+            {sorted.map(listing => (
               <ListingListItem
                 key={listing.id}
                 listing={listing}
