@@ -288,7 +288,7 @@ export default function ListingsPage() {
             />
           </div>
 
-          <div className="flex flex-row items-center gap-2 lg:gap-0">
+          <div className="flex flex-row items-center gap-2">
             <label
               htmlFor="sort-select"
               className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
@@ -336,35 +336,35 @@ export default function ListingsPage() {
                 </button>
               </div>
             </div>
+          </div>
 
-            <div className="hidden lg:inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md">
-              <button
-                type="button"
-                aria-label="Visualização em grade"
-                aria-pressed={viewMode === "grid"}
-                onClick={() => setViewMode("grid")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                  viewMode === "grid"
-                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-                }`}>
-                <LayoutGrid size={13} />
-                Grid
-              </button>
-              <button
-                type="button"
-                aria-label="Visualização em lista"
-                aria-pressed={viewMode === "list"}
-                onClick={() => setViewMode("list")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                  viewMode === "list"
-                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-                }`}>
-                <List size={13} />
-                Lista
-              </button>
-            </div>
+          <div className="hidden lg:inline-flex items-center gap-1 select-none rounded-full border border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-800/80 p-1 shadow-sm backdrop-blur-md">
+            <button
+              type="button"
+              aria-label="Visualização em grade"
+              aria-pressed={viewMode === "grid"}
+              onClick={() => setViewMode("grid")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                viewMode === "grid"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+              }`}>
+              <LayoutGrid size={13} />
+              Grid
+            </button>
+            <button
+              type="button"
+              aria-label="Visualização em lista"
+              aria-pressed={viewMode === "list"}
+              onClick={() => setViewMode("list")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                viewMode === "list"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+              }`}>
+              <List size={13} />
+              Lista
+            </button>
           </div>
         </div>
       </div>
