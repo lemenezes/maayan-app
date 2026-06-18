@@ -39,8 +39,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   },
   deleted: {
     label: "Excluído",
-    className:
-      "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+    className: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
   }
 };
 
@@ -126,7 +125,9 @@ export default function AdminListingsPage() {
     setBusy(s => new Set(s).add(id));
     try {
       await deleteListing(id, user?.id);
-      setListings(prev => prev.map(l => l.id === id ? { ...l, status: "deleted" } : l));
+      setListings(prev =>
+        prev.map(l => (l.id === id ? { ...l, status: "deleted" } : l))
+      );
       showToast("Anúncio excluído", "success");
     } catch {
       showToast("Erro ao excluir anúncio", "error");

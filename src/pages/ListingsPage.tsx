@@ -6,6 +6,7 @@ import {
   ImageOff,
   LayoutGrid,
   List,
+  RefreshCw,
   Search,
   SlidersHorizontal,
   X
@@ -113,6 +114,34 @@ function ListingListItem({ listing, onSelect }: ListingListItemProps) {
   );
 }
 
+function ListingListSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="flex flex-col gap-3 sm:gap-4 max-w-[1200px] mx-auto w-full">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-2xl border border-slate-200/80 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/70 backdrop-blur-md p-2 sm:p-3 animate-pulse">
+          <div className="grid grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[196px_minmax(0,1fr)_auto_20px] gap-2.5 sm:gap-4 items-center">
+            <div className="w-[72px] h-[72px] sm:w-[196px] sm:h-[100px] rounded-2xl bg-slate-200 dark:bg-slate-700" />
+
+            <div className="min-w-0 flex flex-col gap-2">
+              <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700 sm:hidden" />
+            </div>
+
+            <div className="hidden sm:flex flex-col items-end gap-2">
+              <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700" />
+            </div>
+
+            <div className="hidden sm:block h-4 w-4 rounded bg-slate-200 dark:bg-slate-700" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type SortOption =
   | "recent"
   | "oldest"
@@ -131,9 +160,10 @@ const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
 ];
 
 export default function ListingsPage() {
-  const { listings, loading } = useListings();
+  const { listings, loading, reload } = useListings();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "grid";
     return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === "list"
@@ -169,6 +199,15 @@ export default function ListingsPage() {
       () => updateParam("busca", value || null),
       300
     );
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await reload();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const filtered = useMemo(
@@ -242,21 +281,49 @@ export default function ListingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-6 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-1">
             Anúncios
           </h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm truncate">
-            {loading ? (
-              <span className="inline-block w-32 h-3.5 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-            ) : (
-              <>
-                {filtered.length} anúncio{filtered.length !== 1 ? "s" : ""}{" "}
-                encontrado{filtered.length !== 1 ? "s" : ""}
-              </>
-            )}
-          </p>
+          <div className="flex items-center justify-between gap-2 md:block">
+            <p className="text-slate-400 dark:text-slate-500 text-sm truncate">
+              {loading ? (
+                <span className="inline-block w-32 h-3.5 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+              ) : (
+                <>
+                  {filtered.length} anúncio{filtered.length !== 1 ? "s" : ""}{" "}
+                  encontrado{filtered.length !== 1 ? "s" : ""}
+                </>
+              )}
+            </p>
+
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={loading || isRefreshing}
+              className="inline-flex md:hidden items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-60">
+              <RefreshCw
+                size={13}
+                className={loading || isRefreshing ? "animate-spin" : ""}
+              />
+              {loading || isRefreshing ? "Atualizando" : "Atualizar"}
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden md:flex">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-60">
+            <RefreshCw
+              size={15}
+              className={loading || isRefreshing ? "animate-spin" : ""}
+            />
+            {loading || isRefreshing ? "Atualizando" : "Atualizar"}
+          </button>
         </div>
       </div>
 
@@ -370,7 +437,11 @@ export default function ListingsPage() {
       </div>
 
       {loading ? (
-        <SkeletonGrid count={6} />
+        viewMode === "grid" ? (
+          <SkeletonGrid count={3} />
+        ) : (
+          <ListingListSkeleton count={3} />
+        )
       ) : filtered.length > 0 ? (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">

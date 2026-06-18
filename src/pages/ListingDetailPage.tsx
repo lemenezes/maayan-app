@@ -145,7 +145,10 @@ export default function ListingDetailPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-sm font-medium text-[#0C5A86] hover:underline dark:border-slate-700 dark:bg-slate-800 dark:text-sky-400">
-                🔗 {link.siteName ? `Ver anúncio original no ${link.siteName}` : "Abrir link externo"}
+                🔗{" "}
+                {link.siteName
+                  ? `Ver anúncio original no ${link.siteName}`
+                  : "Abrir link externo"}
               </a>
             ))}
           </div>

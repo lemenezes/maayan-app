@@ -30,7 +30,9 @@ function toAbsoluteUrl(url: string): string {
 function getFriendlySiteName(href: string): string | null {
   try {
     const hostname = new URL(href).hostname.replace(/^www\./i, "");
-    const mapped = FRIENDLY_SITE_NAMES.find(item => item.pattern.test(hostname));
+    const mapped = FRIENDLY_SITE_NAMES.find(item =>
+      item.pattern.test(hostname)
+    );
     return mapped?.label ?? null;
   } catch {
     return null;

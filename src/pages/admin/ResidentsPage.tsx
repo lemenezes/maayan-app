@@ -84,7 +84,8 @@ const DESKTOP_STATUS_CARD_TONES: Partial<
   Record<RequestStatus, { active: string; inactive: string }>
 > = {
   rejected: {
-    active: "border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-950/30",
+    active:
+      "border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-950/30",
     inactive:
       "border-transparent bg-red-50/70 dark:bg-red-950/15 hover:border-red-200 dark:hover:border-red-800/40"
   },
@@ -607,10 +608,10 @@ export default function ResidentsPage() {
               onClick={() => setFilter(s)}
               className={`rounded-2xl p-4 text-left border-2 transition-all ${
                 filter === s
-                  ? desktopTone?.active ??
-                    "border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40"
-                  : desktopTone?.inactive ??
-                    "border-transparent bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+                  ? (desktopTone?.active ??
+                    "border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40")
+                  : (desktopTone?.inactive ??
+                    "border-transparent bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700")
               }`}>
               <div
                 className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full mb-2 ${conf.className}`}>
