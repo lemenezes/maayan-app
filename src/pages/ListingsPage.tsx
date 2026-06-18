@@ -31,6 +31,13 @@ function formatDate(dateStr: string) {
   });
 }
 
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 interface ListingListItemProps {
   listing: Listing;
   onSelect: (listing: Listing) => void;
@@ -150,12 +157,22 @@ export default function ListingsPage() {
     () =>
       listings.filter(l => {
         const matchCat = !activeCategory || l.category === activeCategory;
-        const q = searchText.toLowerCase();
+        const q = normalizeSearchText(searchText);
+        const categoryLabel =
+          CATEGORIES.find(c => c.value === l.category)?.label ?? "";
+        const searchableText = normalizeSearchText(
+          [
+            l.title,
+            l.description,
+            l.authorName,
+            l.category,
+            categoryLabel,
+            l.referralName ?? "",
+            l.referralNotes ?? ""
+          ].join(" ")
+        );
         const matchSearch =
-          !q ||
-          l.title.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q) ||
-          l.authorName.toLowerCase().includes(q);
+          !q || searchableText.includes(q);
         return matchCat && matchSearch;
       }),
     [listings, activeCategory, searchText]
