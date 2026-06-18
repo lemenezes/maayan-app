@@ -7,6 +7,7 @@ import { CATEGORIES } from "../types";
 import type { Listing } from "../types";
 import { buildWhatsAppUrl } from "../utils/whatsapp";
 import { formatListingPrice } from "../utils/pricing";
+import { extractExternalLinksFromText } from "../utils/linkifyText";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR", {
@@ -88,6 +89,9 @@ export default function ListingDetailPage() {
   const price = formatListingPrice(listing);
   const isReferral = listing.category === "indicacoes";
   const hasReferralNotes = Boolean(listing.referralNotes?.trim());
+  const { descriptionText, links } = extractExternalLinksFromText(
+    listing.description
+  );
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
@@ -126,9 +130,26 @@ export default function ListingDetailPage() {
           </p>
         )}
 
-        <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-          {listing.description}
-        </p>
+        {descriptionText && (
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+            {descriptionText}
+          </p>
+        )}
+
+        {links.length > 0 && (
+          <div className="mb-6 flex flex-col gap-2">
+            {links.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-sm font-medium text-[#0C5A86] hover:underline dark:border-slate-700 dark:bg-slate-800 dark:text-sky-400">
+                🔗 {link.siteName ? `Ver anúncio original no ${link.siteName}` : "Abrir link externo"}
+              </a>
+            ))}
+          </div>
+        )}
 
         {isReferral && (
           <div className="rounded-2xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/70 dark:bg-amber-950/20 p-4 mb-6">

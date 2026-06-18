@@ -67,6 +67,35 @@ const FILTER_OPTIONS: { value: RequestStatus | "all"; label: string }[] = [
   { value: "inconsistent", label: "Inconsistentes" }
 ];
 
+const MOBILE_STATUS_CARD_TONES: Record<RequestStatus, string> = {
+  pending:
+    "border-amber-200/80 bg-amber-50/70 dark:border-amber-800/50 dark:bg-amber-950/20",
+  approved:
+    "border-emerald-200/80 bg-emerald-50/70 dark:border-emerald-800/50 dark:bg-emerald-950/20",
+  rejected:
+    "border-red-200/80 bg-red-50/70 dark:border-red-800/50 dark:bg-red-950/20",
+  suspended:
+    "border-slate-300/80 bg-slate-100/70 dark:border-slate-700/70 dark:bg-slate-800/60",
+  inconsistent:
+    "border-orange-200/80 bg-orange-50/70 dark:border-orange-800/50 dark:bg-orange-950/20"
+};
+
+const DESKTOP_STATUS_CARD_TONES: Partial<
+  Record<RequestStatus, { active: string; inactive: string }>
+> = {
+  rejected: {
+    active: "border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-950/30",
+    inactive:
+      "border-transparent bg-red-50/70 dark:bg-red-950/15 hover:border-red-200 dark:hover:border-red-800/40"
+  },
+  inconsistent: {
+    active:
+      "border-orange-200 bg-orange-50 dark:border-orange-800/50 dark:bg-orange-950/30",
+    inactive:
+      "border-transparent bg-orange-50/70 dark:bg-orange-950/15 hover:border-orange-200 dark:hover:border-orange-800/40"
+  }
+};
+
 function sanitizeWhatsAppInput(value: string): string {
   const digitsOnly = value.replace(/\D/g, "");
   if (!digitsOnly) return "";
@@ -523,8 +552,8 @@ export default function ResidentsPage() {
         </button>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+      {/* Summary chips (mobile) */}
+      <div className="md:hidden grid grid-cols-3 gap-2 mb-4">
         {(
           [
             "pending",
@@ -535,14 +564,53 @@ export default function ResidentsPage() {
           ] as const
         ).map(s => {
           const conf = STATUS_LABELS[s];
+          const mobileLabel =
+            s === "inconsistent" ? "Inconsistente" : conf.label;
+
+          return (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              className={`rounded-xl px-2.5 py-2 text-left border transition-all ${
+                filter === s
+                  ? "border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40"
+                  : MOBILE_STATUS_CARD_TONES[s]
+              }`}>
+              <span
+                className={`inline-flex max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold px-2 py-0.5 rounded-full mb-1 ${conf.className}`}>
+                {mobileLabel}
+              </span>
+              <p className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight mt-0.5">
+                {counts[s] ?? 0}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Summary cards (desktop) */}
+      <div className="hidden md:grid md:grid-cols-5 gap-3 mb-6">
+        {(
+          [
+            "pending",
+            "approved",
+            "rejected",
+            "suspended",
+            "inconsistent"
+          ] as const
+        ).map(s => {
+          const conf = STATUS_LABELS[s];
+          const desktopTone = DESKTOP_STATUS_CARD_TONES[s];
           return (
             <button
               key={s}
               onClick={() => setFilter(s)}
               className={`rounded-2xl p-4 text-left border-2 transition-all ${
                 filter === s
-                  ? "border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40"
-                  : "border-transparent bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+                  ? desktopTone?.active ??
+                    "border-[#1DAFD9] bg-sky-50 dark:bg-sky-950/40"
+                  : desktopTone?.inactive ??
+                    "border-transparent bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
               }`}>
               <div
                 className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full mb-2 ${conf.className}`}>
